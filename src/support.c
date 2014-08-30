@@ -1164,3 +1164,21 @@ img_message (img_window_struct *img,
         }
 
 }
+
+void
+img_check_for_encoder(img_window_struct *img)
+{
+	gchar *name = NULL;
+
+	name = g_find_program_in_path("ffmpeg");
+	if (name == NULL)
+	{
+		img_message(img, TRUE, "Using avconv for encoding.\n");
+		img->encoder_name = g_strdup("avconv");
+	}
+	else
+	{
+		img_message(img, TRUE, "Using ffmpeg for encoding.\n");
+		img->encoder_name = name;
+	} 
+}

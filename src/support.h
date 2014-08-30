@@ -154,4 +154,7 @@ img_message (img_window_struct *img,
              gboolean alert_user,
              gchar *message, ...);
 
+void
+img_check_for_encoder(img_window_struct *img);
+
 #endif

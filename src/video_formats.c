@@ -17,7 +17,7 @@
  *
  */
 
-/**** How-To ad a new video format ***
+/**** How to add a new video format ***
 Adding a new video format is quite easy: you have to add an entry to video_format_lists.
 This entry includes:
 gchar *name;                The name of the video format. As it will be

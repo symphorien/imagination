@@ -259,7 +259,7 @@ img_load_slideshow( img_window_struct *img,
     old_video_size = g_key_file_get_integer(img_key_file, "slideshow settings", "video format", NULL);
     if (old_video_size != 0)
     {
-        img_message(img, FALSE, "Old imagination project file, guessing format as VOB");
+        img_message(img, FALSE, "Old imagination project file, guessing format as VOB\n");
         img->video_format_index = 0; /* index for VOB format*/
 
         for (i = 0;
@@ -520,6 +520,7 @@ img_load_slideshow( img_window_struct *img,
 			}
 			else
 			{
+				angle = 0;
 				/* We are loading an empty slide */
 				gradient = g_key_file_get_integer(img_key_file, conf, "gradient", NULL);
 				c_start = g_key_file_get_double_list(img_key_file, conf, "start_color", NULL, NULL);

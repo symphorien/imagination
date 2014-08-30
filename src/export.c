@@ -249,8 +249,8 @@ img_prepare_audio( img_window_struct *img )
 
 		/* Spawn sox thread now. */
 		g_atomic_int_set( &img->sox_flags, 0 );
-		img->sox = g_thread_create( (GThreadFunc)img_produce_audio_data,
-									tdata, TRUE, NULL );
+		img->sox = g_thread_new( "Imagination" , (GThreadFunc)img_produce_audio_data,
+									tdata);
 
 		/* Chain last export step - video export */
 		g_idle_add( (GSourceFunc)img_start_export, img );
@@ -447,11 +447,11 @@ img_stop_export( img_window_struct *img )
 	/* Do any additional tasks */
 	if( img->export_is_running > 3 )
 	{
-		kill( img->ffmpeg_export, SIGINT );
+		kill( img->encoder_pid, SIGINT );
 		g_source_remove( img->source_id );
 
 		close(img->file_desc);
-		g_spawn_close_pid( img->ffmpeg_export );
+		g_spawn_close_pid( img->encoder_pid );
 
 		/* Destroy images that were used */
 		cairo_surface_destroy( img->image1 );
@@ -641,7 +641,7 @@ img_run_encoder( img_window_struct *img )
 
 	ret = g_spawn_async_with_pipes( NULL, argv, NULL,
 									G_SPAWN_SEARCH_PATH,
-									NULL, NULL, &img->ffmpeg_export,
+									NULL, NULL, &img->encoder_pid,
 									&img->file_desc,
                                     NULL,               /* print to standard_output */
                                     NULL,               /* print to standard_error */
@@ -1203,7 +1203,7 @@ void img_exporter (GtkWidget *button, img_window_struct *img )
         bitrate_cmd = g_strdup("");
 
 
-	cmd_line = g_strdup_printf("ffmpeg -f image2pipe -vcodec ppm "
+	cmd_line = g_strdup_printf("%s -f image2pipe -vcodec ppm "
                 "-i pipe: <#AUDIO#> "
                 "-y "                   /* overwrite output */
                 "%s "                   /* ffmpeg option */
@@ -1212,6 +1212,7 @@ void img_exporter (GtkWidget *button, img_window_struct *img )
                 "%s "                   /* aspect ratio */
                 "%s "                   /* Bitrate */
                 "\"%s\"",               /*filename */
+                img->encoder_name,
                 video_format_list[img->video_format_index].ffmpeg_option,
                 video_format_list[img->video_format_index].fps_list[img->fps_index].ffmpeg_option,
                 img->video_size[0], img->video_size[1],
@@ -1237,10 +1238,15 @@ void test_ffmpeg(img_window_struct *img)
     gchar **argv;
     gint    argc;
 
-    /* Check if ffmpeg is compiled with avfilter setdar */
-    img_message(img, FALSE, "Testing ffmpeg abilities with \"ffmpeg -filters\" ... ");
+   /* Check if ffmpeg/avconv is compiled with avfilter setdar */
+    img_message(img, FALSE, (g_strrstr(img->encoder_name, "ffmpeg") ? "Testing ffmpeg abilities with \"ffmpeg -filters\" ... "
+    															   : "Testing avconv abilities with \"avconv -filters\" ... "));
 
-    g_shell_parse_argv("ffmpeg -filters", &argc, &argv, NULL);
+    if (g_strrstr(img->encoder_name, "ffmpeg"))
+    	g_shell_parse_argv("ffmpeg -filters", &argc, &argv, NULL);
+    else
+    	g_shell_parse_argv("avconv -filters", &argc, &argv, NULL);
+
     g_spawn_sync(NULL, argv, NULL,
                  G_SPAWN_STDERR_TO_DEV_NULL|G_SPAWN_SEARCH_PATH,
                  NULL, NULL,

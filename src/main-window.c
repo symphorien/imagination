@@ -1357,7 +1357,9 @@ img_window_struct *img_create_window (void)
 		gtk_check_menu_item_set_active(
 				GTK_CHECK_MENU_ITEM( tmp_checks[index] ), TRUE );
 	}
-
+	
+	/* As many distros replaced ffmpeg with avconv let's check for it */
+	img_check_for_encoder(img_struct);
 	return img_struct;
 }
 

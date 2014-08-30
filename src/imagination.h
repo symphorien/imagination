@@ -377,10 +377,11 @@ struct _img_window_struct
 	GtkWidget   *export_label;
 	GtkWidget   *export_dialog;
 	gdouble      export_fps;        /* Frame rate for exported video */
+	gchar		*encoder_name;		/* ffmpeg or avconv	*/
 	gchar       *export_cmd_line;   /* ffmpeg spawn cmd line */
 	guint        export_slide;		/* Number of slide being exported */
 	GSourceFunc  export_idle_func;	/* Stored procedure for pause */
-	GPid         ffmpeg_export;     /* ffmpeg's process id */
+	GPid         encoder_pid;       /* ffmpeg/avconv process id */
 
 	/* Sox thread related variables */
 	gint      sox_flags;         /* Thread controls:
