@@ -1,12 +1,13 @@
 Imagination changelog
 
 xx/xx/xx - trunk:
+			- Added two more text transitions and moved -r encoder option before the input filename thanks to Bruce Guenter. 
 			- Fixed bugs #82 and #83 thanks to Davide Capodaglio. 
-            - Fixed compilation error on Fedora 13 (check for libm)
-            - Fix loading of slides without image, bug #3306969
-            - Fix: Propose a project name (unknown.img) when saving a new project from the "save" button.
-            - Rewrote the handling of video formats, including saving/loading the project settings. Fixes bug #3306974.
-            - Added H.264/MPEG-4 AVC support, thanks to David Gnedt
+            		- Fixed compilation error on Fedora 13 (check for libm)
+            		- Fix loading of slides without image, bug #3306969
+            		- Fix: Propose a project name (unknown.img) when saving a new project from the "save" button.
+            		- Rewrote the handling of video formats, including saving/loading the project settings. Fixes bug #3306974.
+            		- Added H.264/MPEG-4 AVC support, thanks to David Gnedt
 
 06/03/11 - 3.0:
 			- Added Chinese simplified and Chinese traditional translations.

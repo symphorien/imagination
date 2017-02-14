@@ -1204,17 +1204,17 @@ void img_exporter (GtkWidget *button, img_window_struct *img )
 
 
 	cmd_line = g_strdup_printf("%s -f image2pipe -vcodec ppm "
+                "-r %s "                /* frame rate */
                 "-i pipe: <#AUDIO#> "
                 "-y "                   /* overwrite output */
                 "%s "                   /* ffmpeg option */
-                "-r %s "                /* frame rate */
                 "-s %dx%d "             /* size */
                 "%s "                   /* aspect ratio */
                 "%s "                   /* Bitrate */
                 "\"%s\"",               /*filename */
                 img->encoder_name,
-                video_format_list[img->video_format_index].ffmpeg_option,
                 video_format_list[img->video_format_index].fps_list[img->fps_index].ffmpeg_option,
+                video_format_list[img->video_format_index].ffmpeg_option,
                 img->video_size[0], img->video_size[1],
                 aspect_ratio_cmd,
                 bitrate_cmd,

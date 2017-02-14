@@ -124,6 +124,32 @@ img_text_grow( cairo_t     *cr,
                gdouble     *font_color,
                gdouble     *font_bgcolor);
 
+static void
+img_text_bottom_to_top( cairo_t     *cr,
+					PangoLayout *layout,
+ 					gint         sw,
+ 					gint         sh,
+ 					gint         lw,
+ 					gint         lh,
+ 					gint         posx,
+ 					gint         posy,
+ 					gdouble      progress,
+                    gdouble     *font_color,
+                    gdouble     *font_bgcolor);
+
+static void
+img_text_right_to_left( cairo_t     *cr,
+					PangoLayout *layout,
+ 					gint         sw,
+ 					gint         sh,
+ 					gint         lw,
+ 					gint         lh,
+ 					gint         posx,
+ 					gint         posy,
+ 					gdouble      progress,
+                    gdouble     *font_color,
+                    gdouble     *font_bgcolor);
+
                
 /* ****************************************************************************
  * Function definitions
@@ -148,7 +174,7 @@ gint
 img_get_text_animation_list( TextAnimation **animations )
 {
 	TextAnimation *list;              /* List of all animations */
-	gint           no_animations = 7; /* Number of animations */
+	gint           no_animations = 9; /* Number of animations */
 	gint           i = 0;
 
 	if( animations )
@@ -186,6 +212,14 @@ img_get_text_animation_list( TextAnimation **animations )
 		list[i].name   = g_strdup( _("Grow") );
 		list[i].id     = i;
 		list[i++].func = img_text_grow;
+
+                list[i].name   = g_strdup( _("Slide bottom to top") );
+                list[i].id     = i;
+                list[i++].func = img_text_bottom_to_top;
+
+                list[i].name   = g_strdup( _("Slide right to left") );
+                list[i].id     = i;
+                list[i++].func = img_text_right_to_left;
 
 		/* FIXME: Add more animations here.
 		 *
@@ -535,6 +569,44 @@ img_text_grow( cairo_t     *cr,
     img_text_draw_layout(cr, layout,
                          - lw * 0.5,
                          - lh * 0.5,
+                         font_color, font_bgcolor);
+}
+
+static void
+img_text_bottom_to_top( cairo_t     *cr,
+				   PangoLayout *layout,
+				   gint         sw,
+				   gint         sh,
+				   gint         lw,
+				   gint         lh,
+				   gint         posx,
+				   gint         posy,
+				   gdouble      progress,
+                   gdouble     *font_color,
+                   gdouble     *font_bgcolor)
+{
+    img_text_draw_layout(cr, layout,
+                         posx,
+                         sh * (1 - progress) - lh * progress,
+                         font_color, font_bgcolor);
+}
+
+static void
+img_text_right_to_left( cairo_t     *cr,
+				   PangoLayout *layout,
+				   gint         sw,
+				   gint         sh,
+				   gint         lw,
+				   gint         lh,
+				   gint         posx,
+				   gint         posy,
+				   gdouble      progress,
+                   gdouble     *font_color,
+                   gdouble     *font_bgcolor)
+{
+    img_text_draw_layout(cr, layout,
+                         sw * (1 - progress) - lw * progress,
+                         posy,
                          font_color, font_bgcolor);
 }
 
