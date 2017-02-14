@@ -1,6 +1,7 @@
 Imagination changelog
 
 xx/xx/xx - trunk:
+			- Fixed bugs #82 and #83 thanks to Davide Capodaglio. 
             - Fixed compilation error on Fedora 13 (check for libm)
             - Fix loading of slides without image, bug #3306969
             - Fix: Propose a project name (unknown.img) when saving a new project from the "save" button.

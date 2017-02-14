@@ -50,8 +50,8 @@ Have fun !
 
 /* Define video formats */
 struct aspect_ratio aspect_ratio_list[] = {
-    {"4:3", "4:3"},
-    {"16:9", "16:9"},
+    {"4:3", "4/3"},
+    {"16:9", "16/9"},
     {NULL}
 };
 
@@ -157,12 +157,20 @@ gchar *x3GP_extensions[] = {
 struct video_size x264_size_list[] = {
     {"HD 852x480",      852,    480, -1, -1, -1},
     {"HD 1280x720",    1280,    720, -1, -1, -1},
+    {"HD 1440x1080",   1440,   1080, -1, -1, -1},
     {"HD 1920x1080",   1920,   1080, -1, -1, -1},
+    {NULL}
+};
+
+struct video_fps x264_fps_list[] = {
+    {"25 (PAL)", "25", 25},
+    {"30 (NTSC)", "30000/1001", 30000/1001},
     {NULL}
 };
 
 gchar *x264_extensions[] = {
     ".mp4",
+    ".mkv",
     NULL
 };
 
@@ -202,12 +210,12 @@ struct video_format video_format_list[] = {
     },
     /* ffmpeg options for x264 thanks to David Gnedt */
     {gettext_noop("H.264/MPEG-4 AVC"), "x264",
-        "-vcodec libx264 -crf 15 " /* FIXME -crf should be in a "Quality" option that also includes bitrate */
-        "-acodec libmp3lame -ac 2 -ar 44100 -ab 128k",
+        "-vcodec libx264 -crf 18 " /* FIXME -crf should be in a "Quality" option that also includes bitrate */
+        "-acodec libmp3lame -ac 2 -ar 44100 -b:a 128k",
         x264_size_list,
         aspect_ratio_list,
         NULL,
-        VOB_fps_list,
+        x264_fps_list,
         x264_extensions
     },
     {NULL}
