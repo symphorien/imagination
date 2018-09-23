@@ -1,6 +1,8 @@
 Imagination changelog
 
 xx/xx/xx - trunk:
+			- Added initial code to allow slide duration with decimals, a long awaited request. Still to be tested.
+			- Added patch from Giovanni Mariani to fix ffmpeg cmd line error when producing VOB.
 			- Added two more text transitions and moved -r encoder option before the input filename thanks to Bruce Guenter. 
 			- Fixed bugs #82 and #83 thanks to Davide Capodaglio. 
             		- Fixed compilation error on Fedora 13 (check for libm)

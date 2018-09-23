@@ -69,7 +69,7 @@ void
 img_update_sub_properties( img_window_struct *img,
 						   TextAnimationFunc  anim,
 						   gint               anim_id,
-						   gint               anim_duration,
+						   gdouble            anim_duration,
 						   ImgSubPos          position,
 						   ImgRelPlacing      placing,
 						   const gchar       *desc,

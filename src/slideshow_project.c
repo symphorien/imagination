@@ -108,7 +108,7 @@ img_save_slideshow( img_window_struct *img,
 		}
 
 		/* Duration */
-		g_key_file_set_integer(img_key_file,conf, "duration",		entry->duration);
+		g_key_file_set_double(img_key_file,conf, "duration",		entry->duration);
 
 		/* Transition */
 		g_key_file_set_integer(img_key_file,conf, "transition_id",	entry->transition_id);
@@ -202,13 +202,13 @@ img_load_slideshow( img_window_struct *img,
 	GKeyFile *img_key_file;
 	gchar *dummy, *slide_filename, *time;
 	GtkWidget *dialog;
-	gint number,i,transition_id, duration, no_points, previous_nr_of_slides;
+	gint number,i,transition_id, no_points, previous_nr_of_slides;
 	guint speed;
 	GtkTreeModel *model;
 	void (*render);
 	GHashTable *table;
 	gchar      *spath, *conf;
-	gdouble    *color, *font_color, *font_bgcolor;
+	gdouble    duration, *color, *font_color, *font_bgcolor;
 	gboolean    old_file = FALSE;
 	gboolean    first_slide = TRUE;
     gchar      *video_config_name, *aspect_ratio, *fps;
@@ -410,7 +410,7 @@ img_load_slideshow( img_window_struct *img,
 				GdkPixbuf *pix;
 
 				speed 	=		g_key_file_get_integer(img_key_file, "transition speed",	dummy, NULL);
-				duration= 		g_key_file_get_integer(img_key_file, "slide duration",		dummy, NULL);
+				duration= 		g_key_file_get_double(img_key_file, "slide duration",		dummy, NULL);
 				transition_id = g_key_file_get_integer(img_key_file, "transition type",		dummy, NULL);
 
 				/* Get the mem address of the transition */
@@ -540,7 +540,7 @@ img_load_slideshow( img_window_struct *img,
 			/* Try to load image. If this fails, skip this slide */
 			if( load_ok )
 			{
-				duration	  = g_key_file_get_integer(img_key_file, conf, "duration", NULL);
+				duration	  = g_key_file_get_double(img_key_file, conf, "duration", NULL);
 				transition_id = g_key_file_get_integer(img_key_file, conf, "transition_id", NULL);
 				speed 		  =	g_key_file_get_integer(img_key_file, conf, "speed",	NULL);
 

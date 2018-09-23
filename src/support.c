@@ -481,7 +481,7 @@ img_set_slide_gradient_info( slide_struct *slide,
 
 void
 img_set_slide_still_info( slide_struct      *slide,
-						  gint               duration,
+						  gdouble           duration,
 						  img_window_struct *img )
 {
 	if( slide->duration != duration )
@@ -697,8 +697,8 @@ img_set_total_slideshow_duration( img_window_struct *img )
 		if( img->final_transition.render )
 			img->total_secs += img->final_transition.speed;
 	}
-		
-	time = img_convert_seconds_to_time(img->total_secs);
+	img->total_secs = ceil(img->total_secs);
+	time = img_convert_seconds_to_time((gint)img->total_secs);
 	gtk_label_set_text(GTK_LABEL (img->total_time_data),time);
 	g_free(time);
 

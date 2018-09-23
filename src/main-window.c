@@ -783,7 +783,8 @@ img_window_struct *img_create_window (void)
 	gtk_table_attach (GTK_TABLE (table), duration_label, 0, 1, 2, 3,(GtkAttachOptions) (GTK_FILL),(GtkAttachOptions) (0), 0, 0);
 	gtk_misc_set_alignment (GTK_MISC (duration_label), 0, 0.5);
 
-	img_struct->duration = gtk_spin_button_new_with_range (1, 300, 1);
+	GtkAdjustment *adj = (GtkAdjustment *) gtk_adjustment_new (0.0, -10000.0, 10000.0, 0.01, 100.0, 0.0);
+	img_struct->duration = gtk_spin_button_new (adj, 0.1, 2);
 	gtk_table_attach (GTK_TABLE (table), img_struct->duration, 1, 2, 2, 3,(GtkAttachOptions) (GTK_FILL),(GtkAttachOptions) (0), 0, 0);
 	gtk_widget_set_sensitive(img_struct->duration, FALSE);
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON (img_struct->duration),TRUE);
@@ -2003,7 +2004,7 @@ static void img_combo_box_speed_changed (GtkComboBox *combo, img_window_struct *
 
 static void img_spinbutton_value_changed (GtkSpinButton *spinbutton, img_window_struct *img)
 {
-	gint duration = 0;
+	gdouble duration = 0;
 	GList *selected, *bak;
 	GtkTreeIter iter;
 	GtkTreeModel *model;
@@ -2014,8 +2015,7 @@ static void img_spinbutton_value_changed (GtkSpinButton *spinbutton, img_window_
 	if (selected == NULL)
 		return;
 
-	duration = gtk_spin_button_get_value_as_int(spinbutton);
-	
+	duration = gtk_spin_button_get_value(spinbutton);
 	bak = selected;
 	while (selected)
 	{
@@ -2473,7 +2473,7 @@ void
 img_update_sub_properties( img_window_struct *img,
 						   TextAnimationFunc  anim,
 						   gint               anim_id,
-						   gint               anim_duration,
+						   gdouble            anim_duration,
 						   ImgSubPos          position,
 						   ImgRelPlacing      placing,
 						   const gchar       *desc,

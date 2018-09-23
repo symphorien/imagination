@@ -73,7 +73,7 @@ img_set_slide_gradient_info( slide_struct *slide,
 
 void
 img_set_slide_still_info( slide_struct      *slide,
-						  gint               duration,
+						  gdouble           duration,
 						  img_window_struct *img );
 
 void

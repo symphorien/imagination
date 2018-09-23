@@ -682,7 +682,7 @@ img_run_encoder( img_window_struct *img )
  * Return value: new time offset. The same value is stored in
  * img->next_slide_off.
  */
-guint
+gdouble
 img_calc_next_slide_time_offset( img_window_struct *img,
 								 gdouble            rate )
 {

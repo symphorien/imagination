@@ -169,7 +169,7 @@ struct _slide_struct
 	gdouble g_stop_point[2];  /* x, y coordinates of stop point */
 
 	/* Still part of the slide params */
-	guint duration; /* Duration of still part */ /* NOTE: sub1 */
+	gdouble duration; /* Duration of still part */ /* NOTE: sub1 */
 
 	/* Transition params */
 	gchar     *path;          /* Transition model path to transition */
@@ -308,7 +308,7 @@ struct _img_window_struct
     GtkWidget  *bitrate_combo;
     gint        bitrate_index;
     gdouble     background_color[3];
-  	gint		total_secs;
+  	gdouble		total_secs;
 	gint		total_music_secs;
   	gint		slides_nr;
 	slide_struct final_transition;  /* Only speed, render and duration fields
@@ -335,7 +335,7 @@ struct _img_window_struct
 	guint  slide_cur_frame;    /* Current slide frame */
 	guint  slide_trans_frames; /* Number of frames in transition */
 	guint  slide_still_frames; /* Number of frames in still part */
-	guint  next_slide_off;     /* Time offset of next slide */
+	gdouble  next_slide_off;     /* Time offset of next slide */
 
 	gint   still_counter; /* Currently displayed still frame */
 	gint   still_max;     /* Number of frames per stop point */

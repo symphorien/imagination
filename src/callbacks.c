@@ -1889,7 +1889,7 @@ img_update_stop_display( img_window_struct *img,
 						 gboolean           update_pos )
 {
 	gchar        *string;
-	gint          full;
+	gdouble      full;
 
 	/* Disable/enable slide duration */
 	gtk_widget_set_sensitive( img->duration,
