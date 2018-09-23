@@ -1204,9 +1204,9 @@ void img_exporter (GtkWidget *button, img_window_struct *img )
 
 
 	cmd_line = g_strdup_printf("%s -f image2pipe -vcodec ppm "
-                "-r %s "                /* frame rate */
-                "-i pipe: <#AUDIO#> "
-                "-y "                   /* overwrite output */
+				"-i pipe: <#AUDIO#> "
+				"-r %s "                /* frame rate */
+				"-y "                   /* overwrite output */
                 "%s "                   /* ffmpeg option */
                 "-s %dx%d "             /* size */
                 "%s "                   /* aspect ratio */
