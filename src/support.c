@@ -313,7 +313,7 @@ static gboolean img_plugin_is_loaded(img_window_struct *img, GModule *module)
 	return (g_slist_find(img->plugin_list,module) != NULL);
 }
 
-void img_show_file_chooser(SexyIconEntry *entry, SexyIconEntryPosition icon_pos,int button,img_window_struct *img)
+void img_show_file_chooser(GtkWidget *entry, GtkEntryIconPosition icon_pos,int button,img_window_struct *img)
 {
 	GtkWidget *file_selector;
 	gchar *dest_dir;

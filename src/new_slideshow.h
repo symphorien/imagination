@@ -24,7 +24,6 @@
 
 #include <gtk/gtk.h>
 #include "main-window.h"
-#include "sexy-icon-entry.h"
 #include "callbacks.h"
 
 void img_new_slideshow_settings_dialog(img_window_struct *, gboolean);

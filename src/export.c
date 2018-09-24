@@ -159,9 +159,9 @@ img_create_export_dialog( img_window_struct  *img,
 	gtk_box_pack_start( GTK_BOX( hbox_slideshow_name ), label, FALSE, TRUE, 0 );
 	gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
 
-	slideshow_title_entry = sexy_icon_entry_new();
-	sexy_icon_entry_add_clear_button( SEXY_ICON_ENTRY(slideshow_title_entry), img, img_show_file_chooser);
-    sexy_icon_entry_set_icon_highlight( SEXY_ICON_ENTRY(slideshow_title_entry), SEXY_ICON_ENTRY_PRIMARY, TRUE);
+    slideshow_title_entry = gtk_entry_new();
+    gtk_entry_set_icon_from_icon_name(GTK_ENTRY(slideshow_title_entry), GTK_ENTRY_ICON_SECONDARY, GTK_STOCK_OPEN), 
+	g_signal_connect (slideshow_title_entry, "icon-press", G_CALLBACK (img_show_file_chooser), img);
 	gtk_box_pack_start( GTK_BOX( hbox_slideshow_name ), slideshow_title_entry, TRUE, TRUE, 0 );
 
 	if( box )
