@@ -200,6 +200,7 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 
 	if (response == GTK_RESPONSE_ACCEPT)
 	{
+		img_close_slideshow(NULL, img);
 		gboolean dist = img->distort_images;
 		GdkColor new;
 		gboolean c_dist,

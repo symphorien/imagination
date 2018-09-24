@@ -123,7 +123,7 @@ void img_new_slideshow(GtkMenuItem *item,img_window_struct *img_struct)
     if (img_struct->project_is_modified)
         if (GTK_RESPONSE_OK != img_ask_user_confirmation(img_struct, _("You didn't save your slideshow yet. Are you sure you want to close it?")))
             return;
-	img_close_slideshow(GTK_WIDGET(item), img_struct);
+
     img_new_slideshow_settings_dialog(img_struct, FALSE);
 }
 
@@ -624,14 +624,18 @@ img_rotate_selected_slides( img_window_struct *img,
 		gtk_tree_model_get_iter( model, &iter, selected->data );
 		gtk_tree_model_get( model, &iter, 1, &info_slide, -1 );
 
-		angle = ( info_slide->angle + ( clockwise ? 1 : -1 ) ) % 4;
-		img_rotate_slide( info_slide, angle, GTK_PROGRESS_BAR( img->progress_bar ) );
+		/* Avoid seg-fault when dealing with text/gradient slides */
+		if (info_slide->o_filename != NULL)
+		{
+			angle = ( info_slide->angle + ( clockwise ? 1 : -1 ) ) % 4;
+			img_rotate_slide( info_slide, angle, GTK_PROGRESS_BAR( img->progress_bar ) );
 
-		/* Display the rotated image in thumbnails iconview */
-		img_scale_image( info_slide->r_filename, img->video_ratio, 88, 0,
-						 img->distort_images, img->background_color,
-						 &thumb, NULL );
-		gtk_list_store_set( img->thumbnail_model, &iter, 0, thumb, -1 );
+			/* Display the rotated image in thumbnails iconview */
+			img_scale_image( info_slide->r_filename, img->video_ratio, 88, 0,
+							 img->distort_images, img->background_color,
+							 &thumb, NULL );
+			gtk_list_store_set( img->thumbnail_model, &iter, 0, thumb, -1 );
+		}
 		selected = selected->next;
 	}
 	gtk_widget_hide(img->progress_bar);
@@ -642,19 +646,21 @@ img_rotate_selected_slides( img_window_struct *img,
 	if( ! img->current_slide )
 		return;
 
-	cairo_surface_destroy( img->current_image );
-
 	/* Respect quality settings */
-	if( img->low_quality )
-		img_scale_image( img->current_slide->r_filename, img->video_ratio,
-						 0, img->video_size[1], img->distort_images,
-						 img->background_color, NULL, &img->current_image );
-	else
-		img_scale_image( img->current_slide->r_filename, img->video_ratio,
-						 0, 0, img->distort_images,
-						 img->background_color, NULL, &img->current_image );
+	if (info_slide->o_filename != NULL)
+	{
+		cairo_surface_destroy( img->current_image );
+		if( img->low_quality )
+			img_scale_image( img->current_slide->r_filename, img->video_ratio,
+							 0, img->video_size[1], img->distort_images,
+							 img->background_color, NULL, &img->current_image );
+		else
+			img_scale_image( img->current_slide->r_filename, img->video_ratio,
+							 0, 0, img->distort_images,
+							 img->background_color, NULL, &img->current_image );
 
-	gtk_widget_queue_draw( img->image_area );
+		gtk_widget_queue_draw( img->image_area );
+	}
 }
 
 /* Rotate clockwise */
