@@ -405,7 +405,7 @@ img_create_new_slide( void )
 	if( slide )
 	{
 		/* Still part */
-		slide->duration = 1;
+		slide->duration = 1.0;
 
 		/* Transition */
 		slide->path = g_strdup( "0" );
@@ -994,10 +994,6 @@ img_sync_timings( slide_struct      *slide,
 		gtk_spin_button_set_value( GTK_SPIN_BUTTON( img->ken_duration ),
 								   point->time );
 	}
-
-	/* Update display */
-	gtk_spin_button_set_value( GTK_SPIN_BUTTON( img->duration ),
-							   slide->anim_duration );
 }
 
 void img_select_nth_slide(img_window_struct *img, gint slide_to_select)
