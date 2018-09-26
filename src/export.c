@@ -544,6 +544,9 @@ img_prepare_pixbufs( img_window_struct *img,
 					 gboolean           preview )
 {
 	GtkTreeModel    *model;
+	GtkTreePath     *path;
+	gchar			*selected_slide_nr;
+
 	static gboolean  last_transition = TRUE;
 
 	model = GTK_TREE_MODEL( img->thumbnail_model );
@@ -553,8 +556,26 @@ img_prepare_pixbufs( img_window_struct *img,
 									g_list_last( img->work_slide->points )->data :
 									NULL );
 
+	/* save the cur iter in the iconview to unselect the slide before selecting the next one */
+	img->prev_ss_iter = img->cur_ss_iter;
+
 	if( last_transition && gtk_tree_model_iter_next( model, &img->cur_ss_iter ) )
 	{
+		img->cur_nr_of_selected_slide++;
+		path = gtk_tree_model_get_path(GTK_TREE_MODEL(model), &img->prev_ss_iter); 
+		if (path)
+		{	
+			gtk_icon_view_unselect_path (GTK_ICON_VIEW(img->thumbnail_iconview), path);
+			gtk_tree_path_free(path);
+		}
+		path = gtk_tree_model_get_path(GTK_TREE_MODEL(model), &img->cur_ss_iter); 
+		gtk_icon_view_select_path (GTK_ICON_VIEW(img->thumbnail_iconview), path);
+		gtk_tree_path_free(path);
+		
+		selected_slide_nr = g_strdup_printf("%d",img->cur_nr_of_selected_slide);
+		gtk_entry_set_text(GTK_ENTRY(img->slide_number_entry),selected_slide_nr);
+		g_free(selected_slide_nr);
+
 		/* We have next iter, so prepare for next round */
 		cairo_surface_destroy( img->image1 );
 		img->image1 = img->image2;
@@ -613,6 +634,16 @@ img_prepare_pixbufs( img_window_struct *img,
 		return( TRUE );
 	}
 
+	/* Unselect the last selected item during the preview */
+	GList *list;
+	list = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(img->thumbnail_iconview));
+	gtk_icon_view_unselect_path (GTK_ICON_VIEW(img->thumbnail_iconview), (GtkTreePath*)list->data);
+	g_list_foreach (list, (GFunc)gtk_tree_path_free, NULL);
+	g_list_free (list);
+
+	/*  Reselect the first selected slide before the preview if any */
+	if (img->first_selected_path)
+		gtk_icon_view_select_path (GTK_ICON_VIEW(img->thumbnail_iconview), img->first_selected_path);
 	/* We're done now */
 	last_transition = TRUE;
 

@@ -311,6 +311,7 @@ struct _img_window_struct
   	gdouble		total_secs;
 	gint		total_music_secs;
   	gint		slides_nr;
+  	gint		cur_nr_of_selected_slide;
 	slide_struct final_transition;  /* Only speed, render and duration fields
 									   of this structure are used (and duration
 									   is always 0). */
@@ -326,6 +327,8 @@ struct _img_window_struct
 	ImgStopPoint    *point1;        /* Last stop point of image1 */
 	ImgStopPoint    *point2;        /* First stop point of image2 */
   	GtkTreeIter      cur_ss_iter;
+  	GtkTreeIter      prev_ss_iter;
+  	GtkTreePath 	*first_selected_path;
   	guint		     source_id;
 
 	/* Counters that control animation flow */

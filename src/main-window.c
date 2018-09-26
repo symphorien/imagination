@@ -1186,7 +1186,7 @@ img_window_struct *img_create_window (void)
                       G_CALLBACK (img_notebook_switch_page), img_struct);
     /* End of Message tab */
 
-	/* Create the model */
+	/* Create the bottom slides thumbnail model */
 	img_struct->thumbnail_model = gtk_list_store_new( 4,
                                                       GDK_TYPE_PIXBUF,  /* thumbnail */
                                                       G_TYPE_POINTER,   /* slide_info */
@@ -1635,17 +1635,15 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 {
 	GtkTreeModel *model;
 	GtkTreeIter iter;
-	GtkTreePath *path = NULL;
 	gint dummy, nr_selected = 0;
 	GList *selected = NULL;
 	gchar *slide_info_msg = NULL, *selected_slide_nr = NULL;
 	slide_struct *info_slide;
 
-	if (img->preview_is_running || img->export_is_running)
+	if (img->export_is_running)
 		return;
 
 	model = gtk_icon_view_get_model(iconview);
-	gtk_icon_view_get_cursor(iconview,&path,NULL);
 
 	selected = gtk_icon_view_get_selected_items(iconview);
 	nr_selected = g_list_length(selected);
@@ -1670,14 +1668,20 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 
 		return;
 	}
-
+	
+	/* Save the current selected slide to restore it when the preview is finished */
+	if (img->preview_is_running == FALSE)
+	{
+		gtk_tree_path_free(img->first_selected_path);
+		gtk_icon_view_get_cursor(iconview,&img->first_selected_path,NULL);
+	}
 	gtk_widget_set_sensitive(img->trans_duration,	TRUE);
 	gtk_widget_set_sensitive(img->duration,			TRUE);
 	gtk_widget_set_sensitive(img->transition_type,	TRUE);
 	gtk_widget_set_sensitive(img->random_button,	TRUE);
 
-	dummy = gtk_tree_path_get_indices(selected->data)[0]+1;
-	selected_slide_nr = g_strdup_printf("%d",dummy);
+	img->cur_nr_of_selected_slide = gtk_tree_path_get_indices(selected->data)[0]+1;
+	selected_slide_nr = g_strdup_printf("%d",img->cur_nr_of_selected_slide);
 	gtk_entry_set_text(GTK_ENTRY(img->slide_number_entry),selected_slide_nr);
 	g_free(selected_slide_nr);
 

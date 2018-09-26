@@ -1,7 +1,9 @@
 Imagination changelog
 
 xx/xx/xx - trunk:
-			- Added initial code to allow slide duration with decimals, a long awaited request. Still to be tested.
+			- Fixed seg-fault when trying to rotate gradient/text slides.
+			- Current slideshow is not closed anymore when clicking cancel in the new slideshow dialog.
+			- Slide duration can be finally set to less than a second. That was a long requested feature!
 			- Added patch from Giovanni Mariani to fix ffmpeg cmd line error when producing VOB.
 			- Added two more text transitions and moved -r encoder option before the input filename thanks to Bruce Guenter. 
 			- Fixed bugs #82 and #83 thanks to Davide Capodaglio. 
