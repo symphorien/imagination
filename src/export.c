@@ -570,6 +570,7 @@ img_prepare_pixbufs( img_window_struct *img,
 		}
 		path = gtk_tree_model_get_path(GTK_TREE_MODEL(model), &img->cur_ss_iter); 
 		gtk_icon_view_select_path (GTK_ICON_VIEW(img->thumbnail_iconview), path);
+		gtk_icon_view_scroll_to_path(GTK_ICON_VIEW(img->thumbnail_iconview), path, FALSE, 0.0, 0.0);
 		gtk_tree_path_free(path);
 		
 		selected_slide_nr = g_strdup_printf("%d",img->cur_nr_of_selected_slide);
@@ -643,7 +644,11 @@ img_prepare_pixbufs( img_window_struct *img,
 
 	/*  Reselect the first selected slide before the preview if any */
 	if (img->first_selected_path)
+	{
 		gtk_icon_view_select_path (GTK_ICON_VIEW(img->thumbnail_iconview), img->first_selected_path);
+		gtk_icon_view_scroll_to_path(GTK_ICON_VIEW(img->thumbnail_iconview), img->first_selected_path, FALSE, 0.0, 0.0);
+	}
+
 	/* We're done now */
 	last_transition = TRUE;
 
@@ -719,12 +724,14 @@ img_calc_next_slide_time_offset( img_window_struct *img,
 {
 	if( img->work_slide->render )
 	{
+		g_print("1 %d\n",img->work_slide->duration);
 		img->next_slide_off += img->work_slide->duration +
 							   img->work_slide->speed;
 		img->slide_trans_frames = img->work_slide->speed * rate;
 	}
 	else
 	{
+		g_print("2 %d\n",img->work_slide->duration);
 		img->next_slide_off += img->work_slide->duration;
 		img->slide_trans_frames = 0;
 	}
