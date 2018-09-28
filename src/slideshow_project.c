@@ -209,10 +209,9 @@ img_load_slideshow( img_window_struct *img,
 	GHashTable *table;
 	gchar      *spath, *conf;
 	gdouble    duration, *color, *font_color, *font_bgcolor;
-	gboolean    old_file = FALSE;
 	gboolean    first_slide = TRUE;
     gchar      *video_config_name, *aspect_ratio, *fps;
-    gint        old_video_size, bitrate;
+    gint        bitrate;
 
 	/* Cretate new key file */
 	img_key_file = g_key_file_new();
@@ -228,21 +227,15 @@ img_load_slideshow( img_window_struct *img,
 
 	if( strncmp( dummy, comment_string, strlen( comment_string ) ) != 0 )
 	{
-		/* Enable loading of old projects too */
-		if( strncmp( dummy, old_comment_string,
-					 strlen( old_comment_string ) ) != 0 )
-		{
-			dialog = gtk_message_dialog_new(
-						GTK_WINDOW( img->imagination_window ), GTK_DIALOG_MODAL,
-						GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
-						_("This is not an Imagination project file!") );
-			gtk_window_set_title( GTK_WINDOW( dialog ), "Imagination" );
-			gtk_dialog_run( GTK_DIALOG( dialog ) );
-			gtk_widget_destroy( GTK_WIDGET( dialog ) );
-			g_free( dummy );
-			return;
-		}
-		old_file = TRUE;
+		dialog = gtk_message_dialog_new(
+				GTK_WINDOW( img->imagination_window ), GTK_DIALOG_MODAL,
+				GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+				_("This is not an Imagination project file!") );
+		gtk_window_set_title( GTK_WINDOW( dialog ), "Imagination" );
+		gtk_dialog_run( GTK_DIALOG( dialog ) );
+		gtk_widget_destroy( GTK_WIDGET( dialog ) );
+		g_free( dummy );
+		return;
 	}
 	g_free( dummy );
 
@@ -255,100 +248,64 @@ img_load_slideshow( img_window_struct *img,
 							&table );
 
 	/* Set the slideshow options */
-    /* Video Format, first check if we have a buggy, old file format (imagination <= 3.0) */
-    old_video_size = g_key_file_get_integer(img_key_file, "slideshow settings", "video format", NULL);
-    if (old_video_size != 0)
-    {
-        img_message(img, FALSE, "Old imagination project file, guessing format as VOB\n");
-        img->video_format_index = 0; /* index for VOB format*/
+   /* Video Codec */
+	video_config_name = g_key_file_get_string(img_key_file, "slideshow settings",
+                          "video codec", NULL);
+	i = 0;
+	while (video_config_name != NULL
+          && video_format_list[i].name != NULL
+          && strcmp (video_format_list[i].config_name, video_config_name) != 0)
+		i++;
+	if (video_config_name == NULL || video_format_list[i].name == NULL)
+	{
+		img_message(img, FALSE, "Could not find a video format, guessing VOB\n");
+		img->video_format_index = 0; /* index for VOB format*/
+	}
+	else
+      img->video_format_index = i;
 
-        for (i = 0;
-             video_format_list[0].sizelist[i].name != NULL
-             && video_format_list[0].sizelist[i].y != old_video_size;
-             i++);
-        if (video_format_list[0].sizelist[i].name != NULL)
-        {
-            img->video_size[0] = video_format_list[0].sizelist[i].x;
-            img->video_size[1] = old_video_size;
-        }
-        else /* we could not find the appropriate format, so we guess 4:3 format */
-        {
-            img->video_size[0] = old_video_size * 4 / 3;
-            img->video_size[1] = old_video_size;
-        }
+	/* Video Size */
+	img->video_size[0] = g_key_file_get_integer(img_key_file, "slideshow settings",
+                          "video width", NULL);
+	img->video_size[1] = g_key_file_get_integer(img_key_file, "slideshow settings",
+                          "video height", NULL);
 
-        /* Guess fps from video size */
-        if (img->video_size[1] == 576)
-            img->fps_index = 1; /* NTSC */
-        else
-            img->fps_index = 0; /* PAL */
-        img->export_fps = video_format_list[img->video_format_index].fps_list[img->fps_index].value;
+	/* fps */
+	fps = g_key_file_get_string(img_key_file, "slideshow settings", "fps", NULL);
+	i = 0;
+	while (fps != NULL
+          && strcmp (video_format_list[img->video_format_index].fps_list[i].name, fps) != 0)
+      i++;
 
-        /* set other parameters to defaults, as they can't be checked */
-        img->aspect_ratio_index = 0;    /* 4:3 */
-        img->bitrate_index = 0;         /* Not used in vob */
+	if (fps == NULL
+      || video_format_list[img->video_format_index].fps_list[i].name == NULL)
+	{
+		img_message(img, FALSE, "Could not find a fps, set to default\n");
+		img->fps_index = 0; /* index for VOB format*/
+	}
+	else
+		img->fps_index = i;
+	img->export_fps = video_format_list[img->video_format_index].fps_list[img->fps_index].value;
 
-    }
-    else
-    {
-        /* Video Codec */
-        video_config_name = g_key_file_get_string(img_key_file, "slideshow settings",
-                                "video codec", NULL);
-        i = 0;
-        while (video_config_name != NULL
-                && video_format_list[i].name != NULL
-                && strcmp (video_format_list[i].config_name, video_config_name) != 0)
-            i++;
-        if (video_config_name == NULL || video_format_list[i].name == NULL)
-        {
-            img_message(img, FALSE, "Could not find a video format, guessing VOB\n");
-            img->video_format_index = 0; /* index for VOB format*/
-        }
-        else
-            img->video_format_index = i;
+  /* Aspect ratio */
+  if (NULL != video_format_list[img->video_format_index].aspect_ratio_list)
+  {
+      aspect_ratio = g_key_file_get_string(img_key_file, "slideshow settings",
+                              "aspect ratio", NULL);
+      i = 0;
+      while (aspect_ratio != NULL
+             && video_format_list[img->video_format_index].aspect_ratio_list[i].name != NULL
+             && strcmp (video_format_list[img->video_format_index].aspect_ratio_list[i].name, aspect_ratio) != 0)
+          i++;
 
-        /* Video Size */
-        img->video_size[0] = g_key_file_get_integer(img_key_file, "slideshow settings",
-                                "video width", NULL);
-        img->video_size[1] = g_key_file_get_integer(img_key_file, "slideshow settings",
-                                "video height", NULL);
-
-        /* fps */
-        fps = g_key_file_get_string(img_key_file, "slideshow settings", "fps", NULL);
-        i = 0;
-        while (fps != NULL
-                && strcmp (video_format_list[img->video_format_index].fps_list[i].name, fps) != 0)
-            i++;
-
-        if (fps == NULL
-            || video_format_list[img->video_format_index].fps_list[i].name == NULL)
-        {
-            img_message(img, FALSE, "Could not find a fps, set to default\n");
-            img->fps_index = 0; /* index for VOB format*/
-        }
-        else
-            img->fps_index = i;
-        img->export_fps = video_format_list[img->video_format_index].fps_list[img->fps_index].value;
-
-        /* Aspect ratio */
-        if (NULL != video_format_list[img->video_format_index].aspect_ratio_list)
-        {
-            aspect_ratio = g_key_file_get_string(img_key_file, "slideshow settings",
-                                    "aspect ratio", NULL);
-            i = 0;
-            while (aspect_ratio != NULL
-                   && video_format_list[img->video_format_index].aspect_ratio_list[i].name != NULL
-                   && strcmp (video_format_list[img->video_format_index].aspect_ratio_list[i].name, aspect_ratio) != 0)
-                i++;
-
-            if (aspect_ratio == NULL
-                || video_format_list[img->video_format_index].aspect_ratio_list[i].name == NULL)
-                {
-                    img_message(img, FALSE, "Could not find an aspect ratio, set to default\n");
-                    img->aspect_ratio_index = 0; /* index for VOB format*/
-                }
-                else
-                    img->aspect_ratio_index = i;
+      if (aspect_ratio == NULL
+          || video_format_list[img->video_format_index].aspect_ratio_list[i].name == NULL)
+          {
+              img_message(img, FALSE, "Could not find an aspect ratio, set to default\n");
+              img->aspect_ratio_index = 0; /* index for VOB format*/
+          }
+          else
+              img->aspect_ratio_index = i;
         }
         
         /* Bitrate */
@@ -370,8 +327,6 @@ img_load_slideshow( img_window_struct *img,
                     img->bitrate_index = i;
         }
 
-    }
-
 	img->video_ratio = (gdouble)img->video_size[0] / img->video_size[1];
     img_zoom_fit(NULL, img);
 
@@ -380,84 +335,8 @@ img_load_slideshow( img_window_struct *img,
 	gtk_icon_view_set_model( GTK_ICON_VIEW( img->thumbnail_iconview ), NULL );
 	gtk_icon_view_set_model( GTK_ICON_VIEW( img->over_icon ), NULL );
 
-	/* Enable loading of old projects too */
-	if( old_file )
-	{
-		guint32 tmp;
-		dummy = g_key_file_get_string( img_key_file, "slideshow settings",
-									   "background color", NULL );
-		tmp = (guint32)strtoul( dummy, NULL, 16 );
-		img->background_color[0] = (gdouble)( ( tmp >> 24 ) & 0xff ) / 0xff;
-		img->background_color[1] = (gdouble)( ( tmp >> 16 ) & 0xff ) / 0xff;
-		img->background_color[2] = (gdouble)( ( tmp >>  8 ) & 0xff ) / 0xff;
 
-		/* Loads the thumbnails and set the slides info */
-		number = g_key_file_get_integer(img_key_file,"images","number", NULL);
-
-		/* Store the previous number of slides and set img->slides_nr so to have the correct number of slides displayed on the status bar */
-		previous_nr_of_slides = img->slides_nr;
-		img->slides_nr = number;
-		gtk_widget_show(img->progress_bar);
-		for (i = 1; i <= number; i++)
-		{
-			dummy = g_strdup_printf("image_%d",i);
-			slide_filename = g_key_file_get_string(img_key_file,"images",dummy, NULL);
-
-			if( img_scale_image( slide_filename, img->video_ratio, 88, 0,
-								 img->distort_images, img->background_color,
-								 &thumb, NULL ) )
-			{
-				GdkPixbuf *pix;
-
-				speed 	=		g_key_file_get_integer(img_key_file, "transition speed",	dummy, NULL);
-				duration= 		g_key_file_get_double(img_key_file, "slide duration",		dummy, NULL);
-				transition_id = g_key_file_get_integer(img_key_file, "transition type",		dummy, NULL);
-
-				/* Get the mem address of the transition */
-				spath = (gchar *)g_hash_table_lookup( table, GINT_TO_POINTER( transition_id ) );
-				if (spath)
-				{
-					gtk_tree_model_get_iter_from_string( model, &iter, spath );
-					gtk_tree_model_get( model, &iter, 2, &render, 0, &pix, -1 );
-				}
-				slide_info = img_create_new_slide();
-				if( slide_info )
-				{
-					img_set_slide_file_info( slide_info, slide_filename );
-					gtk_list_store_append( img->thumbnail_model, &iter );
-					gtk_list_store_set( img->thumbnail_model, &iter, 0, thumb, 1, slide_info, -1 );
-					g_object_unref( G_OBJECT( thumb ) );
-
-					/* Set non-default data */
-					img_set_slide_still_info( slide_info, duration, img );
-					img_set_slide_transition_info( slide_info,
-												   img->thumbnail_model, &iter,
-												   pix, spath, transition_id,
-												   render, speed, img );
-					g_object_unref( G_OBJECT( pix ) );
-
-					/* Increment slide counter */
-					img->slides_nr++;
-
-					/* If we're loading the first slide, apply some of it's
-				 	 * data to final pseudo-slide */
-					if( first_slide )
-					{
-						first_slide = FALSE;
-						img->final_transition.speed  = slide_info->speed;
-						img->final_transition.render = slide_info->render;
-					}
-				}
-			}
-
-			img_increase_progressbar(img, i);
-			g_free(slide_filename);
-			g_free(dummy);
-		}
-	}
-	else
-	{
-		gchar *subtitle = NULL, *font_desc;
+	gchar *subtitle = NULL, *font_desc;
 		gdouble *my_points = NULL, *p_start, *p_stop, *c_start, *c_stop;
 		gsize length;
 		gint anim_id,anim_duration, text_pos, placing, gradient;
@@ -643,7 +522,7 @@ img_load_slideshow( img_window_struct *img,
 				g_free(subtitle);
 			g_free(conf);
 		}
-	}
+	
 	img->slides_nr += previous_nr_of_slides;
 	img->distort_images = g_key_file_get_boolean( img_key_file,
 												  "slideshow settings",

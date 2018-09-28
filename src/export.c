@@ -724,14 +724,12 @@ img_calc_next_slide_time_offset( img_window_struct *img,
 {
 	if( img->work_slide->render )
 	{
-		g_print("1 %d\n",img->work_slide->duration);
 		img->next_slide_off += img->work_slide->duration +
 							   img->work_slide->speed;
 		img->slide_trans_frames = img->work_slide->speed * rate;
 	}
 	else
 	{
-		g_print("2 %d\n",img->work_slide->duration);
 		img->next_slide_off += img->work_slide->duration;
 		img->slide_trans_frames = 0;
 	}
