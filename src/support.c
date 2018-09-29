@@ -694,7 +694,7 @@ img_set_total_slideshow_duration( img_window_struct *img )
 		while( gtk_tree_model_iter_next( model, &iter ) );
 
 		/* Add time of last pseudo slide */
-		if( img->final_transition.render )
+		if( img->final_transition.render && img->bye_bye_transition)
 			img->total_secs += img->final_transition.speed;
 	}
 	img->total_secs = ceil(img->total_secs);

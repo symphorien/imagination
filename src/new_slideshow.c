@@ -181,19 +181,23 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 	ex_hbox = gtk_hbox_new( FALSE, 5 );
 	gtk_box_pack_start( GTK_BOX( ex_vbox ), ex_hbox, FALSE, FALSE, 0 );
 
-	bg_label = gtk_label_new( _("Select background color:") );
-	gtk_box_pack_start( GTK_BOX( ex_hbox ), bg_label, FALSE, FALSE, 0 );
+	img->bye_bye_transition_checkbox = gtk_check_button_new_with_label( _("End slideshow with blank slide") );
+	gtk_box_pack_start( GTK_BOX( ex_hbox ), img->bye_bye_transition_checkbox, FALSE, FALSE, 0 );
+	
+	bg_label = gtk_label_new( _("Select blank slide color:") );
+	gtk_box_pack_start( GTK_BOX( ex_hbox ), bg_label, TRUE, FALSE, 0 );
 
 	color.red   = img->background_color[0] * 0xffff;
 	color.green = img->background_color[1] * 0xffff;
 	color.blue  = img->background_color[2] * 0xffff;
 	bg_button = gtk_color_button_new_with_color( &color );
 	gtk_box_pack_start( GTK_BOX( ex_hbox ), bg_button, FALSE, FALSE, 0 );
-
 	gtk_widget_show_all(dialog_vbox1);
 
 	/* Set parameters */
 	gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( distort_button ), img->distort_images );
+	gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( img->bye_bye_transition_checkbox ), img->bye_bye_transition );
+
 	img_set_format_options(img);
 
 	response = gtk_dialog_run(GTK_DIALOG(dialog1));
@@ -210,6 +214,10 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 		img->distort_images = 
 			gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( distort_button ) );
 		c_dist = ( dist ? ! img->distort_images : img->distort_images );
+
+		/* Get bye bye transition settings */
+		img->bye_bye_transition = 
+			gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( img->bye_bye_transition_checkbox) );
 
 		/* Get format settings */
 		img_get_format_options(img);
@@ -401,6 +409,7 @@ void img_get_format_options(img_window_struct *img)
     img->bitrate_index = gtk_combo_box_get_active(GTK_COMBO_BOX(img->bitrate_combo));
     img->fps_index = gtk_combo_box_get_active(GTK_COMBO_BOX(img->fps_combo));
     img->export_fps = video_format_list[video_format_index].fps_list[img->fps_index].value;
+    img->bye_bye_transition = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(img->bye_bye_transition_checkbox));
 }
 
 void img_set_format_options(img_window_struct *img)
@@ -410,6 +419,9 @@ void img_set_format_options(img_window_struct *img)
 
     /* Video format */
     gtk_combo_box_set_active(GTK_COMBO_BOX(img->video_format_combo), img->video_format_index);
+
+	/* Bye bye transition */
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(img->bye_bye_transition_checkbox), img->bye_bye_transition);
 
     /* size list */
     size_list = video_format_list[img->video_format_index].sizelist;

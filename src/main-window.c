@@ -1855,7 +1855,7 @@ static void img_combo_box_transition_type_changed (GtkComboBox *combo, img_windo
 
 		/* If this is first slide, we need to copy transition
 		 * to the last pseudo-slide too. */
-		if( gtk_tree_path_get_indices( selected->data )[0] == 0 )
+		if( gtk_tree_path_get_indices( selected->data )[0] == 0 && img->bye_bye_transition)
 			img->final_transition.render = (ImgRender)address;
 
 		selected = selected->next;
@@ -1897,7 +1897,7 @@ static void img_random_button_clicked(GtkButton *button, img_window_struct *img)
 
 		/* If this is first slide, copy transition to last
 		 * pseudo-slide */
-		if( gtk_tree_path_get_indices( selected->data )[0] == 0 )
+		if( gtk_tree_path_get_indices( selected->data )[0] == 0 && img->bye_bye_transition)
 			img->final_transition.render = info_slide->render;
 
 		selected = selected->next;
@@ -1993,9 +1993,9 @@ static void img_combo_box_speed_changed (GtkComboBox *combo, img_window_struct *
 		gtk_tree_model_get(model, &iter,1,&info_slide,-1);
 		info_slide->speed = duration;
 
-		/* If we're modifying fisr slide, we need to modify
+		/* If we're modifying first slide, we need to modify
 		 * last pseudo-slide too. */
-		if( gtk_tree_path_get_indices( selected->data )[0] == 0 )
+		if( gtk_tree_path_get_indices( selected->data )[0] == 0 && img->bye_bye_transition)
 			img->final_transition.speed = duration;
 
 		selected = selected->next;

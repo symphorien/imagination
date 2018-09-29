@@ -294,8 +294,10 @@ struct _img_window_struct
 	gchar       *project_filename;		// project name for saving
 	gchar       *project_current_dir;
 	gboolean	distort_images;
+	gboolean	bye_bye_transition;
 	gboolean	project_is_modified;
     GtkWidget   *video_format_combo;
+    GtkWidget   *bye_bye_transition_checkbox;
 	gint        video_format_index;
     GtkWidget   *video_size_combo;
 	gint        video_size[2];

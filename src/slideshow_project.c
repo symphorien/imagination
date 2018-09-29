@@ -63,9 +63,11 @@ img_save_slideshow( img_window_struct *img,
                 video_format_list[img->video_format_index].aspect_ratio_list[img->aspect_ratio_index].name);
 
     if (NULL != video_format_list[img->video_format_index].bitratelist)
-        g_key_file_set_integer(img_key_file, "slideshow settings",
-                "bitrate",
-                video_format_list[img->video_format_index].bitratelist[img->bitrate_index].value);
+		g_key_file_set_integer(img_key_file, "slideshow settings", "bitrate",video_format_list[img->video_format_index].bitratelist[img->bitrate_index].value);
+
+	/* Save last slide setting (bye bye transition) */
+	g_key_file_set_boolean( img_key_file, "slideshow settings",
+										 "blank slide", img->bye_bye_transition);
 
 	g_key_file_set_double_list( img_key_file, "slideshow settings",
 								"background color", img->background_color, 3 );
@@ -209,7 +211,7 @@ img_load_slideshow( img_window_struct *img,
 	GHashTable *table;
 	gchar      *spath, *conf;
 	gdouble    duration, *color, *font_color, *font_bgcolor;
-	gboolean    first_slide = TRUE;
+	gboolean   first_slide = TRUE;
     gchar      *video_config_name, *aspect_ratio, *fps;
     gint        bitrate;
 
@@ -300,13 +302,13 @@ img_load_slideshow( img_window_struct *img,
 
       if (aspect_ratio == NULL
           || video_format_list[img->video_format_index].aspect_ratio_list[i].name == NULL)
-          {
-              img_message(img, FALSE, "Could not find an aspect ratio, set to default\n");
-              img->aspect_ratio_index = 0; /* index for VOB format*/
-          }
-          else
-              img->aspect_ratio_index = i;
-        }
+      {
+          img_message(img, FALSE, "Could not find an aspect ratio, set to default\n");
+          img->aspect_ratio_index = 0; /* index for VOB format*/
+      }
+      else
+        img->aspect_ratio_index = i;
+   }
         
         /* Bitrate */
         if (NULL != video_format_list[img->video_format_index].bitratelist)
@@ -348,6 +350,10 @@ img_load_slideshow( img_window_struct *img,
         const gchar  *icon_filename;
 		ImgAngle   angle = 0;
 	
+		/* Load last slide setting (bye bye transition) */
+		img->bye_bye_transition = g_key_file_get_boolean( img_key_file, "slideshow settings",
+										 "blank slide", NULL);
+		
 		/* Load project backgroud color */
 		color = g_key_file_get_double_list( img_key_file, "slideshow settings",
 											"background color", NULL, NULL );
@@ -499,7 +505,7 @@ img_load_slideshow( img_window_struct *img,
 
 					/* If we're loading the first slide, apply some of it's
 				 	 * data to final pseudo-slide */
-					if( first_slide )
+					if( first_slide && img->bye_bye_transition)
 					{
 						first_slide = FALSE;
 						img->final_transition.speed  = slide_info->speed;

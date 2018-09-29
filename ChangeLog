@@ -1,7 +1,7 @@
 Imagination changelog
 
 xx/xx/xx - trunk:
-			- Made the slides to be selected during the preview.
+			- Made the slides to be selected during the preview/export and its number shown on the menu bar.
 			- Fixed seg-fault when trying to rotate gradient/text slides.
 			- Current slideshow is not closed anymore when clicking cancel in the new slideshow dialog.
 			- Slide duration can be finally set to less than a second. That was a long requested feature!

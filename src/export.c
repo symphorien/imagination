@@ -546,7 +546,6 @@ img_prepare_pixbufs( img_window_struct *img,
 	GtkTreeModel    *model;
 	GtkTreePath     *path;
 	gchar			*selected_slide_nr;
-
 	static gboolean  last_transition = TRUE;
 
 	model = GTK_TREE_MODEL( img->thumbnail_model );
@@ -608,33 +607,41 @@ img_prepare_pixbufs( img_window_struct *img,
 
 		return( TRUE );
 	}
-	else if( last_transition )
+	else if (last_transition)
 	{
-		cairo_t *cr;
+		if( img->bye_bye_transition )
+		{
+			cairo_t *cr;
 
-		/* We displayed last image, but bye-bye transition hasn't
-		 * been displayed. */
-		last_transition = FALSE;
+			/* We displayed last image, but bye-bye transition hasn't
+			 * been displayed. */
+			
+			last_transition = FALSE;
 
-		cairo_surface_destroy( img->image1 );
-		img->image1 = img->image2;
+			cairo_surface_destroy( img->image1 );
+			img->image1 = img->image2;
 
-		img->image2 = cairo_image_surface_create( CAIRO_FORMAT_RGB24,
-												  img->video_size[0],
-												  img->video_size[1] );
-		cr = cairo_create( img->image2 );
-		cairo_set_source_rgb( cr, img->background_color[0],
-								  img->background_color[1],
-								  img->background_color[2] );
-		cairo_paint( cr );
-		cairo_destroy( cr );
+			img->image2 = cairo_image_surface_create( CAIRO_FORMAT_RGB24,
+													  img->video_size[0],
+													  img->video_size[1] );
+			cr = cairo_create( img->image2 );
+			cairo_set_source_rgb( cr, img->background_color[0],
+									  img->background_color[1],
+									  img->background_color[2] );
+			cairo_paint( cr );
+			cairo_destroy( cr );
 
-		img->work_slide = &img->final_transition;
-		img->point2 = NULL;
+			img->work_slide = &img->final_transition;
+			img->point2 = NULL;
 
-		return( TRUE );
+			return( TRUE );
+		}
+		else
+		{
+			last_transition = TRUE;
+			return (FALSE);
+		}
 	}
-
 	/* Unselect the last selected item during the preview */
 	GList *list;
 	list = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(img->thumbnail_iconview));
@@ -650,8 +657,8 @@ img_prepare_pixbufs( img_window_struct *img,
 	}
 
 	/* We're done now */
-	last_transition = TRUE;
 
+	last_transition = TRUE;
 	return( FALSE );
 }
 
@@ -789,7 +796,6 @@ img_export_transition( img_window_struct *img )
 	gtk_progress_bar_set_fraction( GTK_PROGRESS_BAR( img->export_pbar1 ),
 								   export_progress );
 	gtk_progress_bar_set_text( GTK_PROGRESS_BAR( img->export_pbar1 ), string );
-
 	export_progress = CLAMP( (gdouble)img->displayed_frame /
 									  img->total_nr_frames, 0, 1 );
 	snprintf( string, 10, "%.2f%%", export_progress * 100 );

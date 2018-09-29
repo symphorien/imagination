@@ -50,8 +50,8 @@ Have fun !
 
 /* Define video formats */
 struct aspect_ratio aspect_ratio_list[] = {
-    {"4:3", "4/3"},
-    {"16:9", "16/9"},
+    {"Old TV 4:3", "4/3"},
+    {"New TV 16:9", "16/9"},
     {NULL}
 };
 
