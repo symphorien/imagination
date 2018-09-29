@@ -674,11 +674,6 @@ img_prepare_pixbufs( img_window_struct *img,
 
 			return( TRUE );
 		}
-		else
-		{
-			last_transition = TRUE;
-			return (FALSE);
-		}
 	}
 	/* Unselect the last selected item during the preview */
 	GList *list;
