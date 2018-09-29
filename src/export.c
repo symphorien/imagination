@@ -281,6 +281,7 @@ img_start_export( img_window_struct *img )
 	slide_struct *entry;
 	GtkTreeModel *model;
 	GtkWidget    *dialog;
+	GtkWidget	 *image;
 	GtkWidget    *vbox, *hbox;
 	GtkWidget    *label;
 	GtkWidget    *progress;
@@ -348,13 +349,18 @@ img_start_export( img_window_struct *img )
 	hbox = gtk_hbox_new( TRUE, 6 );
 	gtk_box_pack_start( GTK_BOX( vbox ), hbox, FALSE, FALSE, 0 );
 
-	img->export_cancel_button = gtk_button_new_from_stock( GTK_STOCK_CANCEL );
+	image = gtk_image_new_from_stock( GTK_STOCK_CANCEL, GTK_ICON_SIZE_BUTTON );
+	img->export_cancel_button = gtk_button_new();
+	gtk_button_set_image (GTK_BUTTON (img->export_cancel_button), image);
+	
 	g_signal_connect_swapped( G_OBJECT( img->export_cancel_button ), "clicked",
 							  G_CALLBACK( img_close_export_dialog ), img );
 	gtk_box_pack_end( GTK_BOX( hbox ), img->export_cancel_button, FALSE, FALSE, 0 );
 
-	img->export_pause_button = gtk_toggle_button_new_with_label( GTK_STOCK_MEDIA_PAUSE );
-	gtk_button_set_use_stock( GTK_BUTTON( img->export_pause_button ), TRUE );
+	image = gtk_image_new_from_stock( GTK_STOCK_MEDIA_PAUSE, GTK_ICON_SIZE_BUTTON );
+	img->export_pause_button = gtk_toggle_button_new();
+	gtk_button_set_image (GTK_BUTTON (img->export_pause_button), image);
+
 	g_signal_connect( G_OBJECT( img->export_pause_button ), "toggled",
 					  G_CALLBACK( img_export_pause_unpause ), img );
 	gtk_box_pack_end( GTK_BOX( hbox ), img->export_pause_button, FALSE, FALSE, 0 );
