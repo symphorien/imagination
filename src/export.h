@@ -35,6 +35,12 @@ img_calc_next_slide_time_offset( img_window_struct *img,
 								 gdouble            rate );
 
 void
+img_post_export(img_window_struct *img);
+
+void
+img_close_export_dialog(img_window_struct *img);
+
+void
 img_exporter_vob( img_window_struct *img );
 
 void

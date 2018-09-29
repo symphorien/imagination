@@ -37,8 +37,6 @@
 #define	NORMAL	4
 #define	SLOW	8
 
-#define old_comment_string \
-	"Imagination Slideshow Project - http://imagination.sf.net"
 #define comment_string \
 	"Imagination 2.0 Slideshow Project - http://imagination.sf.net"
 
@@ -271,7 +269,7 @@ struct _img_window_struct
 	GtkWidget	*dim_label;
 	GtkWidget	*size_label;
   	GtkWidget	*preview_image;
-
+ 
 	/* Current image position parameters */
 	gdouble       x;             /* Last button press coordinates */
 	gdouble       y;
@@ -380,13 +378,18 @@ struct _img_window_struct
 	GtkWidget   *export_pbar1;
 	GtkWidget   *export_pbar2;
 	GtkWidget   *export_label;
+	GtkWidget	*elapsed_time_label;
 	GtkWidget   *export_dialog;
+	GtkWidget   *export_cancel_button;
+	GtkWidget   *export_pause_button;
 	gdouble      export_fps;        /* Frame rate for exported video */
+	gdouble      elapsed_time;      /* Elapsed time during export */
 	gchar		*encoder_name;		/* ffmpeg or avconv	*/
 	gchar       *export_cmd_line;   /* ffmpeg spawn cmd line */
 	guint        export_slide;		/* Number of slide being exported */
 	GSourceFunc  export_idle_func;	/* Stored procedure for pause */
 	GPid         encoder_pid;       /* ffmpeg/avconv process id */
+	GTimer		 *elapsed_timer;	/* GTimer for the elasped time */
 
 	/* Sox thread related variables */
 	gint      sox_flags;         /* Thread controls:

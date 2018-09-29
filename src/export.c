@@ -284,7 +284,6 @@ img_start_export( img_window_struct *img )
 	GtkWidget    *vbox, *hbox;
 	GtkWidget    *label;
 	GtkWidget    *progress;
-	GtkWidget    *button;
 	gchar        *string;
 	cairo_t      *cr;
 
@@ -292,9 +291,9 @@ img_start_export( img_window_struct *img )
 	img->export_is_running = 3;
 
 	/* Spawn ffmepg and abort if needed */
-	if( ! img_run_encoder( img ) )
+	if( ! img_run_encoder(img) )
 	{
-		img_stop_export( img );
+		img_stop_export(img);
 		return( FALSE );
 	}
 
@@ -334,20 +333,30 @@ img_start_export( img_window_struct *img )
 	gtk_progress_bar_set_text( GTK_PROGRESS_BAR( progress ), string );
 	gtk_box_pack_start( GTK_BOX( vbox ), progress, FALSE, FALSE, 0 );
 	g_free( string );
+	
+	hbox = gtk_hbox_new( FALSE, 6 );
+	gtk_box_pack_start( GTK_BOX( vbox ), hbox, FALSE, FALSE, 0 );
+	label = gtk_label_new( _("Elapsed time:") );
+	gtk_misc_set_alignment( GTK_MISC( label ), 0, 0.5 );
+	gtk_box_pack_start( GTK_BOX( hbox ), label, FALSE, FALSE, 0 );
+
+	img->elapsed_time_label = gtk_label_new(NULL);
+	gtk_misc_set_alignment( GTK_MISC( img->elapsed_time_label ), 0, 0.5 );
+	gtk_box_pack_start( GTK_BOX( hbox ), img->elapsed_time_label, FALSE, FALSE, 0 );
 
 	hbox = gtk_hbox_new( TRUE, 6 );
 	gtk_box_pack_start( GTK_BOX( vbox ), hbox, FALSE, FALSE, 0 );
 
-	button = gtk_button_new_from_stock( GTK_STOCK_CANCEL );
-	g_signal_connect_swapped( G_OBJECT( button ), "clicked",
-							  G_CALLBACK( img_stop_export ), img );
-	gtk_box_pack_end( GTK_BOX( hbox ), button, FALSE, FALSE, 0 );
+	img->export_cancel_button = gtk_button_new_from_stock( GTK_STOCK_CANCEL );
+	g_signal_connect_swapped( G_OBJECT( img->export_cancel_button ), "clicked",
+							  G_CALLBACK( img_close_export_dialog ), img );
+	gtk_box_pack_end( GTK_BOX( hbox ), img->export_cancel_button, FALSE, FALSE, 0 );
 
-	button = gtk_toggle_button_new_with_label( GTK_STOCK_MEDIA_PAUSE );
-	gtk_button_set_use_stock( GTK_BUTTON( button ), TRUE );
-	g_signal_connect( G_OBJECT( button ), "toggled",
+	img->export_pause_button = gtk_toggle_button_new_with_label( GTK_STOCK_MEDIA_PAUSE );
+	gtk_button_set_use_stock( GTK_BUTTON( img->export_pause_button ), TRUE );
+	g_signal_connect( G_OBJECT( img->export_pause_button ), "toggled",
 					  G_CALLBACK( img_export_pause_unpause ), img );
-	gtk_box_pack_end( GTK_BOX( hbox ), button, FALSE, FALSE, 0 );
+	gtk_box_pack_end( GTK_BOX( hbox ), img->export_pause_button, FALSE, FALSE, 0 );
 
 	gtk_widget_show_all( dialog );
 
@@ -415,6 +424,8 @@ img_start_export( img_window_struct *img )
 	img->export_idle_func = (GSourceFunc)img_export_transition;
 	img->source_id = g_idle_add( (GSourceFunc)img_export_transition, img );
 
+	img->elapsed_timer = g_timer_new();
+
 	string = g_strdup_printf( _("Slide %d export progress:"), 1 );
 	/* I did this for the translators. ^^ */
 	gtk_label_set_label( GTK_LABEL( img->export_label ), string );
@@ -424,6 +435,25 @@ img_start_export( img_window_struct *img )
 	gtk_widget_queue_draw( img->image_area );
 
 	return( FALSE );
+}
+
+/* If the export wasn't aborted by user display the close button
+ * and wait for the user to click it to close the dialog. This
+ * way the elapsed time is still shown until the dialog is closed */
+void img_post_export(img_window_struct *img)
+{
+	/* Free all the allocated resources */
+	img_stop_export(img);
+	
+	gtk_widget_hide(img->export_pause_button);
+	gtk_button_set_label(GTK_BUTTON(img->export_cancel_button), _("Close"));
+	g_signal_connect_swapped (img->export_cancel_button, "clicked", G_CALLBACK (gtk_widget_destroy), img->export_dialog);
+}
+
+void img_close_export_dialog(img_window_struct *img)
+{
+	img_stop_export(img);
+	gtk_widget_destroy(img->export_dialog);
 }
 
 /*
@@ -453,6 +483,9 @@ img_stop_export( img_window_struct *img )
 		close(img->file_desc);
 		g_spawn_close_pid( img->encoder_pid );
 
+		/* Free ffmpeg cmd line */
+		g_free( img->export_cmd_line );
+	
 		/* Destroy images that were used */
 		cairo_surface_destroy( img->image1 );
 		cairo_surface_destroy( img->image2 );
@@ -460,8 +493,8 @@ img_stop_export( img_window_struct *img )
 		cairo_surface_destroy( img->image_to );
 		cairo_surface_destroy( img->exported_image );
 
-		/* Close export dialog */
-		gtk_widget_destroy( img->export_dialog );
+		/* Stops the timer */
+		g_timer_destroy(img->elapsed_timer);
 	}
 
 	if( img->export_is_running > 1 )
@@ -503,9 +536,6 @@ img_stop_export( img_window_struct *img )
 		g_free( img->fifo );
 		img->fifo = NULL;
 	}
-
-	/* Free ffmpeg cmd line */
-	g_free( img->export_cmd_line );
 
 	/* Indicate that export is not running any more */
 	img->export_is_running = 0;
@@ -769,6 +799,7 @@ static gboolean
 img_export_transition( img_window_struct *img )
 {
 	gchar   string[10];
+	gchar	*dummy;
 	gdouble export_progress;
 
 	/* If we rendered all transition frames, connect still export */
@@ -803,6 +834,12 @@ img_export_transition( img_window_struct *img )
 								   export_progress );
 	gtk_progress_bar_set_text( GTK_PROGRESS_BAR( img->export_pbar2 ), string );
 
+	/* Update the elapsed time */
+	img->elapsed_time = g_timer_elapsed(img->elapsed_timer, NULL);  
+	dummy = img_convert_seconds_to_time( (gint) img->elapsed_time);
+	gtk_label_set_text(GTK_LABEL(img->elapsed_time_label), dummy);
+	g_free(dummy);
+
 	/* Draw every 10th frame of animation on screen */
 	if( img->displayed_frame % 10 == 0 )
 		gtk_widget_queue_draw( img->image_area );
@@ -824,6 +861,7 @@ img_export_still( img_window_struct *img )
 {
 	gdouble export_progress;
 	gchar   string[10];
+	gchar	*dummy;
 
 	/* If there is next slide, connect transition preview, else finish
 	 * preview. */
@@ -851,7 +889,7 @@ img_export_still( img_window_struct *img )
 			img->cur_point = NULL;
 		}
 		else
-			img_stop_export( img );
+			img_post_export(img);
 
 		return( FALSE );
 	}
@@ -883,6 +921,12 @@ img_export_still( img_window_struct *img )
 								   export_progress );
 	gtk_progress_bar_set_text( GTK_PROGRESS_BAR( img->export_pbar2 ), string );
 
+	/* Update the elapsed time */
+	img->elapsed_time = g_timer_elapsed(img->elapsed_timer, NULL);  
+	dummy = img_convert_seconds_to_time( (gint) img->elapsed_time);
+	gtk_label_set_text(GTK_LABEL(img->elapsed_time_label), dummy);
+	g_free(dummy);
+	
 	/* Draw every 10th frame of animation on screen */
 	if( img->displayed_frame % 10 == 0 )
 		gtk_widget_queue_draw( img->image_area );
@@ -901,10 +945,16 @@ img_export_pause_unpause( GtkToggleButton   *button,
 						  img_window_struct *img )
 {
 	if( gtk_toggle_button_get_active( button ) )
+	{
 		/* Pause export */
 		g_source_remove( img->source_id );
+		g_timer_stop(img->elapsed_timer);
+	}
 	else
+	{
 		img->source_id = g_idle_add(img->export_idle_func, img);
+		g_timer_continue(img->elapsed_timer);
+	}
 }
 
 void
