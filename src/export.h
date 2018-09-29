@@ -28,8 +28,12 @@ img_stop_export( img_window_struct *img );
 
 gboolean
 img_prepare_pixbufs( img_window_struct *img,
-
 					 gboolean           preview );
+gboolean
+on_close_export_dialog(GtkWidget *widget,
+						GdkEvent *event,
+						img_window_struct *img);
+
 gdouble
 img_calc_next_slide_time_offset( img_window_struct *img,
 								 gdouble            rate );

@@ -303,6 +303,7 @@ img_start_export( img_window_struct *img )
 	img->export_dialog = dialog;
 	gtk_window_set_title( GTK_WINDOW( img->export_dialog ),
 						  _("Exporting the slideshow") );
+	g_signal_connect (G_OBJECT(img->export_dialog), "delete_event", G_CALLBACK (on_close_export_dialog), img);
 	gtk_container_set_border_width( GTK_CONTAINER( dialog ), 10 );
 	gtk_window_set_default_size( GTK_WINDOW( dialog ), 400, -1 );
 	gtk_window_set_type_hint( GTK_WINDOW( dialog ), GDK_WINDOW_TYPE_HINT_DIALOG );
@@ -435,6 +436,13 @@ img_start_export( img_window_struct *img )
 	gtk_widget_queue_draw( img->image_area );
 
 	return( FALSE );
+}
+
+gboolean
+on_close_export_dialog(GtkWidget *widget, GdkEvent *event, img_window_struct *img)
+{
+    img_close_export_dialog(img);
+    return TRUE;
 }
 
 /* If the export wasn't aborted by user display the close button
@@ -675,9 +683,13 @@ img_prepare_pixbufs( img_window_struct *img,
 	/* Unselect the last selected item during the preview */
 	GList *list;
 	list = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(img->thumbnail_iconview));
-	gtk_icon_view_unselect_path (GTK_ICON_VIEW(img->thumbnail_iconview), (GtkTreePath*)list->data);
-	g_list_foreach (list, (GFunc)gtk_tree_path_free, NULL);
-	g_list_free (list);
+
+	if (list)
+	{
+		gtk_icon_view_unselect_path (GTK_ICON_VIEW(img->thumbnail_iconview), (GtkTreePath*)list->data);
+		g_list_foreach (list, (GFunc)gtk_tree_path_free, NULL);
+		g_list_free (list);
+	}
 
 	/*  Reselect the first selected slide before the preview if any */
 	if (img->first_selected_path)
