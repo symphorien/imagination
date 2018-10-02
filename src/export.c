@@ -438,8 +438,8 @@ img_start_export( img_window_struct *img )
 	gtk_label_set_label( GTK_LABEL( img->export_label ), string );
 	g_free( string );
 
-	/* Update display */
-	gtk_widget_queue_draw( img->image_area );
+	/* Update display 
+	gtk_widget_queue_draw( img->image_area );*/
 
 	return( FALSE );
 }
@@ -659,8 +659,6 @@ img_prepare_pixbufs( img_window_struct *img,
 
 			/* We displayed last image, but bye-bye transition hasn't
 			 * been displayed. */
-			
-			last_transition = FALSE;
 
 			cairo_surface_destroy( img->image1 );
 			img->image1 = img->image2;
@@ -677,9 +675,9 @@ img_prepare_pixbufs( img_window_struct *img,
 
 			img->work_slide = &img->final_transition;
 			img->point2 = NULL;
-
-			return( TRUE );
 		}
+		last_transition = FALSE;
+		return( TRUE );
 	}
 	/* Unselect the last selected item during the preview */
 	GList *list;
@@ -700,7 +698,6 @@ img_prepare_pixbufs( img_window_struct *img,
 	}
 
 	/* We're done now */
-
 	last_transition = TRUE;
 	return( FALSE );
 }
@@ -853,9 +850,9 @@ img_export_transition( img_window_struct *img )
 	gtk_label_set_text(GTK_LABEL(img->elapsed_time_label), dummy);
 	g_free(dummy);
 
-	/* Draw every 10th frame of animation on screen */
+	/* Draw every 10th frame of animation on screen 
 	if( img->displayed_frame % 10 == 0 )
-		gtk_widget_queue_draw( img->image_area );
+		gtk_widget_queue_draw( img->image_area );*/
 
 	return( TRUE );
 }
@@ -940,9 +937,9 @@ img_export_still( img_window_struct *img )
 	gtk_label_set_text(GTK_LABEL(img->elapsed_time_label), dummy);
 	g_free(dummy);
 	
-	/* Draw every 10th frame of animation on screen */
+	/* Draw every 10th frame of animation on screen 
 	if( img->displayed_frame % 10 == 0 )
-		gtk_widget_queue_draw( img->image_area );
+		gtk_widget_queue_draw( img->image_area );*/
 
 	return( TRUE );
 }

@@ -868,6 +868,24 @@ void img_start_stop_preview(GtkWidget *button, img_window_struct *img)
 		/* Clean resources used by preview and prepare application for
 		 * next preview. */
 		img_clean_after_preview(img);
+		
+		/* Unselect the last selected item during the preview */
+		GList *list;
+		list = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(img->thumbnail_iconview));
+
+		if (list)
+		{
+			gtk_icon_view_unselect_path (GTK_ICON_VIEW(img->thumbnail_iconview), (GtkTreePath*)list->data);
+			g_list_foreach (list, (GFunc)gtk_tree_path_free, NULL);
+			g_list_free (list);
+		}
+
+		/*  Reselect the first selected slide before the preview if any */
+		if (img->first_selected_path)
+		{
+			gtk_icon_view_select_path (GTK_ICON_VIEW(img->thumbnail_iconview), img->first_selected_path);
+			gtk_icon_view_scroll_to_path(GTK_ICON_VIEW(img->thumbnail_iconview), img->first_selected_path, FALSE, 0.0, 0.0);
+		}
 	}
 	else
 	{

@@ -1,6 +1,8 @@
 Imagination changelog
 
 xx/xx/xx - trunk:
+			- Ending the slideshow with a blank slide with the same transition applied to the first one is now optional.
+			- Added an elapsed time information in the Export dialog.
 			- Made the slides to be selected during the preview/export and its number shown on the menu bar.
 			- Fixed seg-fault when trying to rotate gradient/text slides.
 			- Current slideshow is not closed anymore when clicking cancel in the new slideshow dialog.
