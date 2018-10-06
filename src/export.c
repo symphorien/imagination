@@ -438,8 +438,8 @@ img_start_export( img_window_struct *img )
 	gtk_label_set_label( GTK_LABEL( img->export_label ), string );
 	g_free( string );
 
-	/* Update display 
-	gtk_widget_queue_draw( img->image_area );*/
+	/* Update display */
+	gtk_widget_queue_draw( img->image_area );
 
 	return( FALSE );
 }
@@ -456,12 +456,18 @@ on_close_export_dialog(GtkWidget *widget, GdkEvent *event, img_window_struct *im
  * way the elapsed time is still shown until the dialog is closed */
 void img_post_export(img_window_struct *img)
 {
+	gchar *dummy;
+
 	/* Free all the allocated resources */
 	img_stop_export(img);
 	
 	gtk_widget_hide(img->export_pause_button);
 	gtk_button_set_label(GTK_BUTTON(img->export_cancel_button), _("Close"));
 	g_signal_connect_swapped (img->export_cancel_button, "clicked", G_CALLBACK (gtk_widget_destroy), img->export_dialog);
+	
+	dummy = img_convert_seconds_to_time( (gint) img->elapsed_time);
+	img_message(img,TRUE, _("Elapsed time: %s\n"), dummy);
+	g_free(dummy);
 }
 
 void img_close_export_dialog(img_window_struct *img)
@@ -659,7 +665,8 @@ img_prepare_pixbufs( img_window_struct *img,
 
 			/* We displayed last image, but bye-bye transition hasn't
 			 * been displayed. */
-
+		
+			last_transition = FALSE;
 			cairo_surface_destroy( img->image1 );
 			img->image1 = img->image2;
 
@@ -675,9 +682,9 @@ img_prepare_pixbufs( img_window_struct *img,
 
 			img->work_slide = &img->final_transition;
 			img->point2 = NULL;
+			return( TRUE );
 		}
-		last_transition = FALSE;
-		return( TRUE );
+		
 	}
 	/* Unselect the last selected item during the preview */
 	GList *list;
@@ -905,7 +912,7 @@ img_export_still( img_window_struct *img )
 	}
 
 	/* Draw frames until we have enough of them to fill slide duration gap. */
-	img_render_still_frame( img, img->export_fps );
+	 img_render_still_frame( img, img->export_fps );
 
 	/* Export frame */
 	img_export_frame_to_ppm( img->exported_image, img->file_desc );

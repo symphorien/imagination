@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-29 14:54+0100\n"
+"POT-Creation-Date: 2018-10-04 08:27+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -253,7 +253,7 @@ msgstr ""
 msgid "Fit Zoom in Window"
 msgstr ""
 
-#: ../src/main-window.c:605 ../src/callbacks.c:1373
+#: ../src/main-window.c:605 ../src/callbacks.c:1391
 msgid "Starts the preview"
 msgstr ""
 
@@ -436,7 +436,7 @@ msgstr ""
 msgid "Click to shrink the area"
 msgstr ""
 
-#: ../src/main-window.c:1598 ../src/callbacks.c:1131
+#: ../src/main-window.c:1598 ../src/callbacks.c:1149
 msgid "Sorry, I could not perform the operation!"
 msgstr ""
 
@@ -472,8 +472,8 @@ msgid ""
 "Click on the slide to have Imagination automatically select it."
 msgstr ""
 
-#: ../src/callbacks.c:124 ../src/callbacks.c:474 ../src/callbacks.c:1432
-#: ../src/callbacks.c:1511
+#: ../src/callbacks.c:124 ../src/callbacks.c:474 ../src/callbacks.c:1450
+#: ../src/callbacks.c:1529
 msgid "You didn't save your slideshow yet. Are you sure you want to close it?"
 msgstr ""
 
@@ -490,7 +490,7 @@ msgstr ""
 msgid "All audio files"
 msgstr ""
 
-#: ../src/callbacks.c:300 ../src/callbacks.c:375 ../src/callbacks.c:1460
+#: ../src/callbacks.c:300 ../src/callbacks.c:375 ../src/callbacks.c:1478
 #: ../src/support.c:356
 msgid "All files"
 msgstr ""
@@ -514,43 +514,43 @@ msgstr[1] ""
 msgid "translator-credits"
 msgstr ""
 
-#: ../src/callbacks.c:1383
+#: ../src/callbacks.c:1401
 msgid "Stops the preview"
 msgstr ""
 
-#: ../src/callbacks.c:1443
+#: ../src/callbacks.c:1461
 msgid "Load an Imagination slideshow project"
 msgstr ""
 
-#: ../src/callbacks.c:1444
+#: ../src/callbacks.c:1462
 msgid "Save an Imagination slideshow project"
 msgstr ""
 
-#: ../src/callbacks.c:1454
+#: ../src/callbacks.c:1472
 msgid "Imagination projects (*.img)"
 msgstr ""
 
-#: ../src/callbacks.c:2207
+#: ../src/callbacks.c:2225
 msgid "Create empty slide"
 msgstr ""
 
-#: ../src/callbacks.c:2218
+#: ../src/callbacks.c:2236
 msgid "Empty slide options:"
 msgstr ""
 
-#: ../src/callbacks.c:2228
+#: ../src/callbacks.c:2246
 msgid "Use _solid color"
 msgstr ""
 
-#: ../src/callbacks.c:2234
+#: ../src/callbacks.c:2252
 msgid "Use _linear gradient"
 msgstr ""
 
-#: ../src/callbacks.c:2240
+#: ../src/callbacks.c:2258
 msgid "Use _radial gradient"
 msgstr ""
 
-#: ../src/callbacks.c:2270
+#: ../src/callbacks.c:2288
 msgid "Preview"
 msgstr ""
 
@@ -691,24 +691,37 @@ msgstr ""
 msgid "Exporting the slideshow"
 msgstr ""
 
-#: ../src/export.c:317
+#: ../src/export.c:318
 msgid "Preparing for export ..."
 msgstr ""
 
-#: ../src/export.c:328
+#: ../src/export.c:329
 msgid "Overall progress:"
 msgstr ""
 
-#: ../src/export.c:418 ../src/export.c:843
+#: ../src/export.c:341
+msgid "Elapsed time:"
+msgstr ""
+
+#: ../src/export.c:436 ../src/export.c:898
 #, c-format
 msgid "Slide %d export progress:"
 msgstr ""
 
-#: ../src/export.c:698
+#: ../src/export.c:465
+msgid "Close"
+msgstr ""
+
+#: ../src/export.c:469
+#, c-format
+msgid "Elapsed time: %s\n"
+msgstr ""
+
+#: ../src/export.c:745
 msgid "Failed to launch the encoder!"
 msgstr ""
 
-#: ../src/export.c:841
+#: ../src/export.c:896
 #, c-format
 msgid "Final transition export progress:"
 msgstr ""
