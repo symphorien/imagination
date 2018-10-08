@@ -31,7 +31,7 @@ struct video_size {
 
 struct video_bitrate {
     gchar  *name;
-    gint    value;
+    gchar   *value;
 };
 
 struct aspect_ratio {

@@ -139,7 +139,7 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
                               GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 2);
 
     /* Aspect Ratio */
-    label = gtk_label_new( _("Aspect Ratio:") );
+    label = gtk_label_new( _("Television Format:") );
     gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
     gtk_table_attach(GTK_TABLE(table), label, 0, 1, 3, 4,
                               GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 2, 2);
@@ -204,7 +204,8 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 
 	if (response == GTK_RESPONSE_ACCEPT)
 	{
-		img_close_slideshow(NULL, img);
+		if (! flag)
+			img_close_slideshow(NULL, img);
 		gboolean dist = img->distort_images;
 		GdkColor new;
 		gboolean c_dist,
@@ -353,7 +354,8 @@ static void img_video_format_changed (GtkComboBox *combo, img_window_struct *img
     /* Bitrate */
     if (video_format_list[video_format].bitratelist == NULL)
     {
-        gtk_widget_set_sensitive(img->bitrate_combo, FALSE);        gtk_combo_box_set_active(GTK_COMBO_BOX(img->bitrate_combo),-1);
+        gtk_widget_set_sensitive(img->bitrate_combo, FALSE);
+        gtk_combo_box_set_active(GTK_COMBO_BOX(img->bitrate_combo),-1);
     }
     else
     {

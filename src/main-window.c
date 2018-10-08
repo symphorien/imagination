@@ -683,9 +683,6 @@ img_window_struct *img_create_window (void)
 	gtk_container_add(GTK_CONTAINER(image_area_frame), align);
 
 	img_struct->image_area = gtk_drawing_area_new();
-	gtk_widget_set_size_request( img_struct->image_area,
-								 img_struct->video_size[0],
-								 img_struct->video_size[1] );
 	gtk_container_add(GTK_CONTAINER(align), img_struct->image_area);
 	gtk_widget_add_events( img_struct->image_area, GDK_BUTTON1_MOTION_MASK
 												 | GDK_POINTER_MOTION_HINT_MASK
@@ -1642,7 +1639,7 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 
 	if (img->export_is_running)
 		return;
-
+g_print("*** Icon-view selection-changed ***\n");
 	model = gtk_icon_view_get_model(iconview);
 
 	selected = gtk_icon_view_get_selected_items(iconview);

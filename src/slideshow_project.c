@@ -63,7 +63,7 @@ img_save_slideshow( img_window_struct *img,
                 video_format_list[img->video_format_index].aspect_ratio_list[img->aspect_ratio_index].name);
 
     if (NULL != video_format_list[img->video_format_index].bitratelist)
-		g_key_file_set_integer(img_key_file, "slideshow settings", "bitrate",video_format_list[img->video_format_index].bitratelist[img->bitrate_index].value);
+		g_key_file_set_string(img_key_file, "slideshow settings", "bitrate",video_format_list[img->video_format_index].bitratelist[img->bitrate_index].value);
 
 	/* Save last slide setting (bye bye transition) */
 	g_key_file_set_boolean( img_key_file, "slideshow settings",
@@ -213,7 +213,7 @@ img_load_slideshow( img_window_struct *img,
 	gdouble    duration, *color, *font_color, *font_bgcolor;
 	gboolean   first_slide = TRUE;
     gchar      *video_config_name, *aspect_ratio, *fps;
-    gint        bitrate;
+    gchar      *bitrate;
 
 	/* Cretate new key file */
 	img_key_file = g_key_file_new();
@@ -310,24 +310,25 @@ img_load_slideshow( img_window_struct *img,
         img->aspect_ratio_index = i;
    }
         
-        /* Bitrate */
-        if (NULL != video_format_list[img->video_format_index].bitratelist)
-        {
-            bitrate = g_key_file_get_integer(img_key_file, "slideshow settings",
+   /* Bitrate */
+   if (NULL != video_format_list[img->video_format_index].bitratelist)
+   {
+      bitrate = g_key_file_get_string(img_key_file, "slideshow settings",
                                     "bitrate", NULL);
-            i = 0;
-            while (video_format_list[img->video_format_index].bitratelist[i].name != NULL
-                   && video_format_list[img->video_format_index].bitratelist[i].value != bitrate)
-                i++;
-
-            if (video_format_list[img->video_format_index].bitratelist[i].name == NULL)
-                {
-                    img_message(img, FALSE, "Could not find a bitrate, set to default\n");
-                    img->bitrate_index = 0; /* index for VOB format*/
-                }
-                else
-                    img->bitrate_index = i;
-        }
+      i = 0;
+      while (bitrate != NULL
+			&& video_format_list[img->video_format_index].bitratelist[i].name != NULL
+			&& strcmp (video_format_list[img->video_format_index].bitratelist[i].value, bitrate) != 0)
+         i++;
+ 
+      if (video_format_list[img->video_format_index].bitratelist[i].name == NULL)
+      {
+           img_message(img, FALSE, "Could not find a bitrate, set to default\n");
+           img->bitrate_index = 0; /* index for VOB format*/
+      }
+      else
+        img->bitrate_index = i;
+    }
 
 	img->video_ratio = (gdouble)img->video_size[0] / img->video_size[1];
     img_zoom_fit(NULL, img);

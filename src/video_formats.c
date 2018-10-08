@@ -90,11 +90,10 @@ struct video_size OGV_size_list[] = {
     {NULL}
 };
 
-/* These values have been contributed by Jean-Pierre Redonnet. */
 struct video_bitrate OGV_bitrate_list[] = {
-    {gettext_noop("512 kbps (low)"), 512*1024},
-    {gettext_noop("1024 kbps (medium)"), 1024*1024},
-    {gettext_noop("2048 kbps (high)"), 2048*1024},
+    {gettext_noop("512 kbps (low)"), "512k"},
+    {gettext_noop("1024 kbps (medium)"), "1024k"},
+    {gettext_noop("2048 kbps (high)"), "2048k"},
     {NULL}
 };
 
@@ -123,9 +122,9 @@ struct video_size FLV_size_list[] = {
 };
 
 struct video_bitrate FLV_bitrate_list[] = {
-    {gettext_noop("384 kbps (low)"), 384*1024},
-    {gettext_noop("768 kbps (medium)"), 768*1024},
-    {gettext_noop("1536 kbps (high)"), 1536*1024},
+    {gettext_noop("384 kbps (low)"), "384k"},
+    {gettext_noop("768 kbps (medium)"), "768k"},
+    {gettext_noop("1536 kbps (high)"), "1536k"},
     {NULL}
 };
 
@@ -165,6 +164,17 @@ struct video_size x264_size_list[] = {
 struct video_fps x264_fps_list[] = {
     {"25 (PAL)", "25", 25},
     {"30 (NTSC)", "30000/1001", 30000/1001},
+    {NULL}
+};
+
+struct video_bitrate x264_bitrate_list[] = {
+    {"1500 kbps", "1500k"},
+    {"3000 kbps", "3000k"},
+    {"5000 kbps", "5000k"},
+    {"7000 kbps", "7000k"},
+    {"9000 kbps", "9000k"},
+    {"10000 kbps", "10000k"},
+    {"12000 kbps", "12000k"},
     {NULL}
 };
 
@@ -210,11 +220,11 @@ struct video_format video_format_list[] = {
     },
     /* ffmpeg options for x264 thanks to David Gnedt */
     {gettext_noop("H.264/MPEG-4 AVC"), "x264",
-        "-vcodec libx264 -crf 18 " /* FIXME -crf should be in a "Quality" option that also includes bitrate */
+        "-vcodec libx264 -crf 21 " /* FIXME -crf should be in a "Quality" option that also includes bitrate */
         "-acodec libmp3lame -ac 2 -ar 44100 -b:a 128k",
         x264_size_list,
         aspect_ratio_list,
-        NULL,
+        x264_bitrate_list,
         x264_fps_list,
         x264_extensions
     },
