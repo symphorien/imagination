@@ -466,7 +466,7 @@ void img_post_export(img_window_struct *img)
 	g_signal_connect_swapped (img->export_cancel_button, "clicked", G_CALLBACK (gtk_widget_destroy), img->export_dialog);
 	
 	dummy = img_convert_seconds_to_time( (gint) img->elapsed_time);
-	img_message(img,TRUE, _("Elapsed time: %s\n\n"), dummy);
+	img_message(img,TRUE, _("Elapsed time: %s\n"), dummy);
 	g_free(dummy);
 }
 
@@ -583,15 +583,13 @@ img_stop_export( img_window_struct *img )
  * This function is used when previewing or exporting slideshow. It goes
  * through the model and prepares everything for next transition.
  *
- * If @preview is TRUE, we also respect quality settings.
  *
  * This function also sets img->point[12] that are used for transitions.
  *
  * Return value: TRUE if images have been succefully prepared, FALSE otherwise.
  */
 gboolean
-img_prepare_pixbufs( img_window_struct *img,
-					 gboolean           preview )
+img_prepare_pixbufs( img_window_struct *img)
 {
 	GtkTreeModel    *model;
 	GtkTreePath     *path;
@@ -641,13 +639,8 @@ img_prepare_pixbufs( img_window_struct *img,
 								img->video_size[0],
 								img->video_size[1], NULL, &img->image2 );
 		}
-		else if( preview && img->low_quality )
-			img_scale_image( img->work_slide->r_filename, img->video_ratio,
+		img_scale_image( img->work_slide->r_filename, img->video_ratio,
 							 0, img->video_size[1], img->distort_images,
-							 img->background_color, NULL, &img->image2 );
-		else
-			img_scale_image( img->work_slide->r_filename, img->video_ratio,
-							 0, 0, img->distort_images,
 							 img->background_color, NULL, &img->image2 );
 
 		/* Get first stop point */
@@ -831,9 +824,6 @@ img_export_transition( img_window_struct *img )
 	/* Draw one frame of transition animation */
 	img_render_transition_frame( img );
 
-	/* Export frame */
-	img_export_frame_to_ppm( img->exported_image, img->file_desc );
-
 	/* Increment global frame counters and update progress bars */
 	img->slide_cur_frame++;
 	img->displayed_frame++;
@@ -884,7 +874,7 @@ img_export_still( img_window_struct *img )
 	 * preview. */
 	if( img->slide_cur_frame == img->slide_nr_frames )
 	{
-		if( img_prepare_pixbufs( img, FALSE ) )
+		if( img_prepare_pixbufs( img) )
 		{
 			gchar *string;
 
@@ -913,9 +903,6 @@ img_export_still( img_window_struct *img )
 
 	/* Draw frames until we have enough of them to fill slide duration gap. */
 	 img_render_still_frame( img, img->export_fps );
-
-	/* Export frame */
-	img_export_frame_to_ppm( img->exported_image, img->file_desc );
 
 	/* Increment global frame counter and update progress bar */
 	img->still_counter++;
@@ -1031,6 +1018,10 @@ img_render_transition_frame( img_window_struct *img )
 	cairo_save( cr );
 	img->work_slide->render( cr, img->image_from, img->image_to, progress );
 	cairo_restore( cr );
+	
+	/* Export frame */
+	if (img->export_is_running)
+		img_export_frame_to_ppm( img->exported_image, img->file_desc );
 
 	cairo_destroy( cr );
 }
@@ -1138,6 +1129,10 @@ img_render_still_frame( img_window_struct *img,
 							 progress );
 	}
 
+	/* Export frame */
+	if (img->export_is_running)
+		img_export_frame_to_ppm( img->exported_image, img->file_desc );
+
 	/* Destroy drawing context */
 	cairo_destroy( cr );
 }
@@ -1146,26 +1141,12 @@ static void
 img_export_frame_to_ppm( cairo_surface_t *surface,
 						 gint             file_desc )
 {
-	cairo_format_t  format;
 	gint            width, height, stride, row, col;
 	guchar         *data, *pix;
 	gchar          *header;
 
 	guchar         *buffer, *tmp;
 	gint            buf_size;
-
-	/* Get info about cairo surface passed in. */
-	format = cairo_image_surface_get_format( surface );
-
-	/* For more information on diferent formats, see
-	 * www.cairographics.org/manual/cairo-image-surface.html#cairo-format-t */
-	/* Currently this exporter only handles CAIRO_FORMAT_(ARGB32|RGB24)
-	 * formats. */
-	if( ! format == CAIRO_FORMAT_ARGB32 && ! format == CAIRO_FORMAT_RGB24 )
-	{
-		g_print("Unsupported cairo surface format!\n" );
-		return;
-	}
 
 	/* Image info and pixel data */
 	width  = cairo_image_surface_get_width( surface );

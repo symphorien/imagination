@@ -331,23 +331,6 @@ img_window_struct *img_create_window (void)
 	gtk_container_add (GTK_CONTAINER (slide_menu), img_struct->paste);
 	g_signal_connect (G_OBJECT (img_struct->paste), "activate", G_CALLBACK (img_slide_paste), img_struct);
 
-	separator_slide_menu = gtk_separator_menu_item_new ();
-	gtk_container_add (GTK_CONTAINER (slide_menu),separator_slide_menu);
-
-	/* Preview quality menu */
-	menuitem1 = gtk_menu_item_new_with_mnemonic( _("Preview quality") );
-	gtk_menu_shell_append( GTK_MENU_SHELL( slide_menu ), menuitem1 );
-
-	menu3 = gtk_menu_new();
-	gtk_menu_item_set_submenu( GTK_MENU_ITEM( menuitem1 ), menu3 );
-
-	menuitem2 = gtk_radio_menu_item_new_with_mnemonic( NULL, _("_Low") );
-	gtk_menu_shell_append( GTK_MENU_SHELL( menu3 ), menuitem2 );
-	g_signal_connect( G_OBJECT( menuitem2 ), "toggled",
-					  G_CALLBACK( img_quality_toggled ), img_struct );
-	menuitem3 = gtk_radio_menu_item_new_with_mnemonic_from_widget(GTK_RADIO_MENU_ITEM( menuitem2 ), _("High") );
-	gtk_menu_shell_append( GTK_MENU_SHELL( menu3 ), menuitem3 );
-
 	/* Zoom controls */
 	menuitem1 = gtk_menu_item_new_with_mnemonic( _("_Zoom") );
 	gtk_menu_shell_append( GTK_MENU_SHELL( slide_menu ), menuitem1 );
@@ -372,9 +355,6 @@ img_window_struct *img_create_window (void)
 	g_signal_connect( G_OBJECT( menuitem2 ), "activate",
 					  G_CALLBACK( img_zoom_reset ), img_struct );
 	gtk_menu_shell_append( GTK_MENU_SHELL( menu3 ), menuitem2 );
-
-	separator_slide_menu = gtk_separator_menu_item_new ();
-	gtk_container_add (GTK_CONTAINER (slide_menu),separator_slide_menu);
 
 	add_slide = gtk_image_menu_item_new_with_mnemonic (_("Add empt_y slide"));
 	gtk_container_add (GTK_CONTAINER (slide_menu), add_slide);
@@ -1785,15 +1765,9 @@ g_print("*** Icon-view selection-changed ***\n");
 								&img->current_image );
 		}
 		/* Respect quality settings */
-		else if( img->low_quality )
-			img_scale_image( info_slide->r_filename,
+		img_scale_image( info_slide->r_filename,
 							 (gdouble)img->video_size[0] / img->video_size[1],
 							 0, img->video_size[1], img->distort_images,
-							 img->background_color, NULL, &img->current_image );
-		else
-			img_scale_image( info_slide->r_filename,
-							 (gdouble)img->video_size[0] / img->video_size[1],
-							 0, 0, img->distort_images,
 							 img->background_color, NULL, &img->current_image );
 	}
 }

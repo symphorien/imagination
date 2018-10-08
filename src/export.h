@@ -27,8 +27,7 @@ gboolean
 img_stop_export( img_window_struct *img );
 
 gboolean
-img_prepare_pixbufs( img_window_struct *img,
-					 gboolean           preview );
+img_prepare_pixbufs( img_window_struct *img);
 gboolean
 on_close_export_dialog(GtkWidget *widget,
 						GdkEvent *event,

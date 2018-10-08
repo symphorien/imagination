@@ -418,9 +418,6 @@ struct _img_window_struct
 	gdouble  image_area_zoom; /* Zoom to be applied to image area */
 	gdouble  overview_zoom;   /* Zoom to be applied in overview mode */
 	gint     preview_fps;     /* Preview frame rate */
-	gboolean low_quality;     /* Preview quality:
-								  TRUE  - preview in low-res
-								  FALSE - preview in hi-res */
 
 	/* Clipboard related stuff */
 	GList				*selected_paths;

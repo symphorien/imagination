@@ -655,15 +655,10 @@ img_rotate_selected_slides( img_window_struct *img,
 	if (info_slide->o_filename != NULL)
 	{
 		cairo_surface_destroy( img->current_image );
-		if( img->low_quality )
-			img_scale_image( img->current_slide->r_filename, img->video_ratio,
+		img_scale_image( img->current_slide->r_filename, img->video_ratio,
 							 0, img->video_size[1], img->distort_images,
 							 img->background_color, NULL, &img->current_image );
-		else
-			img_scale_image( img->current_slide->r_filename, img->video_ratio,
-							 0, 0, img->distort_images,
-							 img->background_color, NULL, &img->current_image );
-
+		
 		gtk_widget_queue_draw( img->image_area );
 	}
 }
@@ -883,8 +878,10 @@ void img_start_stop_preview(GtkWidget *button, img_window_struct *img)
 		/*  Reselect the first selected slide before the preview if any */
 		if (img->first_selected_path)
 		{
+			g_signal_handlers_block_by_func((gpointer)img->thumbnail_iconview, (gpointer)img_iconview_selection_changed, img);
 			gtk_icon_view_select_path (GTK_ICON_VIEW(img->thumbnail_iconview), img->first_selected_path);
 			gtk_icon_view_scroll_to_path(GTK_ICON_VIEW(img->thumbnail_iconview), img->first_selected_path, FALSE, 0.0, 0.0);
+			g_signal_handlers_unblock_by_func((gpointer)img->thumbnail_iconview, (gpointer)img_iconview_selection_changed, img);
 		}
 	}
 	else
@@ -932,15 +929,11 @@ void img_start_stop_preview(GtkWidget *button, img_window_struct *img)
 								img->video_size[1], NULL, &img->image2 );
 		}
 		/* Respect quality settings */
-		else if( img->low_quality )
+	
 			img_scale_image( entry->r_filename, img->video_ratio,
 							 0, img->video_size[1], img->distort_images,
 							 img->background_color, NULL, &img->image2 );
-		else
-			img_scale_image( entry->r_filename, img->video_ratio,
-							 0, 0, img->distort_images,
-							 img->background_color, NULL, &img->image2 );
-
+	
 		/* Load first stop point */
 		img->point2 = (ImgStopPoint *)( entry->no_points ?
 										entry->points->data :
@@ -965,13 +958,8 @@ void img_start_stop_preview(GtkWidget *button, img_window_struct *img)
 									img->video_size[1], NULL, &img->image1 );
 			}
 			/* Respect quality settings */
-			else if( img->low_quality )
-				img_scale_image( entry->r_filename, img->video_ratio,
+			img_scale_image( entry->r_filename, img->video_ratio,
 								 0, img->video_size[1], img->distort_images,
-								 img->background_color, NULL, &img->image1 );
-			else
-				img_scale_image( entry->r_filename, img->video_ratio,
-								 0, 0, img->distort_images,
 								 img->background_color, NULL, &img->image1 );
 			
 			/* Load last stop point */
@@ -1013,7 +1001,7 @@ void img_start_stop_preview(GtkWidget *button, img_window_struct *img)
 		img->exported_image = cairo_image_surface_create( CAIRO_FORMAT_RGB24,
 														  img->video_size[0],
 														  img->video_size[1] );
-
+//img_run_encoder(img);
 		img->source_id = g_timeout_add( 1000 / img->preview_fps,
 										(GSourceFunc)img_transition_timeout,
 										img );
@@ -1221,7 +1209,7 @@ img_on_expose_event( GtkWidget         *widget,
 
 	/* If we're previewing or exporting, only paint frame that is being
 	 * currently produced. */
-	if( img->preview_is_running || img->export_is_running > 2 )
+	if( img->preview_is_running || img->export_is_running > 2)
 	{
 		gdouble factor;
 
@@ -1342,12 +1330,14 @@ static gboolean img_still_timeout(img_window_struct *img)
 	 * preview. */
 	if( img->slide_cur_frame == img->slide_nr_frames )
 	{
-		if( img_prepare_pixbufs( img, TRUE ) )
+		g_print("Prepare pixbufx %d - %d\n",img->slide_cur_frame,img->slide_nr_frames);
+		if( img_prepare_pixbufs( img) )
 		{
 			img_calc_next_slide_time_offset( img, img->preview_fps );
 			img->source_id = g_timeout_add( 1000 / img->preview_fps,
 										    (GSourceFunc)img_transition_timeout,
 											img );
+		
 		}
 		else
 		{
@@ -1817,13 +1807,6 @@ img_overview_change_zoom( gdouble            step,
 	g_object_set( img->over_cell, "zoom", img->overview_zoom, NULL );
 	g_object_set( G_OBJECT( img->over_icon ), "model", model, NULL );
 	g_object_unref( G_OBJECT( model ) );
-}
-
-void
-img_quality_toggled( GtkCheckMenuItem  *item,
-					 img_window_struct *img )
-{
-	img->low_quality = gtk_check_menu_item_get_active( item );
 }
 
 void
@@ -2652,7 +2635,6 @@ img_save_window_settings( img_window_struct *img )
 	g_key_file_set_integer( kf, group, "mode",    img->mode );
 	g_key_file_set_double(  kf, group, "zoom_p",  img->image_area_zoom );
 	g_key_file_set_double(  kf, group, "zoom_o",  img->overview_zoom );
-	g_key_file_set_boolean( kf, group, "quality", img->low_quality );
 	g_key_file_set_boolean( kf, group, "max",     max );
 	g_key_file_set_integer( kf, group, "preview", img->preview_fps );
 
@@ -2695,7 +2677,6 @@ img_load_window_settings( img_window_struct *img )
 	m                    = g_key_file_get_integer( kf, group, "mode",    NULL );
 	img->image_area_zoom = g_key_file_get_double(  kf, group, "zoom_p",  NULL );
 	img->overview_zoom   = g_key_file_get_double(  kf, group, "zoom_o",  NULL );
-	img->low_quality     = g_key_file_get_boolean( kf, group, "quality", NULL );
 	max                  = g_key_file_get_boolean( kf, group, "max",     NULL );
 
 	/* New addition to environment settings */
@@ -2733,7 +2714,6 @@ img_set_window_default_settings( img_window_struct *img )
 {
 	img->image_area_zoom = 1.0;
 	img->overview_zoom = 1.0;
-	img->low_quality = TRUE;
 	img->preview_fps = PREVIEW_FPS_DEFAULT;
 
 	/* Update mode */
