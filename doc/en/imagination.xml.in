@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
     "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
-  <!ENTITY date "October 2009"> 
-  <!ENTITY version "3.0">
+  <!ENTITY date "October 2018"> 
+  <!ENTITY version "3.1">
   <!ENTITY application "Imagination"> 
 ]>
 <article id="index" lang="en">
@@ -10,7 +10,7 @@
 		<title>Imagination DVD Slide Show Creator</title>
 		<pubdate>&date;</pubdate>
 		<copyright>
-			<year>2009</year>
+			<year>2009-2018</year>
 			<holder>Giuseppe Torelli</holder>
 		</copyright>
 		<legalnotice id="legalnotice">
@@ -48,14 +48,6 @@
 				Imagination is a lightweight DVD slide show creator developed in C with the GTK+2 toolkit and Cairo. Imagination is designed to be
 				be fast and easy-to-use. Its user interface is clean and intuitive, and does not include any confusing or useless options by default.
 				It requires the ffmpeg encoder to produce the movie file and libsox to import the audio files. Yes you don't need any other third-party software!
-			</para>
-	</sect1>
-	<sect1 id="new_format">
-		<title>New Slideshow Project Format</title>
-			<para>
-				Starting from release 2.0 Imagination's slideshow project format has changed. The old format will be recognized and slideshows saved with this format
-				will be correctly loaded, but in next release support for old slideshow project files (saved with Imagination's release prior to 2.0;)
-				will be <emphasis>DROPPED</emphasis>. Please ensure to load ALL your old slideshow projects with Imagination &version; and save them again.
 			</para>
 	</sect1>
 	<sect1 id="window">
@@ -294,7 +286,7 @@
 					<graphic fileref="images/new_dialog.png"></graphic>
 				</figure>
 				<para>
-					This menu allows you to create a new slideshow. The slideshow dialog is displayed. You can choose the video format and size, if to scale the picture so that it covers the whole screen avoiding the black stripes and the background color to be displayed when the picture is too small and the rescaling doesn't succed to cover the whole screen. You can also change these options later.
+					This menu allows you to create a new slideshow. The slideshow dialog is displayed. You can choose the video format and size, if to scale the picture so that it covers the whole screen avoiding the black stripes and the background color to be displayed when the picture is too small and the rescaling doesn't succed to cover the whole screen. You can choose if ending the slideshow with a blank slide with the same transition effect applied to the first one. You can also change these options later.
 				</para>
 			</sect3>
 			<sect3 id="open">
@@ -367,7 +359,7 @@
 				<title>Export</title>
 				<para>
 					This submenu allows you to export the slideshow in the format defined in the New / Properties dialog: VOB (DVD Video) OGV (Ogg Theora/Vorbis)
-					FLV (Flash Video) and 3GP (Mobile Phones). Each format has its own set of
+					FLV (Flash Video), 3GP (Mobile Phones) and H264. Each format has its own set of
 					preferences that you'll be asked about when you select any
 					of them. Please be sure to have all the necessary libraries
 					installed first, otherwise you'll get errors from ffmpeg, the
@@ -387,7 +379,6 @@
 				<listitem><para>Cut</para></listitem>
 				<listitem><para>Copy</para></listitem>
 				<listitem><para>Paste</para></listitem>
-				<listitem><para>Preview quality</para></listitem>
 				<listitem><para>Zoom</para></listitem>
 				<listitem><para>Add empty slide</para></listitem>
 				<listitem><para>Delete</para></listitem>
@@ -413,19 +404,6 @@
 				<title>Paste</title>
 				<para>
 					Before choosing Paste you have to left click on a slide after which you want the previously selected slides to be moved (if you chose Cut) or copied if you chose Copy).
-				</para>
-			</sect3>
-			<sect3 id="preview">
-				<title>Preview quality</title>
-				<para>
-					This submenu allows you to set different quality for the
-					preview and the image quality in the image area. This option
-					doesn't affect exported video in any way. It's main purpose
-					is to speed-up the creation process, since loading large
-					images from disk at original size may take some time
-					(loading of 4032x3024 image from disk takes cca. 2s on
-					modern system). Be aware, preview might not work properly on
-					slower machines when high quality is selected.
 				</para>
 			</sect3>
 			<sect3 id="zoom">

@@ -760,7 +760,7 @@ img_scale_image( const gchar      *filename,
 	gdouble    skew;               /* Transformation between ratio and
 											 i_ratio */
 	gboolean   transform = FALSE;  /* Flag that controls scalling */
-g_print("*** SCALE *** %s\n",filename);
+
 	/* MAximal distortion values */
 	gdouble max_stretch = 0.1280;
 	gdouble max_crop    = 0.8500;
@@ -953,7 +953,7 @@ g_print("*** SCALE *** %s\n",filename);
 
 	/* Free temporary pixbuf */
 	g_object_unref( G_OBJECT( loader ) );
-g_print("Esco img_scale_image\n");
+
 	return( TRUE );
 }
 

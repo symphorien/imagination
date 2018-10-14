@@ -102,17 +102,16 @@ img_gradient_move( GtkWidget      *widget,
 void img_set_window_title(img_window_struct *img, gchar *text)
 {
 	gchar *title = NULL;
-	static gchar version[] = VERSION "-" REVISION;
 
 	if (text == NULL)
 	{
-		title = g_strconcat("Imagination ", strcmp(REVISION, "-1") == 0 ? VERSION : version, NULL);
+		title = g_strconcat("Imagination ", strcmp(REVISION, "-1") == 0 ? VERSION : VERSION "-" REVISION, NULL);
 		gtk_window_set_title (GTK_WINDOW (img->imagination_window), title);
 		g_free(title);
 	}
 	else
 	{
-		title = g_strconcat(text, " - Imagination ", strcmp(REVISION, "-1") == 0 ? VERSION : version, NULL);
+		title = g_strconcat(text, " - Imagination ", strcmp(REVISION, "-1") == 0 ? VERSION : VERSION "-" REVISION, NULL);
 		gtk_window_set_title (GTK_WINDOW (img->imagination_window), title);
 		g_free(title);
 	}
@@ -651,7 +650,6 @@ img_rotate_selected_slides( img_window_struct *img,
 	if( ! img->current_slide )
 		return;
 
-	/* Respect quality settings */
 	if (info_slide->o_filename != NULL)
 	{
 		cairo_surface_destroy( img->current_image );
@@ -792,8 +790,7 @@ void img_show_about_dialog (GtkMenuItem *item,img_window_struct *img_struct)
 	static GtkWidget *about = NULL;
 	static gchar version[] = VERSION "-" REVISION;
     const char *authors[] = {"\nDevelopers:\nGiuseppe Torelli <colossus73@gmail.com>\nTadej Borovšak <tadeboro@gmail.com>\nRobert Chéramy <robert@cheramy.net>\n\nImagination logo:\nhttp://linuxgraphicsusers.com\n\nInsert Transitions Family:\nJean-Pierre Redonnet <inphilly@gmail.com>",NULL};
-    //const char *documenters[] = {NULL};
-
+    
 	if (about == NULL)
 	{
 		about = gtk_about_dialog_new ();
@@ -928,9 +925,7 @@ void img_start_stop_preview(GtkWidget *button, img_window_struct *img)
 								entry->g_stop_color, img->video_size[0],
 								img->video_size[1], NULL, &img->image2 );
 		}
-		/* Respect quality settings */
-	
-			img_scale_image( entry->r_filename, img->video_ratio,
+		img_scale_image( entry->r_filename, img->video_ratio,
 							 0, img->video_size[1], img->distort_images,
 							 img->background_color, NULL, &img->image2 );
 	
@@ -957,7 +952,6 @@ void img_start_stop_preview(GtkWidget *button, img_window_struct *img)
 									entry->g_stop_color, img->video_size[0],
 									img->video_size[1], NULL, &img->image1 );
 			}
-			/* Respect quality settings */
 			img_scale_image( entry->r_filename, img->video_ratio,
 								 0, img->video_size[1], img->distort_images,
 								 img->background_color, NULL, &img->image1 );
@@ -1330,7 +1324,6 @@ static gboolean img_still_timeout(img_window_struct *img)
 	 * preview. */
 	if( img->slide_cur_frame == img->slide_nr_frames )
 	{
-		g_print("Prepare pixbufx %d - %d\n",img->slide_cur_frame,img->slide_nr_frames);
 		if( img_prepare_pixbufs( img) )
 		{
 			img_calc_next_slide_time_offset( img, img->preview_fps );

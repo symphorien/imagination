@@ -213,7 +213,7 @@ struct video_format video_format_list[] = {
 
     {gettext_noop("3GP (Mobile Phones)"), "3GP",
         "-f 3gp -vcodec h263 -acodec libfaac"
-        "-b 192k "                  /* bitrate */
+        "-b:v 192k "                  /* bitrate */
         "-ab 32k -ar 8000 -ac 1"    /* audio bitrate, sampling frequency and number of channels */
         , x3GP_size_list, NULL, NULL, x3GP_fps_list,
         x3GP_extensions

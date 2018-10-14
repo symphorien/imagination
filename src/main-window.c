@@ -1619,7 +1619,7 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 
 	if (img->export_is_running)
 		return;
-g_print("*** Icon-view selection-changed ***\n");
+
 	model = gtk_icon_view_get_model(iconview);
 
 	selected = gtk_icon_view_get_selected_items(iconview);

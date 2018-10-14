@@ -466,7 +466,7 @@ void img_post_export(img_window_struct *img)
 	g_signal_connect_swapped (img->export_cancel_button, "clicked", G_CALLBACK (gtk_widget_destroy), img->export_dialog);
 	
 	dummy = img_convert_seconds_to_time( (gint) img->elapsed_time);
-	img_message(img,TRUE, _("Elapsed time: %s\n"), dummy);
+	img_message(img,TRUE, _("Elapsed time: %s\n\n"), dummy);
 	g_free(dummy);
 }
 
@@ -902,6 +902,7 @@ img_export_still( img_window_struct *img )
 	}
 
 	/* Draw frames until we have enough of them to fill slide duration gap. */
+	
 	 img_render_still_frame( img, img->export_fps );
 
 	/* Increment global frame counter and update progress bar */
@@ -1287,7 +1288,7 @@ void img_exporter (GtkWidget *button, img_window_struct *img )
         aspect_ratio_cmd = g_strdup("");
 
     if (NULL != video_format_list[img->video_format_index].bitratelist)
-        bitrate_cmd = g_strdup_printf("-b %s",
+        bitrate_cmd = g_strdup_printf("-b:v %s",
                     video_format_list[img->video_format_index].bitratelist[img->bitrate_index].value);
     else
         bitrate_cmd = g_strdup("");
