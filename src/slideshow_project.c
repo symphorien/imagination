@@ -525,8 +525,6 @@ img_load_slideshow( img_window_struct *img,
 
 			img_increase_progressbar(img, i);
 			g_free(slide_filename);
-			if (subtitle)
-				g_free(subtitle);
 			g_free(conf);
 		}
 	
