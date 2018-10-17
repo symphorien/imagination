@@ -417,7 +417,7 @@ img_load_slideshow( img_window_struct *img,
 
 				/* Create thumbnail */
 				load_ok = img_scale_gradient( gradient, p_start, p_stop,
-											  c_start, c_stop, 88, 72,
+											  c_start, c_stop, 88, 49,
 											  &thumb, NULL );
                 /* No image is loaded, so img_load_ok is OK if load_ok is */
                 img_load_ok = load_ok;

@@ -2332,7 +2332,7 @@ img_add_empty_slide( GtkMenuItem       *item,
 			/* Create thumbnail */
 			img_scale_gradient( slide.gradient, p_start, p_stop,
 								slide.c_start, slide.c_stop,
-								88, 72,
+								88, 49,
 								&thumb, NULL );
 										
 			/* Add slide to store */

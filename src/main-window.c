@@ -938,7 +938,7 @@ img_window_struct *img_create_window (void)
     g_signal_connect( G_OBJECT( img_struct->sub_bgcolor ), "color-set",
                       G_CALLBACK( img_font_bgcolor_changed ), img_struct );
     gtk_box_pack_start( GTK_BOX( text_animation_hbox ), img_struct->sub_bgcolor, FALSE, FALSE, 0 );
-    gtk_widget_set_tooltip_text(img_struct->sub_bgcolor, _("Click to choose the font background color"));
+    gtk_widget_set_tooltip_text(img_struct->sub_bgcolor, _("Click to choose the font border color"));
 
 	a_hbox = gtk_hbox_new(FALSE, 6);
 	gtk_box_pack_start (GTK_BOX (vbox_slide_caption), a_hbox, FALSE, FALSE, 0);
@@ -1246,7 +1246,7 @@ img_window_struct *img_create_window (void)
 
 	/* Create the thumbnail viewer */
 	thumb_scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
-	gtk_widget_set_size_request( thumb_scrolledwindow, -1, 115 );
+	gtk_widget_set_size_request( thumb_scrolledwindow, -1, 85 );
 	g_signal_connect( G_OBJECT( thumb_scrolledwindow ), "scroll-event",
 					  G_CALLBACK( img_scroll_thumb ), img_struct );
 	gtk_container_add( GTK_CONTAINER( eventbox ), thumb_scrolledwindow );
@@ -1713,8 +1713,6 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 	/* Update subtitle widgets */
 	img_update_subtitles_widgets( img );
 
-	img->project_is_modified = TRUE;
-
 	if (nr_selected > 1)
 	{
 		img_set_statusbar_message(img,nr_selected);
@@ -1764,11 +1762,12 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 								img->video_size[1], NULL,
 								&img->current_image );
 		}
-		/* Respect quality settings */
-		img_scale_image( info_slide->r_filename,
-							 (gdouble)img->video_size[0] / img->video_size[1],
-							 0, img->video_size[1], img->distort_images,
-							 img->background_color, NULL, &img->current_image );
+		else
+			/* Respect quality settings */
+			img_scale_image( info_slide->r_filename,
+								(gdouble)img->video_size[0] / img->video_size[1],
+								0, img->video_size[1], img->distort_images,
+								img->background_color, NULL, &img->current_image );
 	}
 }
 

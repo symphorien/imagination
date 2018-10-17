@@ -770,6 +770,7 @@ img_scale_image( const gchar      *filename,
 	gdouble min_skew = ( 1 - max_stretch ) * max_crop;
 
 	/* Obtain information about image being loaded */
+
 	if( ! gdk_pixbuf_get_file_info( filename, &i_width, &i_height ) )
 		return( FALSE );
 

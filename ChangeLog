@@ -1,6 +1,7 @@
 Imagination changelog
 
 14/10/18 - 3.1:
+			- Export is now much faster than 3.0!
 			- Ending the slideshow with a blank slide with the same transition applied to the first one is now optional.
 			- Added an elapsed time information in the Export dialog.
 			- Made the slides to be selected during the preview/export and its number shown on the menu bar.

@@ -36,7 +36,7 @@ plugins_modules="cairo >= 1.6 glib-2.0 > 2.18.0"
 PKG_CHECK_MODULES(PLUGINS, [$plugins_modules])
 
 # get svn revision
-REVISION="-1"
+REVISION="r0"
 if test "x${REVISION}" = "xr0"
 then
 	SVN=`which svn 2>/dev/null`
