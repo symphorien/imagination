@@ -21,7 +21,7 @@
 #include "support.h"
 
 /* Border width around image (no text is placed there) */
-#define BORDER 20
+#define BORDER 1
 
 /* Wrap width for subtitles (fraction of image size) */
 #define WRAP_WIDTH 0.75
@@ -213,13 +213,12 @@ img_get_text_animation_list( TextAnimation **animations )
 		list[i].id     = i;
 		list[i++].func = img_text_grow;
 
-                list[i].name   = g_strdup( _("Slide bottom to top") );
-                list[i].id     = i;
-                list[i++].func = img_text_bottom_to_top;
-
-                list[i].name   = g_strdup( _("Slide right to left") );
-                list[i].id     = i;
-                list[i++].func = img_text_right_to_left;
+        list[i].name   = g_strdup( _("Slide bottom to top") );
+        list[i].id     = i;
+        list[i++].func = img_text_bottom_to_top;
+        list[i].name   = g_strdup( _("Slide right to left") );
+        list[i].id     = i;
+        list[i++].func = img_text_right_to_left;
 
 		/* FIXME: Add more animations here.
 		 *
@@ -609,4 +608,3 @@ img_text_right_to_left( cairo_t     *cr,
                          posy,
                          font_color, font_bgcolor);
 }
-

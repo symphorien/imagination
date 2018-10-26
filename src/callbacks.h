@@ -98,7 +98,7 @@ void
 img_add_stop_point( GtkButton         *button,
 					img_window_struct *img );
 void
-img_update_stop_point( GtkButton         *button,
+img_update_stop_point( GtkSpinButton         *button,
 					   img_window_struct *img );
 void
 img_delete_stop_point( GtkButton         *button,

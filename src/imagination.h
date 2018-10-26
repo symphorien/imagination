@@ -252,7 +252,6 @@ struct _img_window_struct
 	GtkWidget *ken_duration; /* Stop point duration spin button */
 	GtkWidget *ken_zoom;     /* Zoom slider */
 	GtkWidget *ken_add;      /* Add stop point button */
-	GtkWidget *ken_update;   /* Update stop point button */
 	GtkWidget *ken_remove;   /* Remove stop point button */
 
 	/* Subtitle related controls */

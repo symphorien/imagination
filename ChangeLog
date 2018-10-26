@@ -1,5 +1,7 @@
 Imagination changelog
 
+xx/xx/19 - 3.x		- Got rid of Update button in the Slide Motion as it's now automatic.
+			- Moved Add and Remove buttons in the Slide Motion on the right.
 14/10/18 - 3.1:
 			- Export is now much faster than 3.0!
 			- Ending the slideshow with a blank slide with the same transition applied to the first one is now optional.

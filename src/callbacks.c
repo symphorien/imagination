@@ -919,15 +919,14 @@ void img_start_stop_preview(GtkWidget *button, img_window_struct *img)
 		gtk_tree_model_get( model, &iter, 1, &entry, -1);
 
 		if( ! entry->o_filename )
-		{
 			img_scale_gradient( entry->gradient, entry->g_start_point,
 								entry->g_stop_point, entry->g_start_color,
 								entry->g_stop_color, img->video_size[0],
 								img->video_size[1], NULL, &img->image2 );
-		}
-		img_scale_image( entry->r_filename, img->video_ratio,
-							 0, img->video_size[1], img->distort_images,
-							 img->background_color, NULL, &img->image2 );
+		else
+			img_scale_image( entry->r_filename, img->video_ratio,
+								0, img->video_size[1], img->distort_images,
+								img->background_color, NULL, &img->image2 );
 	
 		/* Load first stop point */
 		img->point2 = (ImgStopPoint *)( entry->no_points ?
@@ -952,9 +951,10 @@ void img_start_stop_preview(GtkWidget *button, img_window_struct *img)
 									entry->g_stop_color, img->video_size[0],
 									img->video_size[1], NULL, &img->image1 );
 			}
-			img_scale_image( entry->r_filename, img->video_ratio,
-								 0, img->video_size[1], img->distort_images,
-								 img->background_color, NULL, &img->image1 );
+			else
+				img_scale_image( entry->r_filename, img->video_ratio,
+									0, img->video_size[1], img->distort_images,
+									img->background_color, NULL, &img->image1 );
 			
 			/* Load last stop point */
 			img->point1 = (ImgStopPoint *)( entry->no_points ?
@@ -1628,7 +1628,7 @@ img_ken_burns_zoom_changed( GtkRange          *range,
 		img->current_point.offx = CLAMP( tmpoffx, img->maxoffx, 0 );
 		img->current_point.offy = CLAMP( tmpoffy, img->maxoffy, 0 );
 	}
-
+	img_update_stop_point(NULL, img);
 	gtk_widget_queue_draw( img->image_area );
 }
 
@@ -1835,12 +1835,12 @@ img_add_stop_point( GtkButton         *button,
 }
 
 void
-img_update_stop_point( GtkButton         *button,
+img_update_stop_point( GtkSpinButton  *button,
 					   img_window_struct *img )
 {
 	ImgStopPoint *point;
 
-	if( img->current_slide == NULL )
+	if( img->current_slide == NULL || img->current_slide->points == NULL)
 		return;
 
 	/* Get selected point */
@@ -1851,9 +1851,10 @@ img_update_stop_point( GtkButton         *button,
 	*point = img->current_point;
 	point->time = gtk_spin_button_get_value_as_int(
 						GTK_SPIN_BUTTON( img->ken_duration ) );
-
+	point->zoom = gtk_range_get_value( GTK_RANGE( img->ken_zoom ) );
+	
 	/* Update display */
-	img_update_stop_display( img, FALSE );
+	//img_update_stop_display( img, FALSE );
 
 	/* Sync timings */
 	img_sync_timings( img->current_slide, img );
@@ -1925,9 +1926,15 @@ img_update_stop_display( img_window_struct *img,
 		/* Set duration of this point */
 		point = (ImgStopPoint *)g_list_nth_data( img->current_slide->points,
 												 img->current_slide->cur_point );
+		
+		g_signal_handlers_block_by_func( img->ken_duration,
+									 img_update_stop_point, img );
+	
 		gtk_spin_button_set_value( GTK_SPIN_BUTTON( img->ken_duration ),
 								   point->time );
-		
+		g_signal_handlers_unblock_by_func( img->ken_duration,
+									 img_update_stop_point, img );
+	
 		/* Set zoom value */
 		gtk_range_set_value( GTK_RANGE( img->ken_zoom ), point->zoom );
 

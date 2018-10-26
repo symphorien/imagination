@@ -830,14 +830,32 @@ img_window_struct *img_create_window (void)
 	image_buttons = gtk_image_new_from_stock (GTK_STOCK_GO_FORWARD, GTK_ICON_SIZE_MENU);
 	gtk_button_set_image(GTK_BUTTON(img_struct->ken_right), image_buttons);
 
+	img_struct->ken_add = gtk_button_new();
+	g_signal_connect( G_OBJECT( img_struct->ken_add ), "clicked",
+					  G_CALLBACK( img_add_stop_point ), img_struct );
+	gtk_box_pack_start (GTK_BOX (hbox_stop_points), img_struct->ken_add, FALSE, FALSE, 5);
+	image_buttons = gtk_image_new_from_stock (GTK_STOCK_ADD, GTK_ICON_SIZE_BUTTON);
+	gtk_button_set_image(GTK_BUTTON(img_struct->ken_add), image_buttons);
+
 	hbox_time_offset = gtk_hbox_new(FALSE,0);
 	gtk_box_pack_start (GTK_BOX (vbox_slide_motion), hbox_time_offset, FALSE, FALSE, 0);
 	time_offset_label = gtk_label_new(_("Duration:"));
 	gtk_box_pack_start (GTK_BOX (hbox_time_offset), time_offset_label, TRUE, TRUE, 0);
 	gtk_misc_set_alignment(GTK_MISC(time_offset_label),0.0, 0.5);
 	img_struct->ken_duration = gtk_spin_button_new_with_range (1, 60, 1);
+	gtk_widget_set_size_request(img_struct->ken_duration, 55, -1);
 	gtk_box_pack_start (GTK_BOX (hbox_time_offset), img_struct->ken_duration, FALSE, FALSE, 0);
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON (img_struct->ken_duration),TRUE);
+	g_signal_connect( G_OBJECT( img_struct->ken_duration ), "value-changed",
+					  G_CALLBACK( img_update_stop_point ), img_struct );
+	
+	img_struct->ken_remove = gtk_button_new();
+	g_signal_connect( G_OBJECT( img_struct->ken_remove ), "clicked",
+					  G_CALLBACK( img_delete_stop_point ), img_struct );
+	gtk_box_pack_start (GTK_BOX (hbox_time_offset), img_struct->ken_remove, FALSE, FALSE, 5);
+	image_buttons = gtk_image_new_from_stock (GTK_STOCK_REMOVE, GTK_ICON_SIZE_BUTTON);
+	gtk_button_set_image(GTK_BUTTON(img_struct->ken_remove), image_buttons);
+	
 	GtkWidget *hbox_zoom = gtk_hbox_new(FALSE,0);
 	gtk_box_pack_start (GTK_BOX (vbox_slide_motion), hbox_zoom, FALSE, FALSE, 0);
 
@@ -851,24 +869,6 @@ img_window_struct *img_create_window (void)
 	g_signal_connect( G_OBJECT( img_struct->ken_zoom ), "value-changed",
 					  G_CALLBACK( img_ken_burns_zoom_changed ), img_struct );
 	
-	hbox_buttons = gtk_hbutton_box_new();
-	gtk_button_box_set_layout (GTK_BUTTON_BOX (hbox_buttons), GTK_BUTTONBOX_SPREAD);
-	gtk_box_pack_start (GTK_BOX (vbox_slide_motion), hbox_buttons, FALSE, FALSE, 0);
-
-	img_struct->ken_add = gtk_button_new_with_label(_("Add"));
-	g_signal_connect( G_OBJECT( img_struct->ken_add ), "clicked",
-					  G_CALLBACK( img_add_stop_point ), img_struct );
-	gtk_box_pack_start (GTK_BOX (hbox_buttons), img_struct->ken_add, FALSE, FALSE, 0);
-	img_struct->ken_update = gtk_button_new_with_label( _("Update") );
-	g_signal_connect( G_OBJECT( img_struct->ken_update ), "clicked",
-					  G_CALLBACK( img_update_stop_point ), img_struct );
-	gtk_box_pack_start( GTK_BOX( hbox_buttons ), img_struct->ken_update,
-						FALSE, FALSE, 0 );
-	img_struct->ken_remove = gtk_button_new_with_label(_("Remove"));
-	g_signal_connect( G_OBJECT( img_struct->ken_remove ), "clicked",
-					  G_CALLBACK( img_delete_stop_point ), img_struct );
-	gtk_box_pack_start (GTK_BOX (hbox_buttons), img_struct->ken_remove, FALSE, FALSE, 0);
-
 	/* Slide text frame */
 	frame4 = gtk_frame_new (NULL);
 	gtk_box_pack_start (GTK_BOX (vbox_frames), frame4, FALSE, FALSE, 0);
@@ -2127,7 +2127,7 @@ void
 img_queue_subtitle_update( GtkTextBuffer     *buffer,
 						   img_window_struct *img )
 {
-	/* This queue enables us to avid sensless copying and redrawing when typing
+	/* This queue enables us to avoid sensless copying and redrawing when typing
 	 * relatively fast (limit is cca. 3 keypresses per second) */
 	if( img->subtitle_update_id )
 		g_source_remove( img->subtitle_update_id );
@@ -2376,7 +2376,6 @@ img_ken_burns_update_sensitivity( img_window_struct *img,
 	gtk_widget_set_sensitive( img->ken_duration, FALSE );
 	gtk_widget_set_sensitive( img->ken_zoom,     FALSE );
 	gtk_widget_set_sensitive( img->ken_add,      FALSE );
-	gtk_widget_set_sensitive( img->ken_update,   FALSE );
 	gtk_widget_set_sensitive( img->ken_remove,   FALSE );
 
 	/* Enabler */
@@ -2388,7 +2387,6 @@ img_ken_burns_update_sensitivity( img_window_struct *img,
 			gtk_widget_set_sensitive( img->ken_right,    TRUE );
 
 		case 1: /* Disable navigation only */
-			gtk_widget_set_sensitive( img->ken_update,   TRUE );
 			gtk_widget_set_sensitive( img->ken_remove,   TRUE );
 
 		case 2: /* Only adding is enabled */
