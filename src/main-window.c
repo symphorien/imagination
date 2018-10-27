@@ -933,12 +933,26 @@ img_window_struct *img_create_window (void)
 	gtk_box_pack_start( GTK_BOX( text_animation_hbox ), img_struct->sub_color, FALSE, FALSE, 0 );
     gtk_widget_set_tooltip_text(img_struct->sub_color, _("Click to choose the font color"));
 
-    img_struct->sub_bgcolor = gtk_color_button_new();
-    gtk_color_button_set_use_alpha( GTK_COLOR_BUTTON( img_struct->sub_bgcolor ), TRUE );
+    img_struct->sub_brdr_color = gtk_color_button_new();
+    gtk_color_button_set_use_alpha( GTK_COLOR_BUTTON( img_struct->sub_brdr_color ), TRUE );
+    g_signal_connect( G_OBJECT( img_struct->sub_brdr_color ), "color-set",
+                      G_CALLBACK( img_font_brdr_color_changed ), img_struct );
+    gtk_box_pack_start( GTK_BOX( text_animation_hbox ), img_struct->sub_brdr_color, FALSE, FALSE, 0 );
+    gtk_widget_set_tooltip_text(img_struct->sub_brdr_color, _("Click to choose the font border color"));
+
+	a_hbox = gtk_hbox_new(FALSE, 6);
+	gtk_box_pack_start (GTK_BOX (vbox_slide_caption), a_hbox, FALSE, FALSE, 0);
+	a_label = gtk_label_new(_("Font background color:"));
+	gtk_misc_set_alignment(GTK_MISC(a_label), 0.0, 0.5);
+	gtk_box_pack_start (GTK_BOX (a_hbox), a_label, TRUE, TRUE, 0);
+	
+	img_struct->sub_bgcolor = gtk_color_button_new();
+	gtk_color_button_set_use_alpha( GTK_COLOR_BUTTON( img_struct->sub_bgcolor ), TRUE );
+	gtk_color_button_set_alpha(GTK_COLOR_BUTTON( img_struct->sub_bgcolor ), 0);
     g_signal_connect( G_OBJECT( img_struct->sub_bgcolor ), "color-set",
-                      G_CALLBACK( img_font_bgcolor_changed ), img_struct );
-    gtk_box_pack_start( GTK_BOX( text_animation_hbox ), img_struct->sub_bgcolor, FALSE, FALSE, 0 );
-    gtk_widget_set_tooltip_text(img_struct->sub_bgcolor, _("Click to choose the font border color"));
+                      G_CALLBACK( img_font_bg_color_changed ), img_struct );
+    gtk_box_pack_start( GTK_BOX( a_hbox ), img_struct->sub_bgcolor, FALSE, FALSE, 0 );
+    gtk_widget_set_tooltip_text(img_struct->sub_bgcolor, _("Click to choose the font background color. If the alpha value is 0, Imagination will not render any background."));
 
 	a_hbox = gtk_hbox_new(FALSE, 6);
 	gtk_box_pack_start (GTK_BOX (vbox_slide_caption), a_hbox, FALSE, FALSE, 0);
@@ -2217,7 +2231,7 @@ img_text_font_set( GtkFontButton     *button,
 	
 	string = gtk_font_button_get_font_name( button );
 
-	img_update_sub_properties( img, NULL, -1, -1, -1, -1, string, NULL, NULL );
+	img_update_sub_properties( img, NULL, -1, -1, -1, -1, string, NULL, NULL, NULL );
 
 	gtk_widget_queue_draw( img->image_area );
 }
@@ -2235,7 +2249,7 @@ img_text_anim_set( GtkComboBox       *combo,
 	gtk_combo_box_get_active_iter( combo, &iter );
 	gtk_tree_model_get( model, &iter, 1, &anim, 2, &anim_id, -1 );
 
-	img_update_sub_properties( img, anim, anim_id, -1, -1, -1, NULL, NULL, NULL);
+	img_update_sub_properties( img, anim, anim_id, -1, -1, -1, NULL, NULL, NULL, NULL);
 
 	/* Speed should be disabled when None is in effect */
 	gtk_widget_set_sensitive( img->sub_anim_duration,
@@ -2259,14 +2273,35 @@ img_font_color_changed( GtkColorButton    *button,
 	font_color[1] = (gdouble)color.green / 0xffff;
 	font_color[2] = (gdouble)color.blue  / 0xffff;
 	font_color[3] = (gdouble)alpha       / 0xffff;
-
-	img_update_sub_properties( img, NULL, -1, -1, -1, -1, NULL, font_color, NULL );
+ 
+	img_update_sub_properties( img, NULL, -1, -1, -1, -1, NULL, font_color, NULL, NULL );
 
 	gtk_widget_queue_draw( img->image_area );
 }
 
 void
-img_font_bgcolor_changed( GtkColorButton    *button,
+img_font_brdr_color_changed( GtkColorButton    *button,
+                          img_window_struct *img )
+{
+    GdkColor color;
+    guint16  alpha;
+    gdouble  font_brdr_color[4];
+
+    gtk_color_button_get_color( button, &color );
+    alpha = gtk_color_button_get_alpha( button  );
+
+    font_brdr_color[0] = (gdouble)color.red   / 0xffff;
+    font_brdr_color[1] = (gdouble)color.green / 0xffff;
+    font_brdr_color[2] = (gdouble)color.blue  / 0xffff;
+    font_brdr_color[3] = (gdouble)alpha       / 0xffff;
+    
+    img_update_sub_properties( img, NULL, -1, -1, -1, -1, NULL, NULL, font_brdr_color,NULL);
+
+    gtk_widget_queue_draw( img->image_area );
+}
+
+void
+img_font_bg_color_changed( GtkColorButton    *button,
                           img_window_struct *img )
 {
     GdkColor color;
@@ -2281,7 +2316,7 @@ img_font_bgcolor_changed( GtkColorButton    *button,
     font_bgcolor[2] = (gdouble)color.blue  / 0xffff;
     font_bgcolor[3] = (gdouble)alpha       / 0xffff;
 
-    img_update_sub_properties( img, NULL, -1, -1, -1, -1, NULL, NULL, font_bgcolor);
+    img_update_sub_properties( img, NULL, -1, -1, -1, -1, NULL, NULL, NULL, font_bgcolor);
 
     gtk_widget_queue_draw( img->image_area );
 }
@@ -2293,7 +2328,7 @@ img_combo_box_anim_speed_changed( GtkSpinButton       *spinbutton,
 	gint speed;
 
 	speed = gtk_spin_button_get_value_as_int(spinbutton);
-	img_update_sub_properties( img, NULL, -1, speed, -1, -1, NULL, NULL, NULL);
+	img_update_sub_properties( img, NULL, -1, speed, -1, -1, NULL, NULL, NULL, NULL);
 }
 
 void
@@ -2304,7 +2339,7 @@ img_text_pos_changed( ImgTableButton    *button,
 	/* NOTE: This can be done because we know how items are packed into table
 	 * button. For safety measures and future expandability, this should be
 	 * converted into switch statement. */
-	img_update_sub_properties( img, NULL, -1, -1, item, -1, NULL, NULL, NULL);
+	img_update_sub_properties( img, NULL, -1, -1, item, -1, NULL, NULL, NULL, NULL);
 
 	gtk_widget_queue_draw( img->image_area );
 }
@@ -2320,7 +2355,7 @@ img_placing_changed( GtkComboBox   *combo,
 	else
 		placing = IMG_REL_PLACING_ORIGINAL_IMAGE;
 
-	img_update_sub_properties( img, NULL, -1, -1, -1, placing, NULL, NULL, NULL);
+	img_update_sub_properties( img, NULL, -1, -1, -1, placing, NULL, NULL, NULL, NULL);
 
 	gtk_widget_queue_draw( img->image_area );
 }
@@ -2435,7 +2470,7 @@ img_subtitle_update_sensitivity( img_window_struct *img,
 	/* All other controls are simple */
 	gtk_widget_set_sensitive( img->sub_font,    (gboolean)mode );
 	gtk_widget_set_sensitive( img->sub_color,   (gboolean)mode );
-    gtk_widget_set_sensitive( img->sub_bgcolor, (gboolean)mode );
+    gtk_widget_set_sensitive( img->sub_brdr_color, (gboolean)mode );
 	gtk_widget_set_sensitive( img->sub_anim,    (gboolean)mode );
 	gtk_widget_set_sensitive( img->sub_placing, (gboolean)mode );
 	gtk_widget_set_sensitive( img->sub_pos,     (gboolean)mode );
@@ -2450,7 +2485,8 @@ img_update_sub_properties( img_window_struct *img,
 						   ImgRelPlacing      placing,
 						   const gchar       *desc,
 						   gdouble           *color,
-						   gdouble           *bgcolor)
+						   gdouble           *brdr_color,
+						   gdouble           *bg_color)
 {
 	GList        *selected,
 				 *tmp;
@@ -2474,7 +2510,7 @@ img_update_sub_properties( img_window_struct *img,
 		
 		img_set_slide_text_info( slide, NULL, NULL, NULL,
 								 anim_id, anim_duration, position,
-								 placing, desc, color, bgcolor, img );
+								 placing, desc, color, brdr_color, bg_color, img );
 	}
 
 	g_list_foreach( selected, (GFunc)gtk_tree_path_free, NULL );

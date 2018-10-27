@@ -1244,7 +1244,8 @@ img_on_expose_event( GtkWidget         *widget,
 								 img->current_slide->subtitle,
 								 img->current_slide->font_desc,
 								 img->current_slide->font_color,
-                                 img->current_slide->font_bgcolor,
+                                 img->current_slide->font_brdr_color,
+                                 img->current_slide->font_bg_color,
 								 img->current_slide->anim,
 								 1.0 );
 		
@@ -1971,8 +1972,10 @@ img_update_subtitles_widgets( img_window_struct *img )
 									 img_text_font_set, img );
 	g_signal_handlers_block_by_func( img->sub_color,
 									 img_font_color_changed, img );
-    g_signal_handlers_block_by_func( img->sub_bgcolor,
-                                     img_font_bgcolor_changed, img );
+    g_signal_handlers_block_by_func( img->sub_brdr_color,
+                                     img_font_brdr_color_changed, img );
+	g_signal_handlers_block_by_func( img->sub_bgcolor,
+                                     img_font_bg_color_changed, img );
 	g_signal_handlers_block_by_func( img->sub_anim,
 									 img_text_anim_set, img );
 	g_signal_handlers_block_by_func( img->sub_anim_duration,
@@ -2001,8 +2004,17 @@ img_update_subtitles_widgets( img_window_struct *img )
 	gtk_color_button_set_alpha( GTK_COLOR_BUTTON( img->sub_color ),
 								(gint)(f_colors[3] * 0xffff ) );
 
+    /* Update border color button */
+    f_colors = img->current_slide->font_brdr_color;
+    color.red   = (gint)( f_colors[0] * 0xffff );
+    color.green = (gint)( f_colors[1] * 0xffff );
+    color.blue  = (gint)( f_colors[2] * 0xffff );
+    gtk_color_button_set_color( GTK_COLOR_BUTTON( img->sub_brdr_color ), &color ); 
+    gtk_color_button_set_alpha( GTK_COLOR_BUTTON( img->sub_brdr_color ),
+                                (gint)(f_colors[3] * 0xffff ) );
+                                
     /* Update background color button */
-    f_colors = img->current_slide->font_bgcolor;
+    f_colors = img->current_slide->font_bg_color;
     color.red   = (gint)( f_colors[0] * 0xffff );
     color.green = (gint)( f_colors[1] * 0xffff );
     color.blue  = (gint)( f_colors[2] * 0xffff );
@@ -2033,8 +2045,10 @@ img_update_subtitles_widgets( img_window_struct *img )
 									   img_text_font_set, img );
 	g_signal_handlers_unblock_by_func( img->sub_color,
 									   img_font_color_changed, img );
-    g_signal_handlers_unblock_by_func( img->sub_bgcolor,
-                                       img_font_bgcolor_changed, img );
+    g_signal_handlers_unblock_by_func( img->sub_brdr_color,
+                                       img_font_brdr_color_changed, img );
+	g_signal_handlers_unblock_by_func( img->sub_bgcolor,
+                                       img_font_bg_color_changed, img );
 	g_signal_handlers_unblock_by_func( img->sub_anim,
 									   img_text_anim_set, img );
 	g_signal_handlers_unblock_by_func( img->sub_anim_duration,

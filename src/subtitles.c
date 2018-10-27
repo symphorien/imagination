@@ -21,7 +21,7 @@
 #include "support.h"
 
 /* Border width around image (no text is placed there) */
-#define BORDER 1
+#define BORDER 5
 
 /* Wrap width for subtitles (fraction of image size) */
 #define WRAP_WIDTH 0.75
@@ -49,6 +49,7 @@ img_text_ani_fade( cairo_t     *cr,
 				   gint         posy,
 				   gdouble      progress,
 				   gdouble     *font_color,
+				   gdouble     *font_brdr_color,
 				   gdouble     *font_bgcolor);
 
 static void
@@ -57,7 +58,8 @@ img_text_draw_layout( cairo_t     *cr,
                       gint posx,
                       gint posy,
                       gdouble     *font_color,
-                      gdouble     *font_bgcolor);
+                      gdouble     *font_brdr_color,
+                      gdouble     *font_bg_color);
 
 static void
 img_text_from_left( cairo_t     *cr,
@@ -70,6 +72,7 @@ img_text_from_left( cairo_t     *cr,
  					gint         posy,
  					gdouble      progress,
                     gdouble     *font_color,
+                    gdouble     *font_brdr_color,
                     gdouble     *font_bgcolor);
 
 static void
@@ -83,6 +86,7 @@ img_text_from_right( cairo_t     *cr,
  					 gint         posy,
  					 gdouble      progress,
                      gdouble     *font_color,
+                     gdouble     *font_brdr_color,
                      gdouble     *font_bgcolor);
 
 static void
@@ -96,6 +100,7 @@ img_text_from_top( cairo_t     *cr,
 				   gint         posy,
 				   gdouble      progress,
                    gdouble     *font_color,
+                   gdouble     *font_brdr_color,
                    gdouble     *font_bgcolor);
 
 static void
@@ -109,6 +114,7 @@ img_text_from_bottom( cairo_t     *cr,
   					  gint         posy,
   					  gdouble      progress,
                       gdouble     *font_color,
+                      gdouble     *font_brdr_color,
                       gdouble     *font_bgcolor);
 
 static void
@@ -122,6 +128,7 @@ img_text_grow( cairo_t     *cr,
 			   gint         posy,
 			   gdouble      progress,
                gdouble     *font_color,
+               gdouble     *font_brdr_color,
                gdouble     *font_bgcolor);
 
 static void
@@ -135,6 +142,7 @@ img_text_bottom_to_top( cairo_t     *cr,
  					gint         posy,
  					gdouble      progress,
                     gdouble     *font_color,
+                    gdouble     *font_brdr_color,
                     gdouble     *font_bgcolor);
 
 static void
@@ -148,6 +156,7 @@ img_text_right_to_left( cairo_t     *cr,
  					gint         posy,
  					gdouble      progress,
                     gdouble     *font_color,
+                    gdouble     *font_brdr_color,
                     gdouble     *font_bgcolor);
 
                
@@ -264,7 +273,8 @@ img_render_subtitle( cairo_t              *cr,
 					 gchar                *subtitle,
 					 PangoFontDescription *font_desc,
 					 gdouble              *font_color,
-                     gdouble              *font_bgcolor,
+                     gdouble              *font_brdr_color,
+                     gdouble              *font_bg_color,
                      TextAnimationFunc     func,
 					 gdouble               progress )
 {
@@ -331,11 +341,11 @@ img_render_subtitle( cairo_t              *cr,
 
 	/* Do animation */
 	if( func )
-		(*func)( cr, layout, width, height, lw, lh, posx, posy, progress, font_color, font_bgcolor );
+		(*func)( cr, layout, width, height, lw, lh, posx, posy, progress, font_color, font_brdr_color, font_bg_color );
 	else
 	{
 		/* No animation renderer */
-        img_text_draw_layout(cr, layout, posx, posy, font_color, font_bgcolor);
+        img_text_draw_layout(cr, layout, posx, posy, font_color, font_brdr_color, font_bg_color);
 	}
 
 	/* Destroy layout */
@@ -418,9 +428,10 @@ img_text_ani_fade( cairo_t     *cr,
 				   gint         posy,
 				   gdouble      progress,
                    gdouble     *font_color,
+                   gdouble     *font_brdr_color,
                    gdouble     *font_bgcolor)
 {
-    gdouble  progress_font_color[4], progress_font_bgcolor[4];
+    gdouble  progress_font_color[4], progress_font_brdr_color[4], progress_font_bgcolor[4];
 
 	/* Calculate colors */
     progress_font_color[0] = font_color[0];
@@ -428,13 +439,18 @@ img_text_ani_fade( cairo_t     *cr,
     progress_font_color[2] = font_color[2];
     progress_font_color[3] = font_color[3] * progress;
 
+	progress_font_brdr_color[0] = font_brdr_color[0];
+    progress_font_brdr_color[1] = font_brdr_color[1];
+    progress_font_brdr_color[2] = font_brdr_color[2];
+    progress_font_brdr_color[3] = font_brdr_color[3] * pow(progress, 6);
+
     progress_font_bgcolor[0] = font_bgcolor[0];
     progress_font_bgcolor[1] = font_bgcolor[1];
     progress_font_bgcolor[2] = font_bgcolor[2];
     progress_font_bgcolor[3] = font_bgcolor[3] * pow(progress, 6);
 
     /* Paint text */
-    img_text_draw_layout(cr, layout, posx, posy, progress_font_color, progress_font_bgcolor);
+    img_text_draw_layout(cr, layout, posx, posy, progress_font_color, progress_font_brdr_color, progress_font_bgcolor);
 }
 
 static void
@@ -443,15 +459,30 @@ img_text_draw_layout( cairo_t     *cr,
                       gint         posx,
                       gint         posy,
                       gdouble     *font_color,
-                      gdouble     *font_bgcolor)
+                      gdouble     *font_brdr_color,
+                      gdouble     *font_bg_color)
 {
-    gint x,y;
+    gint x,y,w,h;
 
-    /* Draw the background border */
-    cairo_set_source_rgba(cr, font_bgcolor[0],
-                              font_bgcolor[1],
-                              font_bgcolor[2],
-                              font_bgcolor[3] );
+	/* Paint the background only if the user
+	 * chose an alpha value greater than 0 */
+	if (font_bg_color[3] > 0)
+	{
+		pango_layout_get_pixel_size (layout, &w, &h );
+		cairo_set_source_rgba(cr, font_bg_color[0],
+							  font_bg_color[1],
+                              font_bg_color[2],
+                              font_bg_color[3] );
+                              
+        cairo_rectangle(cr, posx - 5, posy, w + 8, h + 5);
+		cairo_fill(cr);
+	}
+
+    /* Draw the border */
+    cairo_set_source_rgba(cr, font_brdr_color[0],
+                              font_brdr_color[1],
+                              font_brdr_color[2],
+                              font_brdr_color[3] );
     for (x=-1; x <=1; x++)
     {
         for (y=-1; y<=1; y++)
@@ -484,12 +515,13 @@ img_text_from_left( cairo_t     *cr,
  					gint         posy,
  					gdouble      progress,
                     gdouble     *font_color,
+                    gdouble     *font_brdr_color,
                     gdouble     *font_bgcolor)
 {
     img_text_draw_layout(cr, layout,
                          posx * progress - lw * ( 1 - progress ),
                          posy,
-                         font_color, font_bgcolor);
+                         font_color, font_brdr_color, font_bgcolor);
 }
 
 static void
@@ -503,12 +535,13 @@ img_text_from_right( cairo_t     *cr,
  					 gint         posy,
  					 gdouble      progress,
                      gdouble     *font_color,
+                     gdouble     *font_brdr_color,
                      gdouble     *font_bgcolor)
 {
     img_text_draw_layout(cr, layout,
                          posx * progress + sw * ( 1 - progress ),
                          posy,
-                         font_color, font_bgcolor);
+                         font_color, font_brdr_color, font_bgcolor);
 }
 
 static void
@@ -522,12 +555,13 @@ img_text_from_top( cairo_t     *cr,
 				   gint         posy,
 				   gdouble      progress,
                    gdouble     *font_color,
+                   gdouble     *font_brdr_color,
                    gdouble     *font_bgcolor)
 {
     img_text_draw_layout(cr, layout,
                          posx,
                          posy * progress - lh * ( 1 - progress ),
-                         font_color, font_bgcolor);
+                         font_color, font_brdr_color, font_bgcolor);
 }
 
 static void
@@ -541,12 +575,13 @@ img_text_from_bottom( cairo_t     *cr,
   					  gint         posy,
   					  gdouble      progress,
                       gdouble     *font_color,
+                      gdouble     *font_brdr_color,
                       gdouble     *font_bgcolor)
 {
     img_text_draw_layout(cr, layout,
                          posx,
                          posy * progress + sh * ( 1 - progress ),
-                         font_color, font_bgcolor);
+                         font_color, font_brdr_color, font_bgcolor);
 }
 
 static void
@@ -560,6 +595,7 @@ img_text_grow( cairo_t     *cr,
 			   gint         posy,
 			   gdouble      progress,
                gdouble     *font_color,
+               gdouble     *font_brdr_color,
                gdouble     *font_bgcolor)
 {
 	cairo_translate( cr, posx + lw * 0.5, posy + lh * 0.5 );
@@ -568,7 +604,7 @@ img_text_grow( cairo_t     *cr,
     img_text_draw_layout(cr, layout,
                          - lw * 0.5,
                          - lh * 0.5,
-                         font_color, font_bgcolor);
+                         font_color, font_brdr_color, font_bgcolor);
 }
 
 static void
@@ -582,12 +618,13 @@ img_text_bottom_to_top( cairo_t     *cr,
 				   gint         posy,
 				   gdouble      progress,
                    gdouble     *font_color,
+                   gdouble     *font_brdr_color,
                    gdouble     *font_bgcolor)
 {
     img_text_draw_layout(cr, layout,
                          posx,
                          sh * (1 - progress) - lh * progress,
-                         font_color, font_bgcolor);
+                         font_color, font_brdr_color, font_bgcolor);
 }
 
 static void
@@ -601,10 +638,11 @@ img_text_right_to_left( cairo_t     *cr,
 				   gint         posy,
 				   gdouble      progress,
                    gdouble     *font_color,
+                   gdouble     *font_brdr_color,
                    gdouble     *font_bgcolor)
 {
     img_text_draw_layout(cr, layout,
                          sw * (1 - progress) - lw * progress,
                          posy,
-                         font_color, font_bgcolor);
+                         font_color, font_brdr_color, font_bgcolor);
 }

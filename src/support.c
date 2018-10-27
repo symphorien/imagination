@@ -424,11 +424,16 @@ img_create_new_slide( void )
 		slide->font_color[1] = 0; /* G */
 		slide->font_color[2] = 0; /* B */
 		slide->font_color[3] = 1; /* A */
-		/* default: no font color background */
-        slide->font_bgcolor[0] = 1; /* R */
-        slide->font_bgcolor[1] = 1; /* G */
-        slide->font_bgcolor[2] = 1; /* B */
-        slide->font_bgcolor[3] = 1; /* A */
+		/* default: no font color border */
+        slide->font_brdr_color[0] = 1; /* R */
+        slide->font_brdr_color[1] = 1; /* G */
+        slide->font_brdr_color[2] = 1; /* B */
+        slide->font_brdr_color[3] = 1; /* A */
+        /* default: no font background color */
+        slide->font_bg_color[0] = 1; /* R */
+        slide->font_bg_color[1] = 1; /* G */
+        slide->font_bg_color[2] = 1; /* B */
+        slide->font_bg_color[3] = 0; /* A */
         
         /* Load error handling */
         slide->load_ok = TRUE;
@@ -577,7 +582,8 @@ img_set_slide_text_info( slide_struct      *slide,
 						 gint               placing,
 						 const gchar       *font_desc,
 						 gdouble           *font_color,
-                         gdouble           *font_bgcolor,
+                         gdouble           *font_brdr_color,
+                         gdouble           *font_bg_color,
 						 img_window_struct *img )
 {
 	/* Set the slide text info parameters */
@@ -640,12 +646,20 @@ img_set_slide_text_info( slide_struct      *slide,
 		slide->font_color[3] = font_color[3];
 	}
 
-    if( font_bgcolor )
+    if( font_brdr_color )
     {
-        slide->font_bgcolor[0] = font_bgcolor[0];
-        slide->font_bgcolor[1] = font_bgcolor[1];
-        slide->font_bgcolor[2] = font_bgcolor[2];
-        slide->font_bgcolor[3] = font_bgcolor[3];
+        slide->font_brdr_color[0] = font_brdr_color[0];
+        slide->font_brdr_color[1] = font_brdr_color[1];
+        slide->font_brdr_color[2] = font_brdr_color[2];
+        slide->font_brdr_color[3] = font_brdr_color[3];
+    }
+    
+    if( font_bg_color )
+    {
+        slide->font_bg_color[0] = font_bg_color[0];
+        slide->font_bg_color[1] = font_bg_color[1];
+        slide->font_bg_color[2] = font_bg_color[2];
+        slide->font_bg_color[3] = font_bg_color[3];
     }
 }								
 

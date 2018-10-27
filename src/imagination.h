@@ -105,7 +105,8 @@ typedef void (*TextAnimationFunc)( cairo_t     *cr,
 								   gint         posy,
 								   gdouble      progress,
 								   gdouble     *font_color,
-                                   gdouble     *font_bgcolor );
+								   gdouble     *font_brdr_color,
+                                   gdouble     *font_bg_color );
 
 
 /* ****************************************************************************
@@ -189,7 +190,8 @@ struct _slide_struct
 	ImgRelPlacing         placing;         /* Relative placing */
 	PangoFontDescription *font_desc;       /* Font description */
 	gdouble               font_color[4];   /* Font color (RGBA format) */
-    gdouble               font_bgcolor[4]; /* Font background color (RGBA format) */
+    gdouble               font_brdr_color[4]; /* Font border color (RGBA format) */
+    gdouble               font_bg_color[4]; /* Font background color (RGBA format) */
 };
 
 typedef struct _img_window_struct img_window_struct;
@@ -257,8 +259,9 @@ struct _img_window_struct
 	/* Subtitle related controls */
 	GtkWidget *sub_textview;      /* Text view */
 	GtkWidget *sub_font;          /* Font button */
-	GtkWidget *sub_color;         /* Color selector button */
-    GtkWidget *sub_bgcolor;       /* Background Color selector button */
+	GtkWidget *sub_color;         /* Font color selector button */
+    GtkWidget *sub_brdr_color;    /* Border font color selector button */
+    GtkWidget *sub_bgcolor;       /* Background font color selector button */
 	GtkWidget *sub_anim;          /* Animation combo box */
 	GtkWidget *sub_anim_duration; /* Animation duration spin button */
 	GtkWidget *sub_placing;       /* Placing combo box */

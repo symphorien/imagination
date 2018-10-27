@@ -52,7 +52,8 @@ img_render_subtitle( cairo_t              *cr,
 					 gchar                *subtitle,
 					 PangoFontDescription *font_desc,
 					 gdouble              *font_color,
-                     gdouble              *font_bgcolor,
+					 gdouble              *font_brdr_color,
+                     gdouble              *font_bg_color,
 					 TextAnimationFunc     func,
 					 gdouble               progress );
 #endif

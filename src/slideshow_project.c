@@ -150,7 +150,8 @@ img_save_slideshow( img_window_struct *img,
 		g_key_file_set_integer(img_key_file,conf, "placing",		entry->placing);
 		g_key_file_set_string (img_key_file, conf,"font",			font_desc);
 		g_key_file_set_double_list(img_key_file, conf,"font color",entry->font_color,4);
-        g_key_file_set_double_list(img_key_file, conf,"font bgcolor",entry->font_bgcolor,4);
+        g_key_file_set_double_list(img_key_file, conf,"font bgcolor",entry->font_brdr_color,4);
+        g_key_file_set_double_list(img_key_file, conf,"font bgcolor2",entry->font_bg_color,4);
 		g_free(font_desc);
 		g_free(conf);
 	}
@@ -210,7 +211,7 @@ img_load_slideshow( img_window_struct *img,
 	void (*render);
 	GHashTable *table;
 	gchar      *spath, *conf;
-	gdouble    duration, *color, *font_color, *font_bgcolor;
+	gdouble    duration, *color, *font_color, *font_brdr_color, *font_bg_color;
 	gboolean   first_slide = TRUE;
     gchar      *video_config_name, *aspect_ratio, *fps;
     gchar      *bitrate;
@@ -443,7 +444,8 @@ img_load_slideshow( img_window_struct *img,
 				placing 	  = g_key_file_get_integer(img_key_file, conf, "placing",		NULL);
 				font_desc     = g_key_file_get_string (img_key_file, conf, "font", 			NULL);
 				font_color 	  = g_key_file_get_double_list(img_key_file, conf, "font color", NULL, NULL );
-                font_bgcolor  = g_key_file_get_double_list(img_key_file, conf, "font bgcolor", NULL, NULL );
+                font_brdr_color  = g_key_file_get_double_list(img_key_file, conf, "font bgcolor", NULL, NULL );
+                font_bg_color = g_key_file_get_double_list(img_key_file, conf, "font bgcolor2", NULL, NULL );
 
 				/* Get the mem address of the transition */
 				spath = (gchar *)g_hash_table_lookup( table, GINT_TO_POINTER( transition_id ) );
@@ -502,7 +504,7 @@ img_load_slideshow( img_window_struct *img,
 					img_set_slide_text_info( slide_info, img->thumbnail_model,
 											 &iter, subtitle, anim_id,
 											 anim_duration, text_pos, placing,
-											 font_desc, font_color, font_bgcolor, img );
+											 font_desc, font_color, font_brdr_color, font_bg_color, img );
 
 					/* If we're loading the first slide, apply some of it's
 				 	 * data to final pseudo-slide */

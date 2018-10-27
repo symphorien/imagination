@@ -1,12 +1,13 @@
 Imagination changelog
 
-xx/xx/19 - 3.x		- Got rid of Update button in the Slide Motion as it's now automatic.
+xx/xx/19 - 3.x		- Added optional background to the text slide. 
+			- Got rid of Update button in the Slide Motion as it's now automatic.
 			- Moved Add and Remove buttons in the Slide Motion on the right.
 14/10/18 - 3.1:
 			- Export is now much faster than 3.0!
 			- Ending the slideshow with a blank slide with the same transition applied to the first one is now optional.
 			- Added an elapsed time information in the Export dialog.
-			- Made the slides to be selected during the preview/export and its number shown on the menu bar.
+			- Made the slides to be selected during the preview/export and their number shown on the menu bar.
 			- Fixed seg-fault when trying to rotate gradient/text slides.
 			- Current slideshow is not closed anymore when clicking ok/cancel in the properties/new slideshow dialog.
 			- Slide duration can be finally set to less than a second. That was a long requested feature!
