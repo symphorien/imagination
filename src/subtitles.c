@@ -474,7 +474,7 @@ img_text_draw_layout( cairo_t     *cr,
                               font_bg_color[2],
                               font_bg_color[3] );
                               
-        cairo_rectangle(cr, posx - 5, posy, w + 8, h + 5);
+        cairo_rectangle(cr, posx - 5, posy, w + 8, h);
 		cairo_fill(cr);
 	}
 

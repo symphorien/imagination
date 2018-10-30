@@ -362,6 +362,12 @@ img_window_struct *img_create_window (void)
 	g_signal_connect( G_OBJECT( add_slide ), "activate",
 					  G_CALLBACK( img_add_empty_slide ), img_struct );
 
+	img_struct->edit_empty_slide = gtk_image_menu_item_new_with_mnemonic (_("Edit empty slide"));
+	gtk_container_add (GTK_CONTAINER (slide_menu), img_struct->edit_empty_slide);
+	gtk_widget_add_accelerator( img_struct->edit_empty_slide, "activate", img_struct->accel_group,	GDK_e, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE );
+	g_signal_connect( G_OBJECT( img_struct->edit_empty_slide ), "activate",
+					  G_CALLBACK( img_add_empty_slide ), img_struct );
+
 	image_menu = img_load_icon ("imagination-add-new-slide.png",GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (add_slide), image_menu);
 
@@ -413,7 +419,7 @@ img_window_struct *img_create_window (void)
 
 	deselect_all_menu = gtk_image_menu_item_new_with_mnemonic (_("Un_select all"));
 	gtk_container_add (GTK_CONTAINER (slide_menu),deselect_all_menu);
-	gtk_widget_add_accelerator (deselect_all_menu,"activate",img_struct->accel_group,GDK_e,GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
+	gtk_widget_add_accelerator (deselect_all_menu,"activate",img_struct->accel_group,GDK_a,GDK_CONTROL_MASK | GDK_SHIFT_MASK,GTK_ACCEL_VISIBLE);
 	g_signal_connect (G_OBJECT (deselect_all_menu),"activate",G_CALLBACK (img_unselect_all_thumbnails),img_struct);
 
 	/* View menu */
@@ -940,20 +946,18 @@ img_window_struct *img_create_window (void)
     gtk_box_pack_start( GTK_BOX( text_animation_hbox ), img_struct->sub_brdr_color, FALSE, FALSE, 0 );
     gtk_widget_set_tooltip_text(img_struct->sub_brdr_color, _("Click to choose the font border color"));
 
-	a_hbox = gtk_hbox_new(FALSE, 6);
-	gtk_box_pack_start (GTK_BOX (vbox_slide_caption), a_hbox, FALSE, FALSE, 0);
-	a_label = gtk_label_new(_("Font background color:"));
-	gtk_misc_set_alignment(GTK_MISC(a_label), 0.0, 0.5);
-	gtk_box_pack_start (GTK_BOX (a_hbox), a_label, TRUE, TRUE, 0);
-	
 	img_struct->sub_bgcolor = gtk_color_button_new();
 	gtk_color_button_set_use_alpha( GTK_COLOR_BUTTON( img_struct->sub_bgcolor ), TRUE );
 	gtk_color_button_set_alpha(GTK_COLOR_BUTTON( img_struct->sub_bgcolor ), 0);
     g_signal_connect( G_OBJECT( img_struct->sub_bgcolor ), "color-set",
                       G_CALLBACK( img_font_bg_color_changed ), img_struct );
-    gtk_box_pack_start( GTK_BOX( a_hbox ), img_struct->sub_bgcolor, FALSE, FALSE, 0 );
-    gtk_widget_set_tooltip_text(img_struct->sub_bgcolor, _("Click to choose the font background color. If the alpha value is 0, Imagination will not render any background."));
-
+    gtk_box_pack_start( GTK_BOX( text_animation_hbox ), img_struct->sub_bgcolor, FALSE, FALSE, 0 );
+	gtk_widget_set_tooltip_text(img_struct->sub_bgcolor, _("Click to choose the font background color. If the opacity value is set to 0, Imagination will not render any background."));
+	
+	gtk_widget_set_size_request(img_struct->sub_color,35,15);
+	gtk_widget_set_size_request(img_struct->sub_brdr_color,35,15);
+	gtk_widget_set_size_request(img_struct->sub_bgcolor,35,15);
+	
 	a_hbox = gtk_hbox_new(FALSE, 6);
 	gtk_box_pack_start (GTK_BOX (vbox_slide_caption), a_hbox, FALSE, FALSE, 0);
 	a_label = gtk_label_new(_("Animation:"));
@@ -1727,6 +1731,12 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 	/* Update subtitle widgets */
 	img_update_subtitles_widgets( img );
 
+	/* Enable/disable Edit empty slide menu item */
+	if (info_slide->original_filename == NULL)
+		gtk_widget_set_sensitive(img->edit_empty_slide, TRUE);
+	else
+		gtk_widget_set_sensitive(img->edit_empty_slide, FALSE);
+	
 	if (nr_selected > 1)
 	{
 		img_set_statusbar_message(img,nr_selected);
@@ -2471,6 +2481,7 @@ img_subtitle_update_sensitivity( img_window_struct *img,
 	gtk_widget_set_sensitive( img->sub_font,    (gboolean)mode );
 	gtk_widget_set_sensitive( img->sub_color,   (gboolean)mode );
     gtk_widget_set_sensitive( img->sub_brdr_color, (gboolean)mode );
+	gtk_widget_set_sensitive( img->sub_bgcolor, (gboolean)mode );
 	gtk_widget_set_sensitive( img->sub_anim,    (gboolean)mode );
 	gtk_widget_set_sensitive( img->sub_placing, (gboolean)mode );
 	gtk_widget_set_sensitive( img->sub_pos,     (gboolean)mode );

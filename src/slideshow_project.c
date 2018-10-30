@@ -377,7 +377,7 @@ img_load_slideshow( img_window_struct *img,
 			conf = g_strdup_printf("slide %d", i);
 			slide_filename = g_key_file_get_string(img_key_file,conf,"filename", NULL);
             original_filename = g_strdup (slide_filename);
-
+	
 			if( slide_filename )
 			{
 				angle = (ImgAngle)g_key_file_get_integer( img_key_file, conf,

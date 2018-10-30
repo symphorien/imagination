@@ -2188,7 +2188,7 @@ img_add_empty_slide( GtkMenuItem       *item,
 					 img_window_struct *img )
 {
 	/* This structure retains values across invocations */
-	static ImgEmptySlide slide = { { 0, 0, 0 },         /* Start color */
+	ImgEmptySlide slide = { { 0, 0, 0 },         /* Start color */
 								   { 1, 1, 1 },         /* Stop color */
 								   { 0, 0 },            /* Start point (l) */
 								   { -1, 0 },           /* Stop point (l) */
@@ -2202,8 +2202,6 @@ img_add_empty_slide( GtkMenuItem       *item,
 								 }; 
 
 	GList *where_to_insert = NULL;
-
-	/* Widgets */
 	GtkWidget *dialog,
 			  *vbox,
 			  *frame,
@@ -2218,8 +2216,41 @@ img_add_empty_slide( GtkMenuItem       *item,
 	GdkColor   color;
 	gint       i, w, h, pos;
 
+	w = img->video_size[0] / 2;
+	h = img->video_size[1] / 2;
+
+	if (GTK_WIDGET(item) == img->edit_empty_slide)
+	{
+		/* Let's copy the existing empty slide
+		 * values in the empty slide struct so
+		 * the preview dialog area shows the settings
+		 * user applied when creating the empty one */
+		slide.gradient = img->current_slide->gradient;
+		slide.c_start[0] = img->current_slide->g_start_color[0];
+		slide.c_start[1] = img->current_slide->g_start_color[1];
+		slide.c_start[2] = img->current_slide->g_start_color[2];
+		
+		slide.c_stop[0] = img->current_slide->g_stop_color[0];
+		slide.c_stop[1] = img->current_slide->g_stop_color[1];
+		slide.c_stop[2] = img->current_slide->g_stop_color[2];
+		
+		if (slide.gradient < 2) /* solid and linear */
+		{
+			slide.pl_start[0] = img->current_slide->g_start_point[0] * w;
+			slide.pl_start[1] = img->current_slide->g_start_point[1] * h;
+			slide.pl_stop[0]  = img->current_slide->g_stop_point[0] * w;
+			slide.pl_stop[1]  = img->current_slide->g_stop_point[1] * h;
+		}
+		else /* radial */
+		{
+			slide.pr_start[0] = img->current_slide->g_start_point[0] * w;
+			slide.pr_start[1] = img->current_slide->g_start_point[1] * h;
+			slide.pr_stop[0]  = img->current_slide->g_stop_point[0] * w;
+			slide.pr_stop[1]  = img->current_slide->g_stop_point[1] * h;
+		}
+	}
 	dialog = gtk_dialog_new_with_buttons(
-					_("Create empty slide"),
+					GTK_WIDGET(item) == img->edit_empty_slide ? _("Edit empty slide") : _("Create empty slide"),
 					GTK_WINDOW( img->imagination_window ),
 					GTK_DIALOG_MODAL,
 					GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -2285,8 +2316,6 @@ img_add_empty_slide( GtkMenuItem       *item,
 	frame = gtk_frame_new( _("Preview") );
 	gtk_box_pack_start( GTK_BOX( hbox ), frame, TRUE, TRUE, 5 );
 
-	w = img->video_size[0] / 2;
-	h = img->video_size[1] / 2;
 	preview = gtk_drawing_area_new();
 	gtk_widget_set_size_request( preview, w, h );
 	gtk_widget_add_events( preview, GDK_BUTTON1_MOTION_MASK |
@@ -2322,7 +2351,11 @@ img_add_empty_slide( GtkMenuItem       *item,
 		slide_struct *slide_info;
 		GdkPixbuf    *thumb;
 
-		slide_info = img_create_new_slide();
+		if (GTK_WIDGET(item) == img->edit_empty_slide)
+			slide_info = img->current_slide;
+		else
+			slide_info = img_create_new_slide();
+
 		if( slide_info )
 		{
 			gdouble p_start[2],
@@ -2341,8 +2374,8 @@ img_add_empty_slide( GtkMenuItem       *item,
 			{
 				p_start[0] = slide.pr_start[0] / w;
 				p_start[1] = slide.pr_start[1] / h;
-				p_stop[0] = slide.pr_stop[0] / w;
-				p_stop[1] = slide.pr_stop[1] / h;
+				p_stop[0]  = slide.pr_stop[0]  / w;
+				p_stop[1]  = slide.pr_stop[1]  / h;
 			}
 
 			/* Update slide info */
@@ -2355,19 +2388,41 @@ img_add_empty_slide( GtkMenuItem       *item,
 								slide.c_start, slide.c_stop,
 								88, 49,
 								&thumb, NULL );
-										
-			/* Add slide to store */
-			where_to_insert	=	gtk_icon_view_get_selected_items(GTK_ICON_VIEW(img->active_icon));
+
+			/* Add slide to store if we are not editing it */
+			where_to_insert	= gtk_icon_view_get_selected_items(GTK_ICON_VIEW(img->active_icon));
 			if (where_to_insert)
 			{
 				pos = gtk_tree_path_get_indices(where_to_insert->data)[0]+1;
-				gtk_list_store_insert_with_values(img->thumbnail_model, &iter,
-												 pos,
-												 0, thumb,
-						 						 1, slide_info,
-						 						 2, NULL,
-						 						 3, FALSE,
-						 						-1 );
+				/* User chose "Add slide" rather than "Edit empty slide" */
+				if (GTK_WIDGET(item) != img->edit_empty_slide)
+				{
+					gtk_list_store_insert_with_values(img->thumbnail_model, &iter,
+													pos,
+													0, thumb,
+													1, slide_info,
+													2, NULL,
+													3, FALSE,
+													-1 );
+				}
+				else
+				{
+					/* Remove the current empty slide
+					 * to replace it with the updated one */
+					GtkTreeModel *model;
+					model =	GTK_TREE_MODEL( img->thumbnail_model );
+					gtk_tree_model_get_iter(model, &iter, where_to_insert->data);
+					gtk_list_store_remove(img->thumbnail_model, &iter);
+					gtk_list_store_insert_with_values(img->thumbnail_model, &iter,
+													pos - 1,
+													0, thumb,
+													1, slide_info,
+													2, NULL,
+													3, slide_info->subtitle ? TRUE : FALSE,
+													-1 );
+					gtk_icon_view_select_path (GTK_ICON_VIEW(img->thumbnail_iconview), where_to_insert->data);
+			
+				}
 				g_list_foreach (where_to_insert, (GFunc)gtk_tree_path_free, NULL);
 				g_list_free (where_to_insert);
 			}
@@ -2376,11 +2431,14 @@ img_add_empty_slide( GtkMenuItem       *item,
 				gtk_list_store_append( img->thumbnail_model, &iter );
 				gtk_list_store_set(img->thumbnail_model, &iter, 0, thumb, 1, slide_info, 2, NULL, 3, FALSE, -1 );
 			}
+				
+			if (GTK_WIDGET(item) != img->edit_empty_slide)
+			{
+				img->slides_nr++;
+				img_set_total_slideshow_duration( img );
+				img_select_nth_slide( img, img->slides_nr );
+			}
 			g_object_unref( G_OBJECT( thumb ) );
-			img->slides_nr++;
-			img_set_total_slideshow_duration( img );
-
-			img_select_nth_slide( img, img->slides_nr );
 		}
 	}
 	gtk_widget_destroy( dialog );
@@ -2468,10 +2526,10 @@ img_gradient_expose( GtkWidget      *widget,
 			/* Paint indicators */
 			cairo_rectangle( cr, slide->pl_start[0] - 7,
 								 slide->pl_start[1] - 7,
-								 15, 15 );
+								 8, 8 );
 			cairo_rectangle( cr, slide->pl_stop[0] - 7,
 								 slide->pl_stop[1] - 7,
-								 15, 15 );
+								 8, 8 );
 			cairo_set_source_rgb( cr, 0, 0, 0 );
 			cairo_stroke_preserve( cr );
 			cairo_set_source_rgb( cr, 1, 1, 1 );
@@ -2503,10 +2561,10 @@ img_gradient_expose( GtkWidget      *widget,
 			/* Paint indicators */
 			cairo_rectangle( cr, slide->pr_start[0] - 7,
 								 slide->pr_start[1] - 7,
-								 15, 15 );
+								 8, 8 );
 			cairo_rectangle( cr, slide->pr_stop[0] - 7,
 								 slide->pr_stop[1] - 7,
-								 15, 15 );
+								 8, 8 );
 			cairo_set_source_rgb( cr, 0, 0, 0 );
 			cairo_stroke_preserve( cr );
 			cairo_set_source_rgb( cr, 1, 1, 1 );
