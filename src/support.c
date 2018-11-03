@@ -572,109 +572,23 @@ img_set_slide_ken_burns_info( slide_struct *slide,
 }
 
 void
-img_set_slide_text_info( slide_struct      *slide,
-						 GtkListStore      *store,
-						 GtkTreeIter       *iter,
-						 const gchar       *subtitle,
-						 gint	            anim_id,
-						 gint               anim_duration,
-						 gint               position,
-						 gint               placing,
-						 const gchar       *font_desc,
-						 gdouble           *font_color,
-                         gdouble           *font_brdr_color,
-                         gdouble           *font_bg_color,
-						 img_window_struct *img )
-{
-	/* Set the slide text info parameters */
-	if( store && iter )
-	{
-		gboolean flag;
-
-		if( slide->subtitle )
-			g_free( slide->subtitle );
-		slide->subtitle = g_strdup( subtitle );
-
-		flag = ( subtitle ? TRUE : FALSE );
-		gtk_list_store_set( store, iter, 3, flag, -1 );
-	}
-
-	if( ( anim_id > -1 ) && ( anim_id != slide->anim_id ) )
-	{
-		GtkTreeModel *model;
-		gchar        *path;
-		GtkTreeIter   iter;
-
-		path = g_strdup_printf( "%d", anim_id );
-		model = gtk_combo_box_get_model( GTK_COMBO_BOX( img->sub_anim ) );
-		gtk_tree_model_get_iter_from_string( model, &iter, path );
-		g_free( path );
-
-		slide->anim_id = anim_id;
-		gtk_tree_model_get( model, &iter, 1, &slide->anim, -1 );
-
-		/* Sync timings */
-		img_sync_timings( slide, img );
-	}
-
-	if( ( anim_duration > 0 ) && ( anim_duration != slide->anim_duration ) )
-	{
-		slide->anim_duration = anim_duration;
-
-		/* Synchronize timings */
-		img_sync_timings( slide, img );
-	}
-
-	if( ( position > -1 ) && ( position != slide->position ) )
-		slide->position = position;
-
-	if( ( placing > -1 ) && ( placing != slide->placing ) )
-		slide->placing = placing;
-
-	if( font_desc )
-	{
-		if( slide->font_desc )
-			pango_font_description_free( slide->font_desc );
-		slide->font_desc = pango_font_description_from_string( font_desc );
-	}
-
-	if( font_color )
-	{
-		slide->font_color[0] = font_color[0];
-		slide->font_color[1] = font_color[1];
-		slide->font_color[2] = font_color[2];
-		slide->font_color[3] = font_color[3];
-	}
-
-    if( font_brdr_color )
-    {
-        slide->font_brdr_color[0] = font_brdr_color[0];
-        slide->font_brdr_color[1] = font_brdr_color[1];
-        slide->font_brdr_color[2] = font_brdr_color[2];
-        slide->font_brdr_color[3] = font_brdr_color[3];
-    }
-    
-    if( font_bg_color )
-    {
-        slide->font_bg_color[0] = font_bg_color[0];
-        slide->font_bg_color[1] = font_bg_color[1];
-        slide->font_bg_color[2] = font_bg_color[2];
-        slide->font_bg_color[3] = font_bg_color[3];
-    }
-}								
-
-void
 img_free_slide_struct( slide_struct *entry )
 {
 	GList *tmp;
 
 	if( entry->angle != ANGLE_0 )
 		g_unlink( entry->r_filename );
+
 	g_free(entry->o_filename);
 	g_free(entry->r_filename);
     g_free(entry->original_filename);
 	g_free(entry->resolution);
 	g_free(entry->type);
+	
+	if (entry->subtitle)
+		g_free(entry->subtitle);
+	if (entry->pattern_filename)
+		g_free(entry->pattern_filename);
 	
 	/* Free stop point list */
 	for( tmp = entry->points; tmp; tmp = g_list_next( tmp ) )
@@ -1192,4 +1106,29 @@ img_check_for_encoder(img_window_struct *img)
 		img_message(img, TRUE, "Using ffmpeg for encoding.\n");
 		img->encoder_name = name;
 	} 
+}
+
+void img_delete_subtitle_pattern(GtkButton *button, img_window_struct *img)
+{
+	slide_struct 	*slide = img->current_slide;
+	GdkPixbuf 		*pixbuf;
+	GtkWidget		*tmp_image,*fc;
+	GtkIconTheme	*icon_theme;
+
+	if (slide->pattern_filename)
+	{
+		g_free(slide->pattern_filename);
+		slide->pattern_filename = NULL;
+	}
+	icon_theme = gtk_icon_theme_get_default();
+	pixbuf = gtk_icon_theme_load_icon(icon_theme,"image", 20, 0, NULL);
+	tmp_image = gtk_image_new_from_pixbuf(pixbuf);
+	gtk_widget_show(tmp_image);
+	g_object_unref(pixbuf);
+	
+	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(img->pattern_image), tmp_image);
+
+	fc = gtk_widget_get_toplevel(GTK_WIDGET(button));
+	gtk_widget_destroy(fc);
+	gtk_widget_queue_draw( img->image_area );
 }

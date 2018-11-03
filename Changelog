@@ -1,6 +1,7 @@
 Imagination changelog
 
-xx/xx/19 - 3.x		- Empty slide background can now be edited. 
+xx/xx/19 - 3.x		- Subtitle can now have a pattern.
+			- Empty slide background can now be edited. 
 			- Added optional background to the slide subtitle. 
 			- Got rid of Update button in the Slide Motion as it's now automatic.
 			- Moved Add and Remove buttons in the Slide Motion on the right.

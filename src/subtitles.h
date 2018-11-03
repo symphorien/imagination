@@ -50,10 +50,28 @@ img_render_subtitle( cairo_t              *cr,
 					 gdouble               offx,
 					 gdouble               offy,
 					 gchar                *subtitle,
+					 gchar                *pattern_filename,
 					 PangoFontDescription *font_desc,
 					 gdouble              *font_color,
 					 gdouble              *font_brdr_color,
                      gdouble              *font_bg_color,
 					 TextAnimationFunc     func,
 					 gdouble               progress );
+
+void
+img_set_slide_text_info( slide_struct      *slide,
+						 GtkListStore      *store,
+						 GtkTreeIter       *iter,
+						 const gchar       *subtitle,
+						 gchar		       *pattern_filename,
+						 gint	            anim_id,
+						 gint               anim_duration,
+						 gint               position,
+						 gint               placing,
+						 const gchar       *font_desc,
+						 gdouble           *font_color,
+                         gdouble           *font_brdr_color,
+                         gdouble           *font_bgcolor,
+						 img_window_struct *img );
+
 #endif

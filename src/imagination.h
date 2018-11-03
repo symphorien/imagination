@@ -103,6 +103,7 @@ typedef void (*TextAnimationFunc)( cairo_t     *cr,
 								   gint         lh,
 								   gint         posx,
 								   gint         posy,
+								   gchar		*pattern_filename,
 								   gdouble      progress,
 								   gdouble     *font_color,
 								   gdouble     *font_brdr_color,
@@ -183,6 +184,7 @@ struct _slide_struct
 
 	/* Subtitle variables */
 	gchar                *subtitle;        /* Subtitle text */
+	gchar			 	 *pattern_filename;/* Pattern image file */
 	TextAnimationFunc     anim;            /* Animation functions */
 	gint                  anim_id;         /* Animation id */
 	gint                  anim_duration;   /* Duration of animation */
@@ -263,6 +265,7 @@ struct _img_window_struct
 	GtkWidget *sub_color;         /* Font color selector button */
     GtkWidget *sub_brdr_color;    /* Border font color selector button */
     GtkWidget *sub_bgcolor;       /* Background font color selector button */
+    GtkWidget *pattern_image;	  /* Font Pattern */
 	GtkWidget *sub_anim;          /* Animation combo box */
 	GtkWidget *sub_anim_duration; /* Animation duration spin button */
 	GtkWidget *sub_placing;       /* Placing combo box */

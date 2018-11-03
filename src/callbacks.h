@@ -150,4 +150,7 @@ img_notebook_switch_page (GtkNotebook       *notebook,
                           guint              page_num,
                           img_window_struct *img);
 
+void
+img_pattern_clicked(GtkMenuItem *item,
+					img_window_struct *img);
 #endif

@@ -1242,13 +1242,14 @@ img_on_expose_event( GtkWidget         *widget,
 								 img->current_point.offx,
 								 img->current_point.offy,
 								 img->current_slide->subtitle,
+								 img->current_slide->pattern_filename,
 								 img->current_slide->font_desc,
 								 img->current_slide->font_color,
                                  img->current_slide->font_brdr_color,
                                  img->current_slide->font_bg_color,
 								 img->current_slide->anim,
 								 1.0 );
-		
+
 		cairo_destroy( cr );
 	}
 
@@ -1961,9 +1962,12 @@ img_update_stop_display( img_window_struct *img,
 void
 img_update_subtitles_widgets( img_window_struct *img )
 {
-	gchar       *string;
-	GdkColor     color;
-	gdouble     *f_colors;
+	gchar       	*string;
+	GdkColor     	color;
+	gdouble     	*f_colors;
+	GtkWidget		*tmp_image;
+	GdkPixbuf		*pattern_pix;
+	GtkIconTheme	*icon_theme;
 
 	/* Block all handlers */
 	g_signal_handlers_block_by_func( img->slide_text_buffer,
@@ -1989,6 +1993,19 @@ img_update_subtitles_widgets( img_window_struct *img )
 			   img->current_slide->subtitle :
 			   "" );
 	g_object_set( G_OBJECT( img->slide_text_buffer ), "text", string, NULL );
+
+	/* Update text pattern */
+	if (img->current_slide->pattern_filename)
+		pattern_pix = gdk_pixbuf_new_from_file_at_scale( img->current_slide->pattern_filename, 32, 32, TRUE, NULL);
+	else
+	{
+		icon_theme = gtk_icon_theme_get_default();
+		pattern_pix = gtk_icon_theme_load_icon(icon_theme,"image", 20, 0, NULL);
+	}
+	tmp_image = gtk_image_new_from_pixbuf(pattern_pix);
+	gtk_widget_show(tmp_image);
+	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(img->pattern_image), tmp_image);
+	g_object_unref(pattern_pix);
 
 	/* Update font button */
 	string = pango_font_description_to_string(img->current_slide->font_desc);	
@@ -2022,6 +2039,10 @@ img_update_subtitles_widgets( img_window_struct *img )
     gtk_color_button_set_alpha( GTK_COLOR_BUTTON( img->sub_bgcolor ),
                                 (gint)(f_colors[3] * 0xffff ) );
 
+	/* Update text pattern */
+	if (img->current_slide->pattern_filename)
+	{
+	}
 	/* Update animation */
 	gtk_combo_box_set_active( GTK_COMBO_BOX( img->sub_anim ),
 							  img->current_slide->anim_id );
@@ -2862,4 +2883,78 @@ img_notebook_switch_page (GtkNotebook       *notebook,
         gtk_label_set_attributes(GTK_LABEL(img->message_label), pango_list);
         pango_attr_list_unref (pango_list);
     }
+}
+
+void
+img_pattern_clicked(GtkMenuItem *item,
+					img_window_struct *img)
+{
+	GtkWidget		*fc;
+	GtkWidget		*tmp_image;
+	gchar			*filename;
+	gint			response;
+	GtkFileFilter	*png_filter;
+	GError			*error = NULL;
+	GdkPixbuf		*pattern_pix;
+
+	fc = gtk_file_chooser_dialog_new (_("Please choose a PNG file"),
+							GTK_WINDOW (img->imagination_window),
+							GTK_FILE_CHOOSER_ACTION_OPEN,
+							GTK_STOCK_CANCEL,
+							GTK_RESPONSE_CANCEL,
+							GTK_STOCK_OPEN,
+							GTK_RESPONSE_ACCEPT,
+							NULL);
+
+	if (img->project_current_dir)
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fc),img->project_current_dir);
+
+	/* Image files filter */
+	png_filter = gtk_file_filter_new ();
+	gtk_file_filter_set_name(png_filter,_("PNG files"));
+	gtk_file_filter_add_pattern( png_filter, "*.png" );
+	gtk_file_filter_add_pattern( png_filter, "*.PNG" );
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(fc),png_filter);
+
+	/* Set the delete pattern button */
+	GtkWidget *box = gtk_hbox_new (TRUE, 0);
+	GtkWidget *delete_pattern = gtk_button_new_with_mnemonic(_("Delete current pattern"));
+	gtk_box_pack_start (GTK_BOX (box), delete_pattern, FALSE, FALSE, 0);
+	gtk_widget_show(delete_pattern);
+	g_signal_connect (delete_pattern, "clicked", G_CALLBACK (img_delete_subtitle_pattern), img);
+	gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER(fc), box );
+
+	response = gtk_dialog_run (GTK_DIALOG (fc));
+	if (response == GTK_RESPONSE_ACCEPT)
+	{
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fc));
+		if( ! filename )
+		{
+			gtk_widget_destroy(fc);
+			return;
+		}
+		if ( (img->current_slide)->pattern_filename)
+			g_free( ( img->current_slide )->pattern_filename);
+
+		(img->current_slide)->pattern_filename = g_strdup(filename);
+		pattern_pix = gdk_pixbuf_new_from_file_at_scale( filename, 32, 32, TRUE, &error);
+		g_free(filename);
+		if (! pattern_pix)
+		{
+			img_message(img, TRUE, error->message);
+			g_error_free(error);
+			gtk_widget_destroy(fc);
+			return;
+		}
+		/* Swap the current image button
+		 * with the loaded one */
+		tmp_image = gtk_image_new_from_pixbuf(pattern_pix);
+		gtk_widget_show(tmp_image);
+		gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(img->pattern_image), tmp_image);
+
+		//img_set_slide_subtitle_pattern(img, pattern_pix);
+		g_object_unref(pattern_pix); 
+	}
+	if (GTK_IS_WIDGET(fc))
+		gtk_widget_destroy(fc);
 }

@@ -137,11 +137,10 @@ img_save_slideshow( img_window_struct *img,
 		}
 
 		/* Subtitle */
-		/* EXPLANATION: Only facultative field here is subtitle text, since user
-		 * may have set other text properties on slide and we would let them out
-		 * if we only save slides with text present. */
 		if( entry->subtitle )
 			g_key_file_set_string (img_key_file, conf,"text",			entry->subtitle);
+		if( entry->pattern_filename )
+			g_key_file_set_string (img_key_file, conf,"pattern filename",			entry->pattern_filename);
 
 		font_desc = pango_font_description_to_string(entry->font_desc);
 		g_key_file_set_integer(img_key_file,conf, "anim id",		entry->anim_id);
@@ -340,17 +339,16 @@ img_load_slideshow( img_window_struct *img,
 	gtk_icon_view_set_model( GTK_ICON_VIEW( img->over_icon ), NULL );
 
 
-	gchar *subtitle = NULL, *font_desc;
-		gdouble *my_points = NULL, *p_start, *p_stop, *c_start, *c_stop;
-		gsize length;
-		gint anim_id,anim_duration, text_pos, placing, gradient;
-		GdkPixbuf *pix = NULL;
-        gboolean      load_ok, img_load_ok;
-        gchar *original_filename = NULL;
-        GtkIconTheme *icon_theme;
-        GtkIconInfo  *icon_info;
-        const gchar  *icon_filename;
-		ImgAngle   angle = 0;
+	gchar *subtitle = NULL, *pattern_name = NULL, *font_desc;
+	gdouble *my_points = NULL, *p_start, *p_stop, *c_start, *c_stop;
+	gsize length;		gint anim_id,anim_duration, text_pos, placing, gradient;
+	GdkPixbuf *pix = NULL;
+    gboolean      load_ok, img_load_ok;
+	gchar *original_filename = NULL;
+	GtkIconTheme *icon_theme;
+	GtkIconInfo  *icon_info;
+	const gchar  *icon_filename;
+	ImgAngle   angle = 0;
 	
 		/* Load last slide setting (bye bye transition) */
 		img->bye_bye_transition = g_key_file_get_boolean( img_key_file, "slideshow settings",
@@ -438,6 +436,7 @@ img_load_slideshow( img_window_struct *img,
 
 				/* Load the slide text related data */
 				subtitle	  =	g_key_file_get_string (img_key_file, conf, "text",	NULL);
+				pattern_name  =	g_key_file_get_string (img_key_file, conf, "pattern filename",	NULL);
 				anim_id 	  = g_key_file_get_integer(img_key_file, conf, "anim id", 		NULL);
 				anim_duration = g_key_file_get_integer(img_key_file, conf, "anim duration",	NULL);
 				text_pos      = g_key_file_get_integer(img_key_file, conf, "text pos",		NULL);
@@ -502,7 +501,7 @@ img_load_slideshow( img_window_struct *img,
 
 					/* Set subtitle */
 					img_set_slide_text_info( slide_info, img->thumbnail_model,
-											 &iter, subtitle, anim_id,
+											 &iter, subtitle, pattern_name, anim_id,
 											 anim_duration, text_pos, placing,
 											 font_desc, font_color, font_brdr_color, font_bg_color, img );
 

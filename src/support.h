@@ -54,6 +54,7 @@ void img_set_statusbar_message(img_window_struct *, gint);
 void img_load_available_transitions(img_window_struct *);
 void img_show_file_chooser(GtkWidget *, GtkEntryIconPosition, int, img_window_struct *);
 void img_select_nth_slide(img_window_struct *, gint);
+void img_delete_subtitle_pattern(GtkButton *button, img_window_struct *img);
 
 slide_struct *
 img_create_new_slide( void );
@@ -91,21 +92,6 @@ img_set_slide_ken_burns_info( slide_struct *slide,
 							  gint          cur_point,
 							  gsize         length,
 							  gdouble      *points );
-
-void
-img_set_slide_text_info( slide_struct      *slide,
-						 GtkListStore      *store,
-						 GtkTreeIter       *iter,
-						 const gchar       *subtitle,
-						 gint	            anim_id,
-						 gint               anim_duration,
-						 gint               position,
-						 gint               placing,
-						 const gchar       *font_desc,
-						 gdouble           *font_color,
-                         gdouble           *font_brdr_color,
-                         gdouble           *font_bgcolor,
-						 img_window_struct *img );
 
 void img_free_slide_struct( slide_struct * );
 

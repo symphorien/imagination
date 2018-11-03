@@ -944,7 +944,7 @@ img_window_struct *img_create_window (void)
     g_signal_connect( G_OBJECT( img_struct->sub_brdr_color ), "color-set",
                       G_CALLBACK( img_font_brdr_color_changed ), img_struct );
     gtk_box_pack_start( GTK_BOX( text_animation_hbox ), img_struct->sub_brdr_color, FALSE, FALSE, 0 );
-    gtk_widget_set_tooltip_text(img_struct->sub_brdr_color, _("Click to choose the font border color"));
+    gtk_widget_set_tooltip_text(img_struct->sub_brdr_color, _("Click to choose the font border color. If the opacity value is set to 0, Imagination will not render any border."));
 
 	img_struct->sub_bgcolor = gtk_color_button_new();
 	gtk_color_button_set_use_alpha( GTK_COLOR_BUTTON( img_struct->sub_bgcolor ), TRUE );
@@ -953,11 +953,28 @@ img_window_struct *img_create_window (void)
                       G_CALLBACK( img_font_bg_color_changed ), img_struct );
     gtk_box_pack_start( GTK_BOX( text_animation_hbox ), img_struct->sub_bgcolor, FALSE, FALSE, 0 );
 	gtk_widget_set_tooltip_text(img_struct->sub_bgcolor, _("Click to choose the font background color. If the opacity value is set to 0, Imagination will not render any background."));
+
+	gtk_widget_set_size_request(img_struct->sub_color, 35, -1);
+	gtk_widget_set_size_request(img_struct->sub_brdr_color, 35, -1);
+	gtk_widget_set_size_request(img_struct->sub_bgcolor, 35, -1);
 	
-	gtk_widget_set_size_request(img_struct->sub_color,35,15);
-	gtk_widget_set_size_request(img_struct->sub_brdr_color,35,15);
-	gtk_widget_set_size_request(img_struct->sub_bgcolor,35,15);
-	
+	a_hbox = gtk_hbox_new(FALSE, 6);
+	gtk_box_pack_start (GTK_BOX (vbox_slide_caption), a_hbox, FALSE, FALSE, 0);
+	a_label = gtk_label_new(_("Text pattern:"));
+	gtk_misc_set_alignment(GTK_MISC(a_label), 0.0, 0.5);
+	gtk_box_pack_start (GTK_BOX (a_hbox), a_label, TRUE, TRUE, 0);
+
+	pixbuf = gtk_icon_theme_load_icon(icon_theme,"image", 20, 0, NULL);
+	tmp_image = gtk_image_new_from_pixbuf(pixbuf);
+	g_object_unref(pixbuf);
+
+	img_struct->pattern_image = GTK_WIDGET (gtk_tool_button_new (tmp_image,""));
+	gtk_box_pack_start (GTK_BOX (a_hbox), img_struct->pattern_image, FALSE, FALSE, 0);
+	gtk_widget_set_tooltip_text(img_struct->pattern_image, _("Click to choose the text pattern") );
+	g_signal_connect (	G_OBJECT (img_struct->pattern_image), "clicked",
+						G_CALLBACK (img_pattern_clicked), img_struct);
+	gtk_widget_set_size_request(img_struct->pattern_image, 32, 32);
+
 	a_hbox = gtk_hbox_new(FALSE, 6);
 	gtk_box_pack_start (GTK_BOX (vbox_slide_caption), a_hbox, FALSE, FALSE, 0);
 	a_label = gtk_label_new(_("Animation:"));
@@ -2519,7 +2536,7 @@ img_update_sub_properties( img_window_struct *img,
 		gtk_tree_model_get_iter( model, &iter, (GtkTreePath *)tmp->data );
 		gtk_tree_model_get( model, &iter, 1, &slide, -1 );
 		
-		img_set_slide_text_info( slide, NULL, NULL, NULL,
+		img_set_slide_text_info( slide, NULL, NULL, NULL, NULL,
 								 anim_id, anim_duration, position,
 								 placing, desc, color, brdr_color, bg_color, img );
 	}
