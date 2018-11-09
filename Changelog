@@ -1,6 +1,7 @@
 Imagination changelog
 
-xx/xx/19 - 3.x		- Subtitle can now have a pattern.
+xx/xx/19 - 3.x		- The CTRL+A shortcut doesn't select all the slides anymore when pressed from the subtitle widget entry.
+			- Subtitles can now have a pattern.
 			- Empty slide background can now be edited. 
 			- Added optional background to the slide subtitle. 
 			- Got rid of Update button in the Slide Motion as it's now automatic.

@@ -214,6 +214,7 @@ struct _img_window_struct
 	GtkWidget	*paste;
 	GtkWidget	*edit_empty_slide;
 	GtkWidget	*remove_menu;
+	GtkWidget	*select_all_menu;
 	GtkWidget	*report_menu;
 	GtkWidget	*preview_menu;
 	GtkWidget 	*preview_button;

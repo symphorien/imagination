@@ -221,7 +221,9 @@ struct video_format video_format_list[] = {
     /* ffmpeg options for x264 thanks to David Gnedt */
     {gettext_noop("H.264/MPEG-4 AVC"), "x264",
         "-vcodec libx264 -crf 21 " /* FIXME -crf should be in a "Quality" option that also includes bitrate */
-        "-acodec libmp3lame -ac 2 -ar 44100 -b:a 128k",
+        "-pix_fmt yuv420p "
+		"-movflags +faststart "
+        "-acodec libmp3lame -ac 2 -ar 44100 -b:a 128k ",
         x264_size_list,
         aspect_ratio_list,
         x264_bitrate_list,

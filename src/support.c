@@ -1075,7 +1075,7 @@ img_message (img_window_struct *img,
         gtk_text_buffer_insert(img->message_buffer, &message_end,
                                parsed_message, -1);
 
-        printf (parsed_message);
+        printf ("%s",parsed_message);
 
         free(parsed_message);
 
@@ -1127,7 +1127,8 @@ void img_delete_subtitle_pattern(GtkButton *button, img_window_struct *img)
 	g_object_unref(pixbuf);
 	
 	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(img->pattern_image), tmp_image);
-
+	gtk_widget_set_sensitive(img->sub_color, TRUE);
+	
 	fc = gtk_widget_get_toplevel(GTK_WIDGET(button));
 	gtk_widget_destroy(fc);
 	gtk_widget_queue_draw( img->image_area );

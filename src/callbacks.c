@@ -860,7 +860,7 @@ void img_start_stop_preview(GtkWidget *button, img_window_struct *img)
 		/* Clean resources used by preview and prepare application for
 		 * next preview. */
 		img_clean_after_preview(img);
-		
+
 		/* Unselect the last selected item during the preview */
 		GList *list;
 		list = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(img->thumbnail_iconview));
@@ -875,10 +875,8 @@ void img_start_stop_preview(GtkWidget *button, img_window_struct *img)
 		/*  Reselect the first selected slide before the preview if any */
 		if (img->first_selected_path)
 		{
-			g_signal_handlers_block_by_func((gpointer)img->thumbnail_iconview, (gpointer)img_iconview_selection_changed, img);
 			gtk_icon_view_select_path (GTK_ICON_VIEW(img->thumbnail_iconview), img->first_selected_path);
 			gtk_icon_view_scroll_to_path(GTK_ICON_VIEW(img->thumbnail_iconview), img->first_selected_path, FALSE, 0.0, 0.0);
-			g_signal_handlers_unblock_by_func((gpointer)img->thumbnail_iconview, (gpointer)img_iconview_selection_changed, img);
 		}
 	}
 	else
@@ -1630,7 +1628,7 @@ img_ken_burns_zoom_changed( GtkRange          *range,
 		img->current_point.offx = CLAMP( tmpoffx, img->maxoffx, 0 );
 		img->current_point.offy = CLAMP( tmpoffy, img->maxoffy, 0 );
 	}
-	img_update_stop_point(NULL, img);
+
 	gtk_widget_queue_draw( img->image_area );
 }
 
@@ -1659,6 +1657,15 @@ img_image_area_button_press( GtkWidget         *widget,
 	img->bak_offy = img->current_point.offy;
 
 	return( TRUE );
+}
+
+gboolean
+img_image_area_button_release(	GtkWidget			*widget,
+								GdkEventButton		*event,
+								img_window_struct 	*img)
+{
+	img_update_stop_point(NULL, img);
+	return (TRUE);
 }
 
 /*
@@ -1906,6 +1913,7 @@ img_update_stop_display( img_window_struct *img,
 	/* Set slide duration */
 	full = img_calc_slide_duration_points( img->current_slide->points,
 										   img->current_slide->no_points );
+
 	if( ! full )
 		full = img->current_slide->duration;
 	gtk_spin_button_set_value( GTK_SPIN_BUTTON( img->duration ), full );
@@ -2039,10 +2047,6 @@ img_update_subtitles_widgets( img_window_struct *img )
     gtk_color_button_set_alpha( GTK_COLOR_BUTTON( img->sub_bgcolor ),
                                 (gint)(f_colors[3] * 0xffff ) );
 
-	/* Update text pattern */
-	if (img->current_slide->pattern_filename)
-	{
-	}
 	/* Update animation */
 	gtk_combo_box_set_active( GTK_COMBO_BOX( img->sub_anim ),
 							  img->current_slide->anim_id );
@@ -2168,14 +2172,13 @@ void img_clipboard_cut_copy_operation(img_window_struct *img, ImgClipboardMode m
 		{ "application/imagination-info-list", 0, 0 }
 	};
 
-	selected =
-		gtk_icon_view_get_selected_items(GTK_ICON_VIEW(img->active_icon));
+	selected = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(img->active_icon));
 	if (selected == NULL)
 		return;
 
 	img_clipboard = gtk_clipboard_get (IMG_CLIPBOARD);
 
-	/* Let's delete the GList if the user selechooses Cut/Copy again instead of Paste */
+	/* Let's delete the GList if the user chooses Cut/Copy again instead of Paste */
 	if (img->selected_paths)
 	{
 		g_list_foreach (img->selected_paths, (GFunc)gtk_tree_path_free, NULL);
@@ -2951,9 +2954,11 @@ img_pattern_clicked(GtkMenuItem *item,
 		tmp_image = gtk_image_new_from_pixbuf(pattern_pix);
 		gtk_widget_show(tmp_image);
 		gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(img->pattern_image), tmp_image);
+	
+		gtk_widget_set_sensitive(img->sub_color, FALSE);
 
-		//img_set_slide_subtitle_pattern(img, pattern_pix);
-		g_object_unref(pattern_pix); 
+		if (pattern_pix)
+			g_object_unref(pattern_pix); 
 	}
 	if (GTK_IS_WIDGET(fc))
 		gtk_widget_destroy(fc);

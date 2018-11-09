@@ -117,7 +117,7 @@ img_text_from_bottom( cairo_t     *cr,
   					  gint         lh,
   					  gint         posx,
   					  gint         posy,
-  					  gchar		*pattern_filename,
+  					  gchar			*pattern_filename,
   					  gdouble      progress,
                       gdouble     *font_color,
                       gdouble     *font_brdr_color,
@@ -167,8 +167,7 @@ img_text_right_to_left( cairo_t     *cr,
                     gdouble     *font_color,
                     gdouble     *font_brdr_color,
                     gdouble     *font_bgcolor);
-
-               
+                      
 /* ****************************************************************************
  * Function definitions
  * ************************************************************************* */
@@ -234,6 +233,7 @@ img_get_text_animation_list( TextAnimation **animations )
         list[i].name   = g_strdup( _("Slide bottom to top") );
         list[i].id     = i;
         list[i++].func = img_text_bottom_to_top;
+
         list[i].name   = g_strdup( _("Slide right to left") );
         list[i].id     = i;
         list[i++].func = img_text_right_to_left;
@@ -571,6 +571,7 @@ img_text_draw_layout( cairo_t     *cr,
                       gdouble     *font_brdr_color,
                       gdouble     *font_bg_color)
 {
+	cairo_pattern_t  *font_pattern = NULL;
     gint x,y,w,h;
 
 	/* Paint the background only if the user
@@ -609,12 +610,15 @@ img_text_draw_layout( cairo_t     *cr,
 	if (pattern_filename)
 	{
 		cairo_surface_t  *tmp_surf;
-		cairo_pattern_t  *font_pattern;
+		cairo_matrix_t	matrix;
 
 		tmp_surf = cairo_image_surface_create_from_png(pattern_filename);
 		font_pattern = cairo_pattern_create_for_surface(tmp_surf);
-		cairo_pattern_set_extend (font_pattern, CAIRO_EXTEND_REPEAT);
 		cairo_set_source(cr, font_pattern);
+		cairo_pattern_set_extend (font_pattern, CAIRO_EXTEND_REPEAT);
+
+		cairo_matrix_init_translate(&matrix, -posx, -posy);
+		cairo_pattern_set_matrix (font_pattern, &matrix);
 	}
 	else
 	{
@@ -626,7 +630,7 @@ img_text_draw_layout( cairo_t     *cr,
 								font_color[3] );
 	}
     /* Move to proper place and paint text */
-    cairo_move_to( cr, posx, posy );
+	cairo_move_to( cr, posx, posy );
 	pango_cairo_show_layout( cr, layout );
 }
 
