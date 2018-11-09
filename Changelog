@@ -1,6 +1,7 @@
 Imagination changelog
 
-xx/xx/19 - 3.x		- The CTRL+A shortcut doesn't select all the slides anymore when pressed from the subtitle widget entry.
+xx/xx/19 - 3.x		- Enjoy FULLSCREEN preview!!!
+			- The CTRL+A shortcut doesn't select all the slides anymore when pressed from the subtitle widget entry.
 			- Subtitles can now have a pattern.
 			- Empty slide background can now be edited. 
 			- Added optional background to the slide subtitle. 

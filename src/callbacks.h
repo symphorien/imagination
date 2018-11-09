@@ -44,6 +44,7 @@ img_rotate_slides_right( GtkWidget         *widget,
 						 img_window_struct *img );
 void img_show_about_dialog (GtkMenuItem *,img_window_struct *);
 void img_start_stop_preview(GtkWidget *, img_window_struct *);
+void img_start_fullscreen_preview(GtkWidget *, img_window_struct *);
 void img_goto_first_slide(GtkWidget *, img_window_struct *);
 void img_goto_prev_slide(GtkWidget *, img_window_struct *);
 void img_goto_next_slide(GtkWidget *, img_window_struct *);
@@ -58,6 +59,7 @@ void img_increase_progressbar(img_window_struct *, gint);
 GSList *img_import_slides_file_chooser(img_window_struct *);
 void img_free_allocated_memory(img_window_struct *);
 gint img_ask_user_confirmation(img_window_struct *, gchar *);
+gboolean img_check_escape_key_pressed(GtkWidget *, GdkEventKey *, img_window_struct *);
 gboolean img_quit_application(GtkWidget *, GdkEvent *, img_window_struct *);
 void img_move_audio_up( GtkButton *, img_window_struct * );
 void img_move_audio_down( GtkButton *, img_window_struct * );

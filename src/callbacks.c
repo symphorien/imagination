@@ -464,6 +464,25 @@ gint img_ask_user_confirmation(img_window_struct *img_struct, gchar *msg)
 	return response;
 }
 
+gboolean img_check_escape_key_pressed(GtkWidget *widget, GdkEventKey *event, img_window_struct *img)
+{
+	if ( (event->keyval == GDK_KEY_Escape || event->keyval == GDK_KEY_F11) &&
+			gdk_window_get_state(gtk_widget_get_window(img->imagination_window)) == 20)
+	{
+		gtk_widget_show(img->thumb_scrolledwindow);
+		gtk_widget_show(img->notebook);
+		gtk_widget_show(img->statusbar);
+		gtk_widget_show(img->menubar);
+		gtk_widget_show(img->toolbar);
+		gtk_alignment_set(GTK_ALIGNMENT(img->viewport_align), 0.5, 0.5, 0, 0);
+		gtk_widget_set_size_request( img->image_area,
+								 img->video_size[0] * img->image_area_zoom,
+								 img->video_size[1] * img->image_area_zoom );
+		gtk_window_unfullscreen(GTK_WINDOW(img->imagination_window));
+	}
+	return FALSE;
+}
+
 gboolean img_quit_application(GtkWidget *widget, GdkEvent *event, img_window_struct *img_struct)
 {
 	gint response;
@@ -833,6 +852,20 @@ static void img_about_dialog_activate_link(GtkAboutDialog * dialog, const gchar 
 {
 	/* Replace xdg-open with GTK+ equivalent */
 	gtk_show_uri( NULL, link, GDK_CURRENT_TIME, NULL );
+}
+
+void img_start_fullscreen_preview(GtkWidget *button, img_window_struct *img)
+{
+	gtk_widget_hide (img->thumb_scrolledwindow);
+	gtk_widget_hide (img->notebook);
+	gtk_widget_hide (img->statusbar);
+	gtk_widget_hide (img->menubar);
+	gtk_widget_hide (img->toolbar);
+	
+	gtk_alignment_set(GTK_ALIGNMENT(img->viewport_align), 0, 0, 1, 1);
+	gtk_widget_set_size_request(img->image_area, gdk_screen_width() - 15, gdk_screen_height() - 15);
+	gtk_window_fullscreen(GTK_WINDOW(img->imagination_window));
+	img_start_stop_preview(NULL, img);
 }
 
 void img_start_stop_preview(GtkWidget *button, img_window_struct *img)

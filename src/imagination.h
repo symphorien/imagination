@@ -200,7 +200,9 @@ typedef struct _img_window_struct img_window_struct;
 struct _img_window_struct
 {
 	/* Main GUI related variables */
-	GtkWidget	*imagination_window;	// Main window
+	GtkWidget	*imagination_window;
+	GtkWidget 	*menubar;
+	GtkWidget *toolbar;
 	GtkAccelGroup *accel_group;
 	GtkWidget	*open_menu;
     GtkWidget   *close_menu;
@@ -218,6 +220,7 @@ struct _img_window_struct
 	GtkWidget	*report_menu;
 	GtkWidget	*preview_menu;
 	GtkWidget 	*preview_button;
+	GtkWidget	*notebook;
 	GtkWidget	*menu_preview_mode;
 	GtkWidget	*menu_overview_mode;
 	GtkWidget	*transition_type;
@@ -230,9 +233,11 @@ struct _img_window_struct
 	GtkWidget	*scrolled_win;
 	GtkWidget	*expand_button;
 	GtkWidget   *text_pos_button;
+	GtkWidget 	*thumb_scrolledwindow;
   	GtkWidget	*thumbnail_iconview;
   	GtkWidget	*statusbar;
   	GtkWidget	*progress_bar;
+  	GtkWidget 	*viewport_align;
   	GtkWidget	*image_area;
   	guint		context_id;
   	GtkListStore *thumbnail_model;
