@@ -27,6 +27,7 @@
 #include "support.h"
 
 gchar *img_get_audio_length(img_window_struct *, gchar *, gint *);
+gchar *img_get_audio_filetype(gchar *);
 void img_play_stop_selected_file(GtkButton *, img_window_struct *);
 void output_message(unsigned , const char *, const char *, va_list ap);
 

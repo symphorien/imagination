@@ -19,9 +19,11 @@
  */
 
 #include "support.h"
+#include "audio.h"
 #include "video_formats.h"
 #include <glib/gstdio.h>
 
+extern gchar *img_get_audio_filetype(gchar *);
 static gboolean img_plugin_is_loaded(img_window_struct *, GModule *);
 
 GtkWidget *img_load_icon(gchar *filename, GtkIconSize size)
@@ -375,15 +377,14 @@ void img_show_file_chooser(GtkWidget *entry, GtkEntryIconPosition icon_pos,int b
         g_free(stripped_filename);
     }
     else
-    {
         proposed_filename = g_strjoin(NULL, "unknown", file_extention, NULL);
-    }
+ 
     gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER (file_selector), proposed_filename);
     g_free(proposed_filename);
 
     /* set current dir to the project current dir */
     if (img->project_current_dir)
-        gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(file_selector),img->project_current_dir);
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(file_selector),img->project_current_dir);
 
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER (file_selector),TRUE);
 	response = gtk_dialog_run (GTK_DIALOG(file_selector));
@@ -1132,4 +1133,90 @@ void img_delete_subtitle_pattern(GtkButton *button, img_window_struct *img)
 	fc = gtk_widget_get_toplevel(GTK_WIDGET(button));
 	gtk_widget_destroy(fc);
 	gtk_widget_queue_draw( img->image_area );
+}
+
+void img_preview_with_music(img_window_struct *img)
+{
+	GtkTreeModel *model;
+	GtkTreeIter iter;
+	gchar	*cmd_line, *path, *filename, *file;
+	gchar 	**argv;
+	gint argc;
+	gboolean ret;
+
+	model = gtk_tree_view_get_model( GTK_TREE_VIEW( img->music_file_treeview ) );
+	if( ! gtk_tree_model_get_iter_first( model, &iter ) )
+		return;
+
+	gtk_tree_model_get(GTK_TREE_MODEL(img->music_file_liststore), &iter, 0, &path, 1, &filename, -1);
+
+	file = g_build_filename(path, filename, NULL);
+	g_free(path);
+	g_free(filename);
+
+	path = g_shell_quote( file );
+
+	cmd_line = g_strdup_printf("play -t %s %s", img_get_audio_filetype(file), path);
+	g_free( path );
+	g_free( file );
+
+	g_shell_parse_argv (cmd_line, &argc, &argv, NULL);
+
+	ret = g_spawn_async_with_pipes( NULL, argv, NULL,
+									G_SPAWN_SEARCH_PATH | 
+									G_SPAWN_DO_NOT_REAP_CHILD |
+									G_SPAWN_STDOUT_TO_DEV_NULL |
+									G_SPAWN_STDERR_TO_DEV_NULL,
+									NULL, NULL, &img->play_child_pid, NULL, NULL, NULL, NULL );
+
+	/* Free argument vector */
+	g_strfreev( argv );
+	
+	/* Let's connect a callback when the first audio file playing ends
+	 * and if there is another audio to be reproduced */
+	if ( ret && gtk_tree_model_iter_next( model, &iter) )
+    {
+		img->next_audio_iter = iter;
+		img->audio_source_id = g_child_watch_add(img->play_child_pid, (GChildWatchFunc) img_play_next_audio_during_fullscreen_preview, img);
+	}
+
+}
+
+void img_play_next_audio_during_fullscreen_preview (GPid pid, gint status, img_window_struct *img)
+{
+	GtkTreeModel *model;
+	gchar	*cmd_line, *path, *filename, *file;
+	gchar 	**argv;
+	gint argc;
+	gboolean ret;
+
+	g_spawn_close_pid( img->play_child_pid );
+	kill (img->play_child_pid, SIGINT);
+
+	gtk_tree_model_get(GTK_TREE_MODEL(img->music_file_liststore), &img->next_audio_iter, 0, &path, 1, &filename, -1);
+
+	file = g_build_filename(path, filename, NULL);
+	g_free(path);
+	g_free(filename);
+
+	path = g_shell_quote( file );
+
+	cmd_line = g_strdup_printf("play -t %s %s", img_get_audio_filetype(file), path);
+	g_free( path );
+	g_free( file );
+
+	g_shell_parse_argv (cmd_line, &argc, &argv, NULL);
+
+	ret = g_spawn_async_with_pipes( NULL, argv, NULL,
+									G_SPAWN_SEARCH_PATH | 
+									G_SPAWN_DO_NOT_REAP_CHILD |
+									G_SPAWN_STDOUT_TO_DEV_NULL |
+									G_SPAWN_STDERR_TO_DEV_NULL,
+									NULL, NULL, &img->play_child_pid, NULL, NULL, NULL, NULL );
+	
+	model = gtk_tree_view_get_model( GTK_TREE_VIEW( img->music_file_treeview ) );
+	
+	if (ret && img->fullscrn_music_preview &&
+			gtk_tree_model_iter_next( model, &img->next_audio_iter ) )
+		img->audio_source_id = g_child_watch_add(img->play_child_pid, (GChildWatchFunc) img_play_next_audio_during_fullscreen_preview, img);
 }

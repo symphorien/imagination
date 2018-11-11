@@ -19,11 +19,10 @@
 
 #include "audio.h"
 
-static gchar *img_get_audio_filetype(gchar *);
 static void img_play_audio_ended (GPid ,gint ,img_window_struct *);
 static void img_swap_audio_files_button(img_window_struct *, gboolean );
 
-static gchar *img_get_audio_filetype(gchar *filename)
+gchar *img_get_audio_filetype(gchar *filename)
 {
 	if (g_str_has_suffix(filename, ".mp3") || g_str_has_suffix(filename, ".MP3"))
 		return "mp3";

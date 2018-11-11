@@ -101,11 +101,11 @@ img_window_struct *img_create_window (void)
 	img_window_struct *img_struct = NULL;
 	GtkWidget *vbox1;
 	GtkWidget *menuitem1;
+	GtkWidget *menuitem2;
 	GtkWidget *menu1;
 	GtkWidget *imagemenuitem1;
 	GtkWidget *imagemenuitem5;
 	GtkWidget *separatormenuitem1;
-	GtkWidget *menuitem2;
 	GtkWidget *slide_menu;
 	GtkWidget *separator_slide_menu;
 	GtkWidget *image_menu;
@@ -264,7 +264,7 @@ img_window_struct *img_create_window (void)
 	gtk_widget_add_accelerator (import_menu,"activate",img_struct->accel_group,GDK_i,GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
 	g_signal_connect (G_OBJECT (import_menu),"activate",G_CALLBACK (img_add_slides_thumbnails),img_struct);
 
-	pixbuf = gtk_icon_theme_load_icon(icon_theme,"image", 18, 0, NULL);
+	pixbuf = gtk_icon_theme_load_icon(icon_theme,"image", 16, 0, NULL);
 	image_menu = gtk_image_new_from_pixbuf(pixbuf);
 	g_object_unref(pixbuf);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (import_menu),image_menu);
@@ -274,7 +274,7 @@ img_window_struct *img_create_window (void)
 	gtk_widget_add_accelerator (import_audio_menu,"activate",img_struct->accel_group,GDK_m,GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
 	g_signal_connect (G_OBJECT (import_audio_menu),"activate",G_CALLBACK (img_select_audio_files_to_add),img_struct);
 
-	pixbuf = gtk_icon_theme_load_icon(icon_theme,"sound", 18, 0, NULL);
+	pixbuf = gtk_icon_theme_load_icon(icon_theme,"sound", 16, 0, NULL);
 	image_menu = gtk_image_new_from_pixbuf(pixbuf);
 	g_object_unref(pixbuf);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (import_audio_menu),image_menu);
@@ -286,25 +286,48 @@ img_window_struct *img_create_window (void)
 	separatormenuitem1 = gtk_separator_menu_item_new ();
 	gtk_container_add (GTK_CONTAINER (menu1), separatormenuitem1);
 
-
-	fullscreen_preview = gtk_image_menu_item_new_with_mnemonic (_("_Fullscreen Preview"));
-	gtk_container_add (GTK_CONTAINER (menu1), fullscreen_preview);
-	gtk_widget_add_accelerator (fullscreen_preview, "activate",img_struct->accel_group,GDK_p,GDK_SHIFT_MASK|GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
-	g_signal_connect (G_OBJECT (fullscreen_preview),"activate",G_CALLBACK (img_start_fullscreen_preview),img_struct);
-
+	fullscreen_preview = gtk_image_menu_item_new_with_mnemonic (_("Fullscreen preview"));
+	gtk_menu_shell_append( GTK_MENU_SHELL( menu1 ), fullscreen_preview );
 	tmp_image = gtk_image_new_from_stock (GTK_STOCK_FULLSCREEN,GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (fullscreen_preview),tmp_image);
 	
-	img_struct->preview_menu = gtk_image_menu_item_new_with_mnemonic (_("_Preview"));
-	gtk_container_add (GTK_CONTAINER (menu1), img_struct->preview_menu);
-	gtk_widget_add_accelerator (img_struct->preview_menu, "activate",img_struct->accel_group,GDK_p,GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
-	g_signal_connect (G_OBJECT (img_struct->preview_menu),"activate",G_CALLBACK (img_start_stop_preview),img_struct);
+	menu3 = gtk_menu_new ();
+	gtk_menu_item_set_submenu (GTK_MENU_ITEM (fullscreen_preview), menu3);
 
+	img_struct->fullscreen_music_preview = gtk_image_menu_item_new_with_mnemonic(_("With music") );
+	pixbuf = gtk_icon_theme_load_icon(icon_theme,"sound", 16, 0, NULL);
+	image_menu = gtk_image_new_from_pixbuf(pixbuf);
+	g_object_unref(pixbuf);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (img_struct->fullscreen_music_preview),image_menu);
+	gtk_widget_add_accelerator (img_struct->fullscreen_music_preview, "activate",img_struct->accel_group,GDK_m,GDK_SHIFT_MASK|GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
+	g_signal_connect (G_OBJECT (img_struct->fullscreen_music_preview),"activate",G_CALLBACK (img_start_fullscreen_preview),img_struct);
+	gtk_menu_shell_append( GTK_MENU_SHELL( menu3 ), img_struct->fullscreen_music_preview );
+	
+	img_struct->fullscreen_no_music = gtk_image_menu_item_new_with_mnemonic(_("Without music") );
+	tmp_image = gtk_image_new_from_stock (GTK_STOCK_FULLSCREEN,GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (img_struct->fullscreen_no_music),tmp_image);
+	gtk_widget_add_accelerator (img_struct->fullscreen_no_music, "activate",img_struct->accel_group,GDK_F11,GDK_MODE_DISABLED,GTK_ACCEL_VISIBLE);
+	g_signal_connect (G_OBJECT (img_struct->fullscreen_no_music),"activate",G_CALLBACK (img_start_fullscreen_preview), img_struct);
+	gtk_menu_shell_append( GTK_MENU_SHELL( menu3 ), img_struct->fullscreen_no_music );
+	
+	img_struct->fullscreen_loop_preview = gtk_image_menu_item_new_with_mnemonic(_("Continuos") );
+	tmp_image = gtk_image_new_from_stock (GTK_STOCK_REFRESH,GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (img_struct->fullscreen_loop_preview),tmp_image);
+	gtk_widget_add_accelerator (img_struct->fullscreen_loop_preview, "activate",img_struct->accel_group,GDK_p,GDK_SHIFT_MASK|GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
+	g_signal_connect (G_OBJECT (img_struct->fullscreen_loop_preview),"activate",G_CALLBACK (img_start_fullscreen_preview), img_struct);
+	gtk_menu_shell_append( GTK_MENU_SHELL( menu3 ), img_struct->fullscreen_loop_preview );
+
+	img_struct->preview_menu = gtk_image_menu_item_new_with_mnemonic (_("Preview"));
+	gtk_container_add (GTK_CONTAINER (menu1), img_struct->preview_menu);
+	gtk_widget_add_accelerator (img_struct->preview_menu, "activate",img_struct->accel_group,GDK_space,GDK_MODE_DISABLED,GTK_ACCEL_VISIBLE);
+	g_signal_connect (G_OBJECT (img_struct->preview_menu),"activate",G_CALLBACK (img_start_stop_preview),img_struct);
+	
 	tmp_image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_PLAY,GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (img_struct->preview_menu),tmp_image);
 
-	export_menu = gtk_image_menu_item_new_with_mnemonic (_("Export"));
+	export_menu = gtk_image_menu_item_new_with_mnemonic (_("Ex_port"));
 	gtk_container_add (GTK_CONTAINER (menu1), export_menu);
+	gtk_widget_add_accelerator (export_menu, "activate",img_struct->accel_group,GDK_p,GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
 	g_signal_connect (G_OBJECT (export_menu),"activate",G_CALLBACK (img_exporter),img_struct);
 
 	image_menu = img_load_icon ("imagination-generate.png",GTK_ICON_SIZE_MENU);

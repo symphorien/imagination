@@ -219,6 +219,9 @@ struct _img_window_struct
 	GtkWidget	*select_all_menu;
 	GtkWidget	*report_menu;
 	GtkWidget	*preview_menu;
+	GtkWidget 	*fullscreen_music_preview;
+	GtkWidget 	*fullscreen_no_music;
+	GtkWidget 	*fullscreen_loop_preview;
 	GtkWidget 	*preview_button;
 	GtkWidget	*notebook;
 	GtkWidget	*menu_preview_mode;
@@ -363,6 +366,9 @@ struct _img_window_struct
 
 	/* Preview related variables */
   	gboolean	preview_is_running;
+  	gboolean	fullscrn_no_music;
+  	gboolean	fullscrn_music_preview;
+  	gboolean	fullscrn_loop_preview;
   	GtkWidget	*import_slide_chooser;
 	GtkWidget	*total_stop_points_label;
   	GtkWidget	*total_slide_number_label;
@@ -418,8 +424,10 @@ struct _img_window_struct
 	GtkWidget	*play_audio_button;
 	GtkWidget	*remove_audio_button;
 	GtkListStore *music_file_liststore;
+	GtkTreeIter	next_audio_iter;
 	GtkWidget	*music_time_data;
 	GPid		play_child_pid;
+	guint		audio_source_id;
     
     /* Messages related stuf */
     GtkTextBuffer  *message_buffer;

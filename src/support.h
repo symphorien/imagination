@@ -55,6 +55,8 @@ void img_load_available_transitions(img_window_struct *);
 void img_show_file_chooser(GtkWidget *, GtkEntryIconPosition, int, img_window_struct *);
 void img_select_nth_slide(img_window_struct *, gint);
 void img_delete_subtitle_pattern(GtkButton *button, img_window_struct *img);
+void img_preview_with_music(img_window_struct *img);
+void img_play_next_audio_during_fullscreen_preview (GPid pid, gint status, img_window_struct *img);
 
 slide_struct *
 img_create_new_slide( void );

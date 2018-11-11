@@ -1,6 +1,8 @@
 Imagination changelog
 
-xx/xx/19 - 3.x		- Enjoy FULLSCREEN preview!!!
+xx/xx/19 - 3.4		- Fixed seg-fault when trying to delete a slide when preview is running.
+			- Current slideshow is no more closed if user cancels when opening a new one.
+			- Enjoy FULLSCREEN preview with background music and continuos mode. WOOOOOOOOOOW !!!
 			- The CTRL+A shortcut doesn't select all the slides anymore when pressed from the subtitle widget entry.
 			- Subtitles can now have a pattern.
 			- Empty slide background can now be edited. 
