@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2009 Giuseppe Torelli <colossus73@gmail.com>
+ *  Copyright (c) 2009-2018 Giuseppe Torelli <colossus73@gmail.com>
  *  Copyright (c) 2009 Tadej Borovšak 	<tadeboro@gmail.com>
  * 
  *  This program is free software; you can redistribute it and/or modify
@@ -44,7 +44,7 @@ img_rotate_slides_right( GtkWidget         *widget,
 						 img_window_struct *img );
 void img_show_about_dialog (GtkMenuItem *,img_window_struct *);
 void img_start_stop_preview(GtkWidget *, img_window_struct *);
-void img_start_fullscreen_preview(GtkMenuItem *, img_window_struct *);
+void img_go_fullscreen(GtkMenuItem *, img_window_struct *);
 void img_goto_first_slide(GtkWidget *, img_window_struct *);
 void img_goto_prev_slide(GtkWidget *, img_window_struct *);
 void img_goto_next_slide(GtkWidget *, img_window_struct *);
@@ -59,8 +59,8 @@ void img_increase_progressbar(img_window_struct *, gint);
 GSList *img_import_slides_file_chooser(img_window_struct *);
 void img_free_allocated_memory(img_window_struct *);
 gint img_ask_user_confirmation(img_window_struct *, gchar *);
-gboolean img_check_escape_key_pressed(GtkWidget *, GdkEventKey *, img_window_struct *);
-void img_exit_fullscreen_preview(img_window_struct *img);
+gboolean img_key_pressed(GtkWidget *, GdkEventKey *, img_window_struct *);
+void img_exit_fullscreen(img_window_struct *img);
 gboolean img_quit_application(GtkWidget *, GdkEvent *, img_window_struct *);
 void img_move_audio_up( GtkButton *, img_window_struct * );
 void img_move_audio_down( GtkButton *, img_window_struct * );

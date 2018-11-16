@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2009 Giuseppe Torelli <colossus73@gmail.com>
+ *  Copyright (C) 2009-2018 Giuseppe Torelli <colossus73@gmail.com>
  *  Copyright (c) 2009 Tadej Borovšak 	<tadeboro@gmail.com>
  *  Copyright (c) 2011 Robert Chéramy   <robert@cheramy.net>
  *

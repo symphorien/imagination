@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2009 Giuseppe Torelli <colossus73@gmail.com>
+ *  Copyright (c) 2009-2018 Giuseppe Torelli <colossus73@gmail.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -80,6 +80,9 @@ img_update_sub_properties( img_window_struct *img,
 						   gdouble           *color,
                            gdouble           *brdr_color,
                            gdouble           *bg_color );
+
+void img_combo_box_transition_type_changed (GtkComboBox *,
+											img_window_struct *);
 
 void
 img_combo_box_anim_speed_changed( GtkSpinButton       *spinbutton,

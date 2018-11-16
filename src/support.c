@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2009 Giuseppe Torelli <colossus73@gmail.com>
+ *  Copyright (c) 2009-2018 Giuseppe Torelli <colossus73@gmail.com>
  *  Copyright (c) 2011 Robert Chéramy   <robert@cheramy.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -483,6 +483,42 @@ img_set_slide_gradient_info( slide_struct *slide,
 		slide->g_start_point[i] = start_point[i];
 		slide->g_stop_point[i]  = stop_point[i];
 	}
+}
+
+GdkPixbuf *img_set_fade_gradient(img_window_struct *img, gint gradient, slide_struct *slide_info)
+{
+	GdkPixbuf		*pix = NULL;
+	GtkTreeIter 	iter;
+	GtkTreeModel 	*model;
+	gpointer     	address;
+
+	if (gradient == 3)
+	{
+		model = gtk_combo_box_get_model( GTK_COMBO_BOX( img->transition_type ) );
+		/* 10:0 is the path string pointing to the Cross Fade transition */
+		gtk_tree_model_get_iter_from_string( model, &iter, "10:0" );
+		gtk_tree_model_get( model, &iter, 0, &pix,
+										  2, &address,
+										 -1 );
+		slide_info->transition_id = 19;
+		slide_info->render = address;
+		if (slide_info->path)
+		{
+			g_free(slide_info->path);
+			slide_info->path = g_strdup("10:0");
+		}
+	}
+	else
+	{
+		if (slide_info->path)
+		{
+			g_free(slide_info->path);
+			slide_info->path = g_strdup("0");
+		}
+		slide_info->transition_id = -1;
+		slide_info->render = NULL;
+	}
+	return pix;
 }
 
 void
@@ -998,7 +1034,7 @@ img_scale_gradient( gint              gradient,
 
 	switch( gradient )
 	{
-		case 0: /* Solid color */
+		case 0: case 3: /* Solid and gradient fade */
 			cairo_set_source_rgb( cr, c_start[0], c_start[1], c_start[2] );
 			cairo_paint( cr );
 			break;
@@ -1177,12 +1213,12 @@ void img_preview_with_music(img_window_struct *img)
 	if ( ret && gtk_tree_model_iter_next( model, &iter) )
     {
 		img->next_audio_iter = iter;
-		img->audio_source_id = g_child_watch_add(img->play_child_pid, (GChildWatchFunc) img_play_next_audio_during_fullscreen_preview, img);
+		img->audio_source_id = g_child_watch_add(img->play_child_pid, (GChildWatchFunc) img_play_next_audio_during_preview, img);
 	}
 
 }
 
-void img_play_next_audio_during_fullscreen_preview (GPid pid, gint status, img_window_struct *img)
+void img_play_next_audio_during_preview (GPid pid, gint status, img_window_struct *img)
 {
 	GtkTreeModel *model;
 	gchar	*cmd_line, *path, *filename, *file;
@@ -1216,7 +1252,7 @@ void img_play_next_audio_during_fullscreen_preview (GPid pid, gint status, img_w
 	
 	model = gtk_tree_view_get_model( GTK_TREE_VIEW( img->music_file_treeview ) );
 	
-	if (ret && img->fullscrn_music_preview &&
+	if (ret && img->music_preview &&
 			gtk_tree_model_iter_next( model, &img->next_audio_iter ) )
-		img->audio_source_id = g_child_watch_add(img->play_child_pid, (GChildWatchFunc) img_play_next_audio_during_fullscreen_preview, img);
+		img->audio_source_id = g_child_watch_add(img->play_child_pid, (GChildWatchFunc) img_play_next_audio_during_preview, img);
 }

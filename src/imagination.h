@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2009 Giuseppe Torelli <colossus73@gmail.com>
+ *  Copyright (c) 2009-2018 Giuseppe Torelli <colossus73@gmail.com>
  *  Copyright (c) 2009 Tadej Borovšak 	<tadeboro@gmail.com>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -162,7 +162,7 @@ struct _slide_struct
 
 
 	/* Fields that are filled if we create slide in memory */
-	gint    gradient;         /* Gradient type */
+	gint    gradient;         			/* Gradient type */
 	gdouble g_start_color[3]; /* RGB start color */
 	gdouble g_stop_color[3];  /* RGB stop color */
 	gdouble g_start_point[2]; /* x, y coordinates of start point */
@@ -218,7 +218,7 @@ struct _img_window_struct
 	GtkWidget	*remove_menu;
 	GtkWidget	*select_all_menu;
 	GtkWidget	*report_menu;
-	GtkWidget	*preview_menu;
+	GtkWidget	*fullscreen;
 	GtkWidget 	*fullscreen_music_preview;
 	GtkWidget 	*fullscreen_no_music;
 	GtkWidget 	*fullscreen_loop_preview;
@@ -366,9 +366,9 @@ struct _img_window_struct
 
 	/* Preview related variables */
   	gboolean	preview_is_running;
-  	gboolean	fullscrn_no_music;
-  	gboolean	fullscrn_music_preview;
-  	gboolean	fullscrn_loop_preview;
+  	gboolean	no_music;
+  	gboolean	music_preview;
+  	gboolean	loop_preview;
   	GtkWidget	*import_slide_chooser;
 	GtkWidget	*total_stop_points_label;
   	GtkWidget	*total_slide_number_label;

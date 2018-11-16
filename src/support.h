@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2009 Giuseppe Torelli <colossus73@gmail.com>
+ *  Copyright (c) 2009-2018 Giuseppe Torelli <colossus73@gmail.com>
  *  Copyright (c) 2011 Robert Chéramy   <robert@cheramy.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -56,7 +56,7 @@ void img_show_file_chooser(GtkWidget *, GtkEntryIconPosition, int, img_window_st
 void img_select_nth_slide(img_window_struct *, gint);
 void img_delete_subtitle_pattern(GtkButton *button, img_window_struct *img);
 void img_preview_with_music(img_window_struct *img);
-void img_play_next_audio_during_fullscreen_preview (GPid pid, gint status, img_window_struct *img);
+void img_play_next_audio_during_preview (GPid pid, gint status, img_window_struct *img);
 
 slide_struct *
 img_create_new_slide( void );
@@ -73,6 +73,9 @@ img_set_slide_gradient_info( slide_struct *slide,
 							 gdouble      *start_point,
 							 gdouble      *stop_point );
 
+GdkPixbuf *img_set_fade_gradient(	img_window_struct *img,
+							gint gradient,
+							slide_struct *slide_info);
 void
 img_set_slide_still_info( slide_struct      *slide,
 						  gdouble           duration,

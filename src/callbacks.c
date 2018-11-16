@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2009 Giuseppe Torelli <colossus73@gmail.com>
+ *  Copyright (c) 2009-2018 Giuseppe Torelli <colossus73@gmail.com>
  *  Copyright (c) 2009 Tadej Borovšak 	<tadeboro@gmail.com>
  *  Copyright (c) 2011 Robert Chéramy   <robert@cheramy.net>
  *
@@ -42,12 +42,20 @@ struct _ImgEmptySlide
 	gint    gradient;    /* Gradient type:
 						      0 - solid color
 							  1 - linear
-							  2 - radial */
+							  2 - radial
+							  3 - gradient fading animation */
 
 	/* Widgets */
 	GtkWidget *color2;
 	GtkWidget *preview;
 	GtkWidget *radio[4];
+	
+	/* Cairo */
+	cairo_t		*cr;
+	gdouble		alpha;
+	
+	/* GSource */
+	gint		source;
 };
 
 static void img_file_chooser_add_preview(img_window_struct *);
@@ -69,6 +77,9 @@ static void
 img_overview_change_zoom( gdouble            step,
 						  gboolean           reset,
 						  img_window_struct *img );
+
+static gboolean
+img_fade_gradient_decrease_alpha(ImgEmptySlide *slide);
 
 static void
 img_gradient_toggled( GtkToggleButton *button,
@@ -464,48 +475,35 @@ gint img_ask_user_confirmation(img_window_struct *img_struct, gchar *msg)
 	return response;
 }
 
-gboolean img_check_escape_key_pressed(GtkWidget *widget, GdkEventKey *event, img_window_struct *img)
+gboolean img_key_pressed(GtkWidget *widget, GdkEventKey *event, img_window_struct *img)
 {
-	/* Stop fullscreen preview if the
-	 * user pressed ESC or F11 while
-	 * Imagination window is fullscreen */
-	if ( (event->keyval == GDK_KEY_Escape || event->keyval == GDK_KEY_F11) &&
-			gdk_window_get_state(gtk_widget_get_window(img->imagination_window)) == 20 )
-		img_exit_fullscreen_preview(img);
+	if ( gdk_window_get_state(gtk_widget_get_window(img->imagination_window)) == 20 )
+	{
+		if (event->keyval == GDK_KEY_F11)
+			img_exit_fullscreen(img);
+		else if (event->keyval == GDK_space)
+			img_start_stop_preview(NULL, img);
+	}
 
 	return FALSE;
 }
 
-void img_exit_fullscreen_preview(img_window_struct *img)
+void img_exit_fullscreen(img_window_struct *img)
 {
-	/* If there is a background music
-	 * during the fullscreen preview
-	 * we want to stop it when exiting
-	 * fullscreen dont'we? */
-	if (img->fullscreen_music_preview && img->play_child_pid)
-	{
-		kill (img->play_child_pid, SIGINT);
-		/* Let's stop the next scheduled
-		 * audio file to be played too */
-		if (img->audio_source_id > 0)
-		{
-			g_source_remove(img->audio_source_id);
-			img->audio_source_id = 0;
-		}
-		img->play_child_pid = 0;
-	}
-	img->fullscrn_loop_preview = img->fullscrn_music_preview = img->fullscrn_no_music = FALSE;
-
 	gtk_widget_show(img->thumb_scrolledwindow);
 	gtk_widget_show(img->notebook);
 	gtk_widget_show(img->statusbar);
 	gtk_widget_show(img->menubar);
 	gtk_widget_show(img->toolbar);
 	gtk_alignment_set(GTK_ALIGNMENT(img->viewport_align), 0.5, 0.5, 0, 0);
-	gtk_widget_set_size_request( img->image_area,
-							 img->video_size[0] * img->image_area_zoom,
-							 img->video_size[1] * img->image_area_zoom );
+
 	gtk_window_unfullscreen(GTK_WINDOW(img->imagination_window));
+	gtk_widget_add_accelerator (img->fullscreen, "activate", img->accel_group, GDK_F11, GDK_MODE_DISABLED, GTK_ACCEL_VISIBLE);
+
+	/* Restore the cursor */
+	GdkCursor *cursor	= gdk_cursor_new(GDK_ARROW);
+	GdkWindow *win 		= gtk_widget_get_window(img->imagination_window);
+	gdk_window_set_cursor(win, cursor);
 }
 
 gboolean img_quit_application(GtkWidget *widget, GdkEvent *event, img_window_struct *img_struct)
@@ -879,22 +877,14 @@ static void img_about_dialog_activate_link(GtkAboutDialog * dialog, const gchar 
 	gtk_show_uri( NULL, link, GDK_CURRENT_TIME, NULL );
 }
 
-void img_start_fullscreen_preview(GtkMenuItem *item, img_window_struct *img)
+void img_go_fullscreen(GtkMenuItem *item, img_window_struct *img)
 {
-	if (gdk_window_get_state(gtk_widget_get_window(img->imagination_window)) == 20 &&
-		img->preview_is_running)
-	{
-		img_exit_fullscreen_preview(img);
-		return;
-	}
-	if (GTK_WIDGET(item) == img->fullscreen_music_preview)
-		img->fullscrn_music_preview = TRUE;
+	/* Hide the cursor */
+	GdkCursor *cursor	= gdk_cursor_new(GDK_BLANK_CURSOR);
+	GdkWindow *win 		= gtk_widget_get_window(img->imagination_window);
+	gdk_window_set_cursor(win, cursor);
 
-	else if (GTK_WIDGET(item) == img->fullscreen_loop_preview)
-		img->fullscrn_loop_preview = TRUE;
-
-	else
-		img->fullscrn_no_music = TRUE;
+	gtk_widget_remove_accelerator (img->fullscreen, img->accel_group, GDK_F11, GDK_MODE_DISABLED);
 
 	gtk_widget_hide (img->thumb_scrolledwindow);
 	gtk_widget_hide (img->notebook);
@@ -903,14 +893,12 @@ void img_start_fullscreen_preview(GtkMenuItem *item, img_window_struct *img)
 	gtk_widget_hide (img->toolbar);
 	
 	gtk_alignment_set(GTK_ALIGNMENT(img->viewport_align), 0, 0, 1, 1);
-	gtk_widget_set_size_request(img->image_area, gdk_screen_width() - 15, gdk_screen_height() - 15);
 	gtk_window_fullscreen(GTK_WINDOW(img->imagination_window));
-	
-	if (! img->preview_is_running)
-		img_start_stop_preview(NULL, img);
+
+	gtk_widget_queue_draw(img->image_area);
 }
 
-void img_start_stop_preview(GtkWidget *button, img_window_struct *img)
+void img_start_stop_preview(GtkWidget *item, img_window_struct *img)
 {
 	GtkTreeIter iter, prev;
 	GtkTreePath *path = NULL;
@@ -925,10 +913,29 @@ void img_start_stop_preview(GtkWidget *button, img_window_struct *img)
 	if(img->export_is_running)
 		return;
 
+	/* Save the current selected slide to restore it when the preview is finished */
+	if (img->preview_is_running == FALSE)
+	{
+		gtk_tree_path_free(img->first_selected_path);
+		gtk_icon_view_get_cursor(GTK_ICON_VIEW( img->thumbnail_iconview ), &img->first_selected_path, NULL);
+	}
 	if (img->preview_is_running)
 	{
-		/* Preview is already running */
-
+		img->loop_preview = img->music_preview = img->no_music = FALSE;
+		/* If there is a background music during
+		* the preview we want to stop it dont'we? */
+		if (img->fullscreen_music_preview && img->play_child_pid)
+		{
+			kill (img->play_child_pid, SIGINT);
+			/* Let's stop the next scheduled
+			* audio file to be played too */
+			if (img->audio_source_id > 0)
+			{
+				g_source_remove(img->audio_source_id);
+				img->audio_source_id = 0;
+			}
+			img->play_child_pid = 0;
+		}
 		/* Remove timeout function from main loop */
 		g_source_remove(img->source_id);
 
@@ -956,6 +963,14 @@ void img_start_stop_preview(GtkWidget *button, img_window_struct *img)
 	}
 	else
 	{
+		if (GTK_WIDGET(item) == img->fullscreen_music_preview)
+			img->music_preview = TRUE;
+
+		else if (GTK_WIDGET(item) == img->fullscreen_loop_preview)
+			img->loop_preview = TRUE;
+		else
+			img->no_music = TRUE;
+
 		/* Start the preview */
 		if( img->mode == 1 )
 		{
@@ -1010,7 +1025,7 @@ void img_start_stop_preview(GtkWidget *button, img_window_struct *img)
 		img->cur_point = NULL;
 
 		/* If we started our preview from beginning, create empty pixbuf and
-		 * fill it with background color. Else load image that is before
+		 * fill it with background color otherwise load image that is before
 		 * currently selected slide. */
 		if( path != NULL && gtk_tree_path_prev( path ) )
 		{
@@ -1065,11 +1080,26 @@ void img_start_stop_preview(GtkWidget *button, img_window_struct *img)
 		img->image_to = cairo_image_surface_create( CAIRO_FORMAT_RGB24,
 													img->video_size[0],
 													img->video_size[1] );
+		if (entry->gradient == 3)
+		{
+			cairo_t	*cr;
+			cr = cairo_create(img->image_from);
+			cairo_set_source_rgb(cr,	entry->g_start_color[0],
+										entry->g_start_color[1],
+										entry->g_start_color[2] );
+			cairo_paint( cr );
+			
+			cr = cairo_create(img->image_to);
+			cairo_set_source_rgb(cr,	entry->g_stop_color[0],
+										entry->g_stop_color[1],
+										entry->g_stop_color[2] );
+			cairo_paint( cr );
+		}													
 		img->exported_image = cairo_image_surface_create( CAIRO_FORMAT_RGB24,
 														  img->video_size[0],
 														  img->video_size[1] );
 //img_run_encoder(img);
-		if (img->fullscrn_music_preview)
+		if (img->music_preview)
 			img_preview_with_music(img);
 
 		img->source_id = g_timeout_add( 1000 / img->preview_fps,
@@ -1416,7 +1446,8 @@ static gboolean img_still_timeout(img_window_struct *img)
 			 * next preview. */
 			img_clean_after_preview( img );
 
-			if (img->fullscrn_loop_preview)
+			/* If user chose continous preview start it again */
+			if (img->loop_preview)
 				img_start_stop_preview(NULL, img);
 		}
 
@@ -1446,19 +1477,13 @@ static void img_swap_toolbar_images( img_window_struct *img,gboolean flag )
 
 	if( flag )
 	{
-		tmp_image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_PLAY,GTK_ICON_SIZE_MENU);
-		gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (img->preview_menu),tmp_image);
-		
 		tmp_image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_PLAY,GTK_ICON_SIZE_LARGE_TOOLBAR);
 		gtk_widget_show(tmp_image);
 		gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(img->preview_button), tmp_image);
-		gtk_widget_set_tooltip_text(img->preview_button,_("Starts the preview"));
+		gtk_widget_set_tooltip_text(img->preview_button,_("Starts the preview without music"));
 	}
 	else
 	{
-		tmp_image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_STOP,GTK_ICON_SIZE_MENU);
-		gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (img->preview_menu),tmp_image);
-		
 		tmp_image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_STOP,GTK_ICON_SIZE_LARGE_TOOLBAR);
 		gtk_widget_show(tmp_image);
 		gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(img->preview_button), tmp_image);
@@ -1481,10 +1506,6 @@ static void img_clean_after_preview(img_window_struct *img)
 	/* Indicate that preview is not running */
 	img->preview_is_running = FALSE;
 	
-	if (img->fullscrn_music_preview ||
-		img->fullscrn_no_music)
-		img_exit_fullscreen_preview(img);
-
 	/* Destroy images that were used */
 	cairo_surface_destroy( img->image1 );
 	cairo_surface_destroy( img->image2 );
@@ -2310,7 +2331,10 @@ img_add_empty_slide( GtkMenuItem       *item,
 								   0,                   /* Gradient type */
 								   NULL,                /* Color button */
 								   NULL,                /* Preview area */
-								   { NULL, NULL, NULL, NULL } /* Radio buttons */
+							{ NULL, NULL, NULL, NULL }, /* Radio buttons */
+								   NULL,				/* Cairo context */
+								   1.0,					/* Fade alpha value */
+								   0
 								 }; 
 
 	GList *where_to_insert = NULL;
@@ -2381,7 +2405,7 @@ img_add_empty_slide( GtkMenuItem       *item,
 	hbox = gtk_hbox_new( FALSE, 6 );
 	gtk_container_add( GTK_CONTAINER( frame ), hbox );
 
-	table = gtk_table_new( 5, 2, TRUE );
+	table = gtk_table_new( 6, 2, TRUE );
 	gtk_box_pack_start( GTK_BOX( hbox ), table, FALSE, FALSE, 10 );
 
 	radio1 = gtk_radio_button_new_with_mnemonic( NULL, _("_Solid color") );
@@ -2410,7 +2434,6 @@ img_add_empty_slide( GtkMenuItem       *item,
 	gtk_toggle_button_set_active(
 			GTK_TOGGLE_BUTTON( slide.radio[slide.gradient] ), TRUE );
 
-	
 	for( i = 0; i < 4; i++ )
 		g_signal_connect( G_OBJECT( slide.radio[i] ), "toggled",
 						  G_CALLBACK( img_gradient_toggled ), &slide );
@@ -2468,12 +2491,31 @@ img_add_empty_slide( GtkMenuItem       *item,
 	{
 		GtkTreeIter   iter;
 		slide_struct *slide_info;
-		GdkPixbuf    *thumb;
+		GdkPixbuf    *thumb, *pix;
+		GtkTreeModel *model;
+		gchar		 *path;
 
 		if (GTK_WIDGET(item) == img->edit_empty_slide)
 			slide_info = img->current_slide;
 		else
 			slide_info = img_create_new_slide();
+
+		if (slide.gradient == 3)
+			path = "10:0";
+		else
+			path = "0";
+
+		/* Set the transition type to Misc Cross Fade or to None */
+		g_signal_handlers_block_by_func(img->transition_type, (gpointer)img_combo_box_transition_type_changed, img);
+		{
+			GtkTreeIter   iter;
+			GtkTreeModel *model;
+
+			model = gtk_combo_box_get_model( GTK_COMBO_BOX( img->transition_type ) );
+			gtk_tree_model_get_iter_from_string( model, &iter, path );
+			gtk_combo_box_set_active_iter(GTK_COMBO_BOX(img->transition_type), &iter );
+		}
+		g_signal_handlers_unblock_by_func(img->transition_type, (gpointer)img_combo_box_transition_type_changed, img);
 
 		if( slide_info )
 		{
@@ -2482,7 +2524,7 @@ img_add_empty_slide( GtkMenuItem       *item,
 
 			/* Convert gradient points into relative offsets (this enables us to
 			 * scale gradient on any surface size) */
-			if( slide.gradient < 2 ) /* solid and linear */
+			if( slide.gradient == 0 || slide.gradient == 1 || slide.gradient == 3 ) /* Solid, linear and fade */
 			{
 				p_start[0] = slide.pl_start[0] / w;
 				p_start[1] = slide.pl_start[1] / h;
@@ -2508,47 +2550,58 @@ img_add_empty_slide( GtkMenuItem       *item,
 								88, 49,
 								&thumb, NULL );
 
-			/* Add slide to store if we are not editing it */
+			/* If a slide is selected, add the empty slide after it */
 			where_to_insert	= gtk_icon_view_get_selected_items(GTK_ICON_VIEW(img->active_icon));
 			if (where_to_insert)
 			{
 				pos = gtk_tree_path_get_indices(where_to_insert->data)[0]+1;
-				/* User chose "Add slide" rather than "Edit empty slide" */
+				/* Add empty slide */
 				if (GTK_WIDGET(item) != img->edit_empty_slide)
 				{
+					pix = img_set_fade_gradient(img, slide.gradient, slide_info);
 					gtk_list_store_insert_with_values(img->thumbnail_model, &iter,
 													pos,
 													0, thumb,
 													1, slide_info,
-													2, NULL,
+													2, pix,
 													3, FALSE,
 													-1 );
 				}
 				else
 				{
-					/* Remove the current empty slide
-					 * to replace it with the updated one */
-					GtkTreeModel *model;
+					/* Edit empty slide */
+					pix = img_set_fade_gradient(img, slide.gradient, slide_info);
 					model =	GTK_TREE_MODEL( img->thumbnail_model );
 					gtk_tree_model_get_iter(model, &iter, where_to_insert->data);
-					gtk_list_store_remove(img->thumbnail_model, &iter);
-					gtk_list_store_insert_with_values(img->thumbnail_model, &iter,
-													pos - 1,
+					gtk_list_store_set(img->thumbnail_model, &iter,
 													0, thumb,
 													1, slide_info,
-													2, NULL,
+													2, pix,
 													3, slide_info->subtitle ? TRUE : FALSE,
 													-1 );
-					gtk_icon_view_select_path (GTK_ICON_VIEW(img->thumbnail_iconview), where_to_insert->data);
-			
+					/* Update gradient in image area */
+					img_scale_gradient( slide.gradient,
+								slide_info->g_start_point,
+								slide_info->g_stop_point,
+								slide_info->g_start_color,
+								slide_info->g_stop_color,
+								img->video_size[0],
+								img->video_size[1],
+								NULL,
+								&img->current_image );
 				}
 				g_list_foreach (where_to_insert, (GFunc)gtk_tree_path_free, NULL);
 				g_list_free (where_to_insert);
 			}
 			else
 			{
-				gtk_list_store_append( img->thumbnail_model, &iter );
-				gtk_list_store_set(img->thumbnail_model, &iter, 0, thumb, 1, slide_info, 2, NULL, 3, FALSE, -1 );
+				/* Add empty slide */
+				if (GTK_WIDGET(item) != img->edit_empty_slide)
+				{
+					pix = img_set_fade_gradient(img, slide.gradient, slide_info);
+					gtk_list_store_append( img->thumbnail_model, &iter );
+					gtk_list_store_set(img->thumbnail_model, &iter, 0, thumb, 1, slide_info, 2, pix, 3, FALSE, -1 );
+				}
 			}
 				
 			if (GTK_WIDGET(item) != img->edit_empty_slide)
@@ -2559,6 +2612,8 @@ img_add_empty_slide( GtkMenuItem       *item,
 			}
 			g_object_unref( G_OBJECT( thumb ) );
 		}
+	img->project_is_modified = TRUE;
+	gtk_widget_queue_draw(img->image_area);
 	}
 	gtk_widget_destroy( dialog );
 }
@@ -2580,7 +2635,31 @@ img_gradient_toggled( GtkToggleButton *button,
 
 	gtk_widget_set_sensitive( slide->color2, (gboolean)i );
 
+	if (i == 3)
+	{
+		if (slide->source > 0)
+			g_source_remove(slide->source);
+		slide->source = g_timeout_add( 2000 * 0.01, (GSourceFunc)img_fade_gradient_decrease_alpha, slide );
+	}
 	gtk_widget_queue_draw( slide->preview );
+}
+
+static gboolean
+img_fade_gradient_decrease_alpha(ImgEmptySlide *slide)
+{
+	if (slide->gradient != 3)
+		return FALSE;
+
+	slide->alpha -= 0.01;
+	
+	if (slide->alpha <= 0)
+	{
+		slide->alpha = 1.0;
+		slide->source = 0;
+		return FALSE;
+	}
+	gtk_widget_queue_draw(slide->preview);
+	return TRUE;
 }
 
 static void
@@ -2616,6 +2695,7 @@ img_gradient_expose( GtkWidget      *widget,
 
 	gdk_drawable_get_size( expose->window, &w, &h );
 	cr = gdk_cairo_create( expose->window );
+
 	switch( slide->gradient )
 	{
 		case 0:
@@ -2689,6 +2769,20 @@ img_gradient_expose( GtkWidget      *widget,
 			cairo_set_source_rgb( cr, 1, 1, 1 );
 			cairo_fill( cr );
 			break;
+
+		case 3:
+		cairo_set_source_rgb(cr,	slide->c_stop[0],
+									slide->c_stop[1],
+									slide->c_stop[2] );
+		cairo_paint( cr );
+	
+		cairo_set_source_rgb(cr, 	slide->c_start[0],
+									slide->c_start[1],
+									slide->c_start[2] ); 
+		cairo_paint_with_alpha(cr, slide->alpha);
+		if (slide->source == 0)
+			slide->source = g_timeout_add( 2000 * 0.01, (GSourceFunc)img_fade_gradient_decrease_alpha, slide );
+		break;
 	}
 	cairo_destroy( cr );
 

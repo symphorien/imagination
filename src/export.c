@@ -1,5 +1,5 @@
 /*
-** Copyright (c) 2009 Giuseppe Torelli <colossus73@gmail.com>
+** Copyright (c) 2009-2018 Giuseppe Torelli <colossus73@gmail.com>
 ** Copyright (C) 2009 Tadej Borovšak   <tadeboro@gmail.com>
 ** Copyright (c) 2011 Robert Chéramy   <robert@cheramy.net>
 **
@@ -412,6 +412,23 @@ img_start_export( img_window_struct *img )
 	img->image_to = cairo_image_surface_create( CAIRO_FORMAT_RGB24,
 												img->video_size[0],
 												img->video_size[1] );
+	
+	if (entry->gradient == 3)
+	{
+		cairo_t	*cr;
+		cr = cairo_create(img->image_from);
+		cairo_set_source_rgb(cr,	entry->g_stop_color[0],
+									entry->g_stop_color[1],
+									entry->g_stop_color[2] );
+		cairo_paint( cr );
+			
+		cr = cairo_create(img->image_to);
+		cairo_set_source_rgb(cr,	entry->g_start_color[0],
+									entry->g_start_color[1],
+									entry->g_start_color[2] );
+		cairo_paint( cr );
+	}	
+		
 	img->exported_image = cairo_image_surface_create( CAIRO_FORMAT_RGB24,
 													  img->video_size[0],
 													  img->video_size[1] );
@@ -972,7 +989,8 @@ img_render_transition_frame( img_window_struct *img )
 	/* Do image composing here and place result in exported_image */
 	/* Create first image */
 	cr = cairo_create( img->image_from );
-	img_draw_image_on_surface( cr, img->video_size[0], img->image1,
+	if (img->work_slide->gradient != 3)
+		img_draw_image_on_surface( cr, img->video_size[0], img->image1,
 							   ( img->point1 ? img->point1 : &point ), img );
 
 #if 0
@@ -1008,7 +1026,8 @@ img_render_transition_frame( img_window_struct *img )
 
 	/* Create second image */
 	cr = cairo_create( img->image_to );
-	img_draw_image_on_surface( cr, img->video_size[0], img->image2,
+	if (img->work_slide->gradient != 3)
+		img_draw_image_on_surface( cr, img->video_size[0], img->image2,
 							   ( img->point2 ? img->point2 : &point ), img );
 	/* FIXME: Add subtitles here */
 	cairo_destroy( cr );

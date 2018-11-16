@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2009 Giuseppe Torelli <colossus73@gmail.com>
+ *  Copyright (c) 2009-2018 Giuseppe Torelli <colossus73@gmail.com>
  *  Copyright (c) 2009 Tadej Borovšak 	<tadeboro@gmail.com>
  *  Copyright (c) 2011 Robert Chéramy   <robert@cheramy.net>
  *
@@ -39,7 +39,6 @@ static const GtkTargetEntry drop_targets[] =
 /* ****************************************************************************
  * Local function declarations
  * ************************************************************************* */
-static void img_combo_box_transition_type_changed (GtkComboBox *, img_window_struct *);
 static void img_random_button_clicked(GtkButton *, img_window_struct *);
 static GdkPixbuf *img_set_random_transition(img_window_struct *, slide_struct *);
 static void img_combo_box_speed_changed (GtkComboBox *,  img_window_struct *);
@@ -107,7 +106,6 @@ img_window_struct *img_create_window (void)
 	GtkWidget *imagemenuitem5;
 	GtkWidget *separatormenuitem1;
 	GtkWidget *slide_menu;
-	GtkWidget *separator_slide_menu;
 	GtkWidget *image_menu;
 	GtkWidget *deselect_all_menu;
 	GtkWidget *menuitem3;
@@ -152,10 +150,8 @@ img_window_struct *img_create_window (void)
 	GtkWidget *a_label;
 	GtkWidget *a_hbox;
 	GtkWidget *modes_vbox;
-
-	/* Added after cleaning up the img_window_struct */
-	GtkWidget *fullscreen_preview;
 	GtkWidget *properties_menu;
+	GtkWidget *preview_menu;
 	GtkWidget *import_menu;
 	GtkWidget *import_audio_menu;
 	GtkWidget *import_button;
@@ -210,7 +206,7 @@ img_window_struct *img_create_window (void)
 	img_set_window_title(img_struct,NULL);
 	g_signal_connect (G_OBJECT (img_struct->imagination_window),"delete-event",G_CALLBACK (img_quit_application),img_struct);
 	g_signal_connect (G_OBJECT (img_struct->imagination_window), "destroy", G_CALLBACK (gtk_main_quit), NULL );
-	g_signal_connect (G_OBJECT (img_struct->imagination_window), "key_press_event", G_CALLBACK(img_check_escape_key_pressed), img_struct);
+	g_signal_connect (G_OBJECT (img_struct->imagination_window), "key_press_event", G_CALLBACK(img_key_pressed), img_struct);
 	img_struct->accel_group = gtk_accel_group_new();
 
 	vbox1 = gtk_vbox_new (FALSE, 0);
@@ -286,44 +282,36 @@ img_window_struct *img_create_window (void)
 	separatormenuitem1 = gtk_separator_menu_item_new ();
 	gtk_container_add (GTK_CONTAINER (menu1), separatormenuitem1);
 
-	fullscreen_preview = gtk_image_menu_item_new_with_mnemonic (_("Fullscreen preview"));
-	gtk_menu_shell_append( GTK_MENU_SHELL( menu1 ), fullscreen_preview );
-	tmp_image = gtk_image_new_from_stock (GTK_STOCK_FULLSCREEN,GTK_ICON_SIZE_MENU);
-	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (fullscreen_preview),tmp_image);
+	preview_menu = gtk_image_menu_item_new_with_mnemonic (_("Preview"));
+	gtk_menu_shell_append( GTK_MENU_SHELL( menu1 ), preview_menu);
+	tmp_image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_PLAY, GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (preview_menu),tmp_image);
 	
 	menu3 = gtk_menu_new ();
-	gtk_menu_item_set_submenu (GTK_MENU_ITEM (fullscreen_preview), menu3);
+	gtk_menu_item_set_submenu (GTK_MENU_ITEM (preview_menu), menu3);
 
 	img_struct->fullscreen_music_preview = gtk_image_menu_item_new_with_mnemonic(_("With music") );
 	pixbuf = gtk_icon_theme_load_icon(icon_theme,"sound", 16, 0, NULL);
 	image_menu = gtk_image_new_from_pixbuf(pixbuf);
 	g_object_unref(pixbuf);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (img_struct->fullscreen_music_preview),image_menu);
-	gtk_widget_add_accelerator (img_struct->fullscreen_music_preview, "activate",img_struct->accel_group,GDK_m,GDK_SHIFT_MASK|GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
-	g_signal_connect (G_OBJECT (img_struct->fullscreen_music_preview),"activate",G_CALLBACK (img_start_fullscreen_preview),img_struct);
+	gtk_widget_add_accelerator (img_struct->fullscreen_music_preview, "activate",img_struct->accel_group, GDK_space, GDK_MODE_DISABLED, GTK_ACCEL_VISIBLE);
+	g_signal_connect (G_OBJECT (img_struct->fullscreen_music_preview),"activate",G_CALLBACK (img_start_stop_preview),img_struct);
 	gtk_menu_shell_append( GTK_MENU_SHELL( menu3 ), img_struct->fullscreen_music_preview );
 	
 	img_struct->fullscreen_no_music = gtk_image_menu_item_new_with_mnemonic(_("Without music") );
 	tmp_image = gtk_image_new_from_stock (GTK_STOCK_FULLSCREEN,GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (img_struct->fullscreen_no_music),tmp_image);
-	gtk_widget_add_accelerator (img_struct->fullscreen_no_music, "activate",img_struct->accel_group,GDK_F11,GDK_MODE_DISABLED,GTK_ACCEL_VISIBLE);
-	g_signal_connect (G_OBJECT (img_struct->fullscreen_no_music),"activate",G_CALLBACK (img_start_fullscreen_preview), img_struct);
+	gtk_widget_add_accelerator (img_struct->fullscreen_no_music, "activate",img_struct->accel_group, GDK_m, GDK_SHIFT_MASK|GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+	g_signal_connect (G_OBJECT (img_struct->fullscreen_no_music),"activate",G_CALLBACK (img_start_stop_preview), img_struct);
 	gtk_menu_shell_append( GTK_MENU_SHELL( menu3 ), img_struct->fullscreen_no_music );
 	
 	img_struct->fullscreen_loop_preview = gtk_image_menu_item_new_with_mnemonic(_("Continuos") );
 	tmp_image = gtk_image_new_from_stock (GTK_STOCK_REFRESH,GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (img_struct->fullscreen_loop_preview),tmp_image);
 	gtk_widget_add_accelerator (img_struct->fullscreen_loop_preview, "activate",img_struct->accel_group,GDK_p,GDK_SHIFT_MASK|GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
-	g_signal_connect (G_OBJECT (img_struct->fullscreen_loop_preview),"activate",G_CALLBACK (img_start_fullscreen_preview), img_struct);
+	g_signal_connect (G_OBJECT (img_struct->fullscreen_loop_preview),"activate",G_CALLBACK (img_start_stop_preview), img_struct);
 	gtk_menu_shell_append( GTK_MENU_SHELL( menu3 ), img_struct->fullscreen_loop_preview );
-
-	img_struct->preview_menu = gtk_image_menu_item_new_with_mnemonic (_("Preview"));
-	gtk_container_add (GTK_CONTAINER (menu1), img_struct->preview_menu);
-	gtk_widget_add_accelerator (img_struct->preview_menu, "activate",img_struct->accel_group,GDK_space,GDK_MODE_DISABLED,GTK_ACCEL_VISIBLE);
-	g_signal_connect (G_OBJECT (img_struct->preview_menu),"activate",G_CALLBACK (img_start_stop_preview),img_struct);
-	
-	tmp_image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_PLAY,GTK_ICON_SIZE_MENU);
-	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (img_struct->preview_menu),tmp_image);
 
 	export_menu = gtk_image_menu_item_new_with_mnemonic (_("Ex_port"));
 	gtk_container_add (GTK_CONTAINER (menu1), export_menu);
@@ -440,9 +428,6 @@ img_window_struct *img_create_window (void)
 					  G_CALLBACK ( img_rotate_slides_right ), img_struct );
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (rotate_right_menu),tmp_image);
 
-	separator_slide_menu = gtk_separator_menu_item_new ();
-	gtk_container_add (GTK_CONTAINER (slide_menu),separator_slide_menu);
-
 	img_struct->select_all_menu = gtk_image_menu_item_new_from_stock (GTK_STOCK_SELECT_ALL, img_struct->accel_group);
 	gtk_container_add (GTK_CONTAINER (slide_menu),img_struct->select_all_menu);
 	gtk_widget_add_accelerator (img_struct->select_all_menu,"activate",img_struct->accel_group,GDK_a,GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
@@ -469,11 +454,15 @@ img_window_struct *img_create_window (void)
 							GTK_RADIO_MENU_ITEM( img_struct->menu_preview_mode ), _("Overview mode") );
 	gtk_menu_shell_append( GTK_MENU_SHELL( menu1 ), img_struct->menu_overview_mode );
 
-	menuitem1 = gtk_separator_menu_item_new();
-	gtk_menu_shell_append( GTK_MENU_SHELL( menu1 ), menuitem1 );
-
 	menuitem1 = gtk_menu_item_new_with_mnemonic( _("Preview _frame rate") );
 	gtk_menu_shell_append( GTK_MENU_SHELL( menu1 ), menuitem1 );
+
+	img_struct->fullscreen = gtk_image_menu_item_new_with_mnemonic (_("Fullscreen"));
+	gtk_container_add (GTK_CONTAINER (menu1),img_struct->fullscreen);
+	gtk_widget_add_accelerator (img_struct->fullscreen, "activate", img_struct->accel_group,GDK_F11,GDK_MODE_DISABLED,GTK_ACCEL_VISIBLE);
+	g_signal_connect (G_OBJECT (img_struct->fullscreen),"activate", G_CALLBACK (img_go_fullscreen), img_struct);
+	tmp_image = gtk_image_new_from_stock (GTK_STOCK_FULLSCREEN, GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (img_struct->fullscreen),tmp_image);
 
 	menu1 = gtk_menu_new();
 	gtk_menu_item_set_submenu( GTK_MENU_ITEM( menuitem1 ), menu1 );
@@ -619,7 +608,7 @@ img_window_struct *img_create_window (void)
 
 	img_struct->preview_button = GTK_WIDGET (gtk_tool_button_new_from_stock (GTK_STOCK_MEDIA_PLAY));
 	gtk_container_add (GTK_CONTAINER (img_struct->toolbar),img_struct->preview_button);
-	gtk_widget_set_tooltip_text(img_struct->preview_button, _("Starts the preview"));
+	gtk_widget_set_tooltip_text(img_struct->preview_button, _("Starts the preview without music"));
 	g_signal_connect (G_OBJECT (img_struct->preview_button),"clicked",G_CALLBACK (img_start_stop_preview),img_struct);
 
 	separatortoolitem = GTK_WIDGET (gtk_separator_tool_item_new());
@@ -1714,14 +1703,8 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 		if (img->slides_nr == 0)
 			gtk_label_set_text(GTK_LABEL (img->total_time_data),"");
 
+		gtk_widget_set_sensitive(img->edit_empty_slide, FALSE);
 		return;
-	}
-	
-	/* Save the current selected slide to restore it when the preview is finished */
-	if (img->preview_is_running == FALSE)
-	{
-		gtk_tree_path_free(img->first_selected_path);
-		gtk_icon_view_get_cursor(iconview,&img->first_selected_path,NULL);
 	}
 	gtk_widget_set_sensitive(img->trans_duration,	TRUE);
 	gtk_widget_set_sensitive(img->duration,			TRUE);
@@ -1743,7 +1726,7 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 	model = gtk_combo_box_get_model(GTK_COMBO_BOX(img->transition_type));
 
 	/* Block "changed" signal from model to avoid rewriting the same value back into current slide. */
-	g_signal_handlers_block_by_func((gpointer)img->transition_type, (gpointer)img_combo_box_transition_type_changed, img);
+	g_signal_handlers_block_by_func(img->transition_type, (gpointer)img_combo_box_transition_type_changed, img);
 	{
 		GtkTreeIter   iter;
 		GtkTreeModel *model;
@@ -1752,7 +1735,7 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 		gtk_tree_model_get_iter_from_string( model, &iter, info_slide->path );
 		gtk_combo_box_set_active_iter(GTK_COMBO_BOX(img->transition_type), &iter );
 	}
-	g_signal_handlers_unblock_by_func((gpointer)img->transition_type, (gpointer)img_combo_box_transition_type_changed, img);
+	g_signal_handlers_unblock_by_func(img->transition_type, (gpointer)img_combo_box_transition_type_changed, img);
 
 	/* Moved this piece of code below the setting the transition, since we
 	 * get false negatives in certain situations (eg.: if the previously
@@ -1848,7 +1831,7 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 	}
 }
 
-static void img_combo_box_transition_type_changed (GtkComboBox *combo, img_window_struct *img)
+void img_combo_box_transition_type_changed (GtkComboBox *combo, img_window_struct *img)
 {
 	GList        *selected,
 				 *bak;

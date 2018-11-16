@@ -1,5 +1,5 @@
 /*
-** Copyright (c) 2009 Giuseppe Torelli <colossus73@gmail.com>
+** Copyright (c) 2009-2018 Giuseppe Torelli <colossus73@gmail.com>
 ** Copyright (C) 2009 Tadej Borovšak   <tadeboro@gmail.com>
 **  
 ** This program is free software; you can redistribute it and/or modify
