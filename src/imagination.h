@@ -370,6 +370,7 @@ struct _img_window_struct
 	gint   no_text_frames; /* All text frames */
 
 	/* Preview related variables */
+	gboolean	window_is_fullscreen;
   	gboolean	preview_is_running;
   	gboolean	no_music;
   	gboolean	music_preview;

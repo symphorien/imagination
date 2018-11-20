@@ -477,9 +477,9 @@ gint img_ask_user_confirmation(img_window_struct *img_struct, gchar *msg)
 
 gboolean img_key_pressed(GtkWidget *widget, GdkEventKey *event, img_window_struct *img)
 {
-	if ( gdk_window_get_state(gtk_widget_get_window(img->imagination_window)) == 20 )
+	if ( img->window_is_fullscreen )
 	{
-		if (event->keyval == GDK_KEY_F11)
+		if (event->keyval == GDK_KEY_F11 || event->keyval == GDK_KEY_Escape)
 			img_exit_fullscreen(img);
 		else if (event->keyval == GDK_space)
 			img_start_stop_preview(NULL, img);
@@ -499,6 +499,7 @@ void img_exit_fullscreen(img_window_struct *img)
 
 	gtk_window_unfullscreen(GTK_WINDOW(img->imagination_window));
 	gtk_widget_add_accelerator (img->fullscreen, "activate", img->accel_group, GDK_F11, GDK_MODE_DISABLED, GTK_ACCEL_VISIBLE);
+	img->window_is_fullscreen = FALSE;
 
 	/* Restore the cursor */
 	GdkCursor *cursor	= gdk_cursor_new(GDK_ARROW);
@@ -894,6 +895,7 @@ void img_go_fullscreen(GtkMenuItem *item, img_window_struct *img)
 	
 	gtk_alignment_set(GTK_ALIGNMENT(img->viewport_align), 0, 0, 1, 1);
 	gtk_window_fullscreen(GTK_WINDOW(img->imagination_window));
+	img->window_is_fullscreen =TRUE;
 
 	gtk_widget_queue_draw(img->image_area);
 }
@@ -1510,6 +1512,10 @@ static void img_clean_after_preview(img_window_struct *img)
 		img_switch_mode( img, 1 );
 		img->auto_switch = FALSE;
 	}
+
+	/* Stop the music if the user chose preview with music */
+	if (img->fullscreen_music_preview && img->play_child_pid)
+		kill (img->play_child_pid, SIGINT);
 
 	/* Swap toolbar and menu icons */
 	img_swap_toolbar_images( img, TRUE );
