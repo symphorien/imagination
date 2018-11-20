@@ -412,26 +412,25 @@ img_start_export( img_window_struct *img )
 	img->image_to = cairo_image_surface_create( CAIRO_FORMAT_RGB24,
 												img->video_size[0],
 												img->video_size[1] );
-	
+	img->exported_image = cairo_image_surface_create( CAIRO_FORMAT_RGB24,
+													  img->video_size[0],
+													  img->video_size[1] );
+
 	if (entry->gradient == 3)
 	{
 		cairo_t	*cr;
 		cr = cairo_create(img->image_from);
-		cairo_set_source_rgb(cr,	entry->g_stop_color[0],
-									entry->g_stop_color[1],
-									entry->g_stop_color[2] );
-		cairo_paint( cr );
-			
-		cr = cairo_create(img->image_to);
 		cairo_set_source_rgb(cr,	entry->g_start_color[0],
 									entry->g_start_color[1],
 									entry->g_start_color[2] );
 		cairo_paint( cr );
+			
+		cr = cairo_create(img->image_to);
+		cairo_set_source_rgb(cr,	entry->g_stop_color[0],
+									entry->g_stop_color[1],
+									entry->g_stop_color[2] );
+		cairo_paint( cr );
 	}	
-		
-	img->exported_image = cairo_image_surface_create( CAIRO_FORMAT_RGB24,
-													  img->video_size[0],
-													  img->video_size[1] );
 
 	/* Set stop points */
 	img->cur_point = NULL;
@@ -987,12 +986,25 @@ img_render_transition_frame( img_window_struct *img )
 	cairo_t      *cr;
 
 	/* Do image composing here and place result in exported_image */
-	/* Create first image */
-	cr = cairo_create( img->image_from );
-	if (img->work_slide->gradient != 3)
-		img_draw_image_on_surface( cr, img->video_size[0], img->image1,
-							   ( img->point1 ? img->point1 : &point ), img );
-
+	
+	/* Create first image
+	 * this is a dirt hack to have Imagination use the from image painted
+	 * with the second color set in the empty slide fade gradient */
+	if (img->work_slide->o_filename && img->gradient_slide)
+	{
+		cr = cairo_create( img->image_from );
+		cairo_set_source_rgb(cr,	img->g_stop_color[0],
+									img->g_stop_color[1],
+									img->g_stop_color[2]);
+		cairo_paint( cr );
+	}
+	else
+	{
+		cr = cairo_create( img->image_from );
+		if (img->work_slide->gradient != 3)
+			img_draw_image_on_surface( cr, img->video_size[0], img->image1,
+								( img->point1 ? img->point1 : &point ), img );
+	}
 #if 0
 	/* Render subtitle if present */
 	if( img->work_slide->subtitle )
@@ -1120,7 +1132,11 @@ img_render_still_frame( img_window_struct *img,
 
 	/* Paint surface */
 	cr = cairo_create( img->exported_image );
-	img_draw_image_on_surface( cr, img->video_size[0], img->image2,
+	if (img->work_slide->gradient == 3)
+		img_draw_image_on_surface( cr, img->video_size[0], img->image_to,
+							   p_draw_point, img );
+	else
+		img_draw_image_on_surface( cr, img->video_size[0], img->image2,
 							   p_draw_point, img );
 
 	/* Render subtitle if present */

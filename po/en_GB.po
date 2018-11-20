@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: imagination 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-16 17:22+0000\n"
+"POT-Creation-Date: 2018-11-18 20:40+0000\n"
 "PO-Revision-Date: 2011-06-11 20:44+0100\n"
 "Last-Translator: Robert Chéramy <robert@cheramy.net>\n"
 "Language-Team: English (British)\n"
@@ -134,22 +134,22 @@ msgstr "Preview"
 #: ../src/main-window.c:293
 #, fuzzy
 msgid "With music"
-msgstr "Import music"
+msgstr "With music"
 
 #: ../src/main-window.c:302
 #, fuzzy
 msgid "Without music"
-msgstr "Import music"
+msgstr "Without music"
 
 #: ../src/main-window.c:309
 #, fuzzy
 msgid "Continuos"
-msgstr "Contents"
+msgstr "Continuos"
 
 #: ../src/main-window.c:316
 #, fuzzy
 msgid "Ex_port"
-msgstr "Export"
+msgstr "Ex_port"
 
 #. Slide menu
 #: ../src/main-window.c:332
@@ -165,10 +165,9 @@ msgstr "_Zoom"
 msgid "Add empt_y slide"
 msgstr "Add empt_y slide"
 
-#: ../src/main-window.c:381 ../src/callbacks.c:2390
-#, fuzzy
+#: ../src/main-window.c:381 ../src/callbacks.c:2392
 msgid "Edit empty slide"
-msgstr "Add empt_y slide"
+msgstr "Edit empty slide"
 
 #: ../src/main-window.c:393
 msgid "Dele_te"
@@ -209,7 +208,7 @@ msgstr "Preview _frame rate"
 
 #: ../src/main-window.c:460
 msgid "Fullscreen"
-msgstr ""
+msgstr "Fullscreen"
 
 #: ../src/main-window.c:481
 #, c-format
@@ -275,10 +274,10 @@ msgstr "Normal Size"
 msgid "Fit Zoom in Window"
 msgstr "Fit Zoom in Window"
 
-#: ../src/main-window.c:611 ../src/callbacks.c:1483
+#: ../src/main-window.c:611 ../src/callbacks.c:1485
 #, fuzzy
 msgid "Starts the preview without music"
-msgstr "Starts the preview"
+msgstr "Starts the preview without music"
 
 #: ../src/main-window.c:620
 msgid "Go to the first slide of the slideshow"
@@ -359,7 +358,7 @@ msgstr "Stop Point:"
 #: ../src/main-window.c:866
 #, fuzzy
 msgid "Add Stop point"
-msgstr "Stop Point:"
+msgstr "Add Stop Point"
 
 #: ../src/main-window.c:870
 msgid "Duration:"
@@ -368,7 +367,7 @@ msgstr "Duration:"
 #: ../src/main-window.c:886
 #, fuzzy
 msgid "Remove Stop point"
-msgstr "Stop Point:"
+msgstr "Remove Stop Point"
 
 #: ../src/main-window.c:891
 msgid "Zoom: "
@@ -395,21 +394,24 @@ msgid ""
 "Click to choose the font border color. If the opacity value is set to 0, "
 "Imagination will not render any border."
 msgstr ""
+"Click to choose the font border color. If the opacity value is set to 0, "
+"Imagination will not render any border."
 
 #: ../src/main-window.c:978
 msgid ""
 "Click to choose the font background color. If the opacity value is set to 0, "
 "Imagination will not render any background."
 msgstr ""
+"Click to choose the font background color. If the opacity value is set to 0, "
+"Imagination will not render any background."
 
 #: ../src/main-window.c:986
 msgid "Text pattern:"
-msgstr ""
+msgstr "Text pattern:"
 
 #: ../src/main-window.c:996
-#, fuzzy
 msgid "Click to choose the text pattern"
-msgstr "Click to choose the font"
+msgstr "Click to choose the text pattern"
 
 #: ../src/main-window.c:1003
 msgid "Animation:"
@@ -515,8 +517,8 @@ msgstr ""
 "Slides whose transition is applied only once are not shown here.\n"
 "Click on the slide to have Imagination automatically select it."
 
-#: ../src/callbacks.c:134 ../src/callbacks.c:515 ../src/callbacks.c:1539
-#: ../src/callbacks.c:1621
+#: ../src/callbacks.c:134 ../src/callbacks.c:515 ../src/callbacks.c:1541
+#: ../src/callbacks.c:1623
 msgid "You didn't save your slideshow yet. Are you sure you want to close it?"
 msgstr "You didn't save your slideshow yet. Are you sure you want to close it?"
 
@@ -533,7 +535,7 @@ msgstr "Import audio files, use CTRL key for multiple select"
 msgid "All audio files"
 msgstr "All audio files"
 
-#: ../src/callbacks.c:310 ../src/callbacks.c:385 ../src/callbacks.c:1566
+#: ../src/callbacks.c:310 ../src/callbacks.c:385 ../src/callbacks.c:1568
 #: ../src/support.c:358
 msgid "All files"
 msgstr "All files"
@@ -557,63 +559,57 @@ msgstr[1] "%d x %d pixels"
 msgid "translator-credits"
 msgstr "Giuseppe Torelli <colossus73@gmail.com>"
 
-#: ../src/callbacks.c:1490
+#: ../src/callbacks.c:1492
 msgid "Stops the preview"
 msgstr "Stops the preview"
 
-#: ../src/callbacks.c:1549
+#: ../src/callbacks.c:1551
 msgid "Load an Imagination slideshow project"
 msgstr "Load an Imagination slideshow project"
 
-#: ../src/callbacks.c:1550
+#: ../src/callbacks.c:1552
 msgid "Save an Imagination slideshow project"
 msgstr "Save an Imagination slideshow project"
 
-#: ../src/callbacks.c:1560
+#: ../src/callbacks.c:1562
 msgid "Imagination projects (*.img)"
 msgstr "Imagination projects (*.img)"
 
-#: ../src/callbacks.c:2390
+#: ../src/callbacks.c:2392
 msgid "Create empty slide"
 msgstr "Create empty slide"
 
-#: ../src/callbacks.c:2401
+#: ../src/callbacks.c:2403
 msgid "Empty slide options:"
 msgstr "Empty slide options:"
 
-#: ../src/callbacks.c:2411
-#, fuzzy
+#: ../src/callbacks.c:2413
 msgid "_Solid color"
-msgstr "Use _solid colour"
+msgstr "_Solid colour"
 
-#: ../src/callbacks.c:2417
-#, fuzzy
+#: ../src/callbacks.c:2419
 msgid "_Linear gradient"
-msgstr "Use _linear gradient"
+msgstr "_Linear gradient"
 
-#: ../src/callbacks.c:2423
-#, fuzzy
+#: ../src/callbacks.c:2425
 msgid "_Radial gradient"
-msgstr "Use _radial gradient"
+msgstr "_Radial gradient"
 
-#: ../src/callbacks.c:2429
-#, fuzzy
+#: ../src/callbacks.c:2431
 msgid "_Fade gradient"
-msgstr "Use _radial gradient"
+msgstr "_Fade gradient"
 
-#: ../src/callbacks.c:3078
-#, fuzzy
+#: ../src/callbacks.c:3094
 msgid "Please choose a PNG file"
-msgstr "Please choose the audio files to import"
+msgstr "Please choose a PNG file"
 
-#: ../src/callbacks.c:3092
-#, fuzzy
+#: ../src/callbacks.c:3108
 msgid "PNG files"
-msgstr "All files"
+msgstr "PNG files"
 
-#: ../src/callbacks.c:3099
+#: ../src/callbacks.c:3115
 msgid "Delete current pattern"
-msgstr ""
+msgstr "Delete current pattern"
 
 #. Display propert title depending on the callback that is calling this function.
 #: ../src/new_slideshow.c:66
@@ -641,9 +637,8 @@ msgstr "Frames per Second (FPS):"
 
 #. Aspect Ratio
 #: ../src/new_slideshow.c:142
-#, fuzzy
 msgid "Television Format:"
-msgstr "<b>Television Format</b>"
+msgstr "Television Format:"
 
 #. Bitrate
 #: ../src/new_slideshow.c:152
@@ -765,29 +760,31 @@ msgstr "Overall progress:"
 
 #: ../src/export.c:341
 msgid "Elapsed time:"
-msgstr ""
+msgstr "Elapsed time:"
 
-#: ../src/export.c:453 ../src/export.c:905
+#: ../src/export.c:452 ../src/export.c:904
 #, c-format
 msgid "Slide %d export progress:"
 msgstr "Slide %d export progress:"
 
-#: ../src/export.c:482
+#: ../src/export.c:481
 msgid "Close"
-msgstr ""
+msgstr "Close"
 
-#: ../src/export.c:486
+#: ../src/export.c:485
 #, c-format
 msgid ""
 "Elapsed time: %s\n"
 "\n"
 msgstr ""
+"Elapsed time: %s\n"
+"\n"
 
-#: ../src/export.c:755
+#: ../src/export.c:754
 msgid "Failed to launch the encoder!"
 msgstr "Failed to launch the encoder!"
 
-#: ../src/export.c:903
+#: ../src/export.c:902
 #, c-format
 msgid "Final transition export progress:"
 msgstr "Final transition export progress:"
@@ -819,107 +816,17 @@ msgstr "Final transition export progress:"
 #~ msgid "Aspect Ratio:"
 #~ msgstr "Aspect Ratio:"
 
-#, fuzzy
 #~ msgid "<b>Video Size</b>"
-#~ msgstr "<b>Video Quality:</b>"
+#~ msgstr "<b>Video Size:</b>"
 
-#, fuzzy
 #~ msgid "VOB (DVD video)"
 #~ msgstr "VOB (DVD video)"
 
 #~ msgid "MP4 (MPEG-4)"
 #~ msgstr "MP4 (MPEG-4)"
 
-#, fuzzy
 #~ msgid "OGV (Theora/Vorbis)"
 #~ msgstr "OGV (Theora/Vorbis)"
 
-#, fuzzy
 #~ msgid "FLV (Flash video)"
 #~ msgstr "FLV (Flash video)"
-
-#~ msgid "3GP (Mobile Phones)"
-#~ msgstr "3GP (Mobile Phones)"
-
-#~ msgid "Normal 4:3"
-#~ msgstr "Normal 4:3"
-
-#~ msgid "Widescreen 16:9"
-#~ msgstr "Widescreen 16:9"
-
-#~ msgid "<b>Video Quality:</b>"
-#~ msgstr "<b>Video Quality:</b>"
-
-#~ msgid "Low"
-#~ msgstr "Low"
-
-#~ msgid "Medium"
-#~ msgstr "Medium"
-
-#~ msgid "512 kbps (low)"
-#~ msgstr "512 kbps (low)"
-
-#~ msgid "1024 kbps (medium)"
-#~ msgstr "1024 kbps (medium)"
-
-#~ msgid "2048 kbps (high)"
-#~ msgstr "2048 kbps (high)"
-
-#~ msgid "384 kbps (low)"
-#~ msgstr "384 kbps (low)"
-
-#~ msgid "768 kbps (medium)"
-#~ msgstr "768 kbps (medium)"
-
-#~ msgid "1536 kbps (high)"
-#~ msgstr "1536 kbps (high)"
-
-#, fuzzy
-#~ msgid "low"
-#~ msgstr "Slow"
-
-#~ msgid "Rotate the slide clockwise"
-#~ msgstr "Rotate the slide clockwise"
-
-#~ msgid "Goto first slide"
-#~ msgstr "Goto first slide"
-
-#~ msgid "Goto last slide"
-#~ msgstr "Goto last slide"
-
-#~ msgid "VOB export"
-#~ msgstr "VOB Export"
-
-#~ msgid "OGG export"
-#~ msgstr "OGG Export"
-
-#~ msgid "FLV export"
-#~ msgstr "FLV Export"
-
-#~ msgid "An error occurred while trying to rotate the slide:"
-#~ msgstr "An error occurred while trying to rotate the slide:"
-
-#~ msgid "Slide Number:"
-#~ msgstr "Slide Number:"
-
-#~ msgid "Jump to the entered slide number"
-#~ msgstr "Jump to the entered slide number"
-
-#~ msgid "Export the DVD slideshow"
-#~ msgstr "Export the DVD slideshow"
-
-#~ msgid ""
-#~ "The length of the audio track is longer than the video one. Do you want "
-#~ "to continue?"
-#~ msgstr ""
-#~ "The lenght of the audio track is longer than the video one. Do you want "
-#~ "to continue?"
-
-#~ msgid "Export the slideshow as:"
-#~ msgstr "Export the slideshow as:"
-
-#~ msgid "Can't read file header!"
-#~ msgstr "Can't read file header!"
-
-#~ msgid "Import the audio files"
-#~ msgstr "Import the audio files"

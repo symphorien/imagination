@@ -1414,6 +1414,11 @@ static gboolean img_transition_timeout(img_window_struct *img)
 	}
 
 	/* Render single frame */
+	if (img->work_slide->gradient == 3)
+	{
+		img->gradient_slide = TRUE;
+		memcpy(img->g_stop_color, img->work_slide->g_stop_color,  3 * sizeof(gdouble));
+	}
 	img_render_transition_frame( img );
 
 	/* Schedule our image redraw */
@@ -1456,6 +1461,12 @@ static gboolean img_still_timeout(img_window_struct *img)
 
 		return FALSE;
 	}
+
+	/* This is a dirty hack to prevent Imagination
+	keep painting the source image with the second
+	* color set in the empty slide fade gradient */
+	if (strcmp(gtk_entry_get_text(GTK_ENTRY(img->slide_number_entry)) , "2") == 0)
+		img->gradient_slide = FALSE;
 
 	/* Render frame */
 	img_render_still_frame( img, img->preview_fps );
@@ -1571,8 +1582,8 @@ void img_choose_slideshow_filename(GtkWidget *widget, img_window_struct *img)
         if (action == GTK_FILE_CHOOSER_ACTION_SAVE)
             gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER (fc), "unknown.img");
 
-        if (img->project_current_dir)
-            gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fc),img->project_current_dir);
+        /*if (img->project_current_dir)
+            gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fc),img->project_current_dir);*/
 
 
 		gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER (fc),TRUE);
@@ -1585,9 +1596,9 @@ void img_choose_slideshow_filename(GtkWidget *widget, img_window_struct *img)
 				gtk_widget_destroy(fc);
 				return;
 			}
-			if (img->project_current_dir)
+			/*if (img->project_current_dir)
                 g_free(img->project_current_dir);
-            img->project_current_dir = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(fc));
+            img->project_current_dir = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(fc));*/
 
 		}
 		else if (response == GTK_RESPONSE_CANCEL || GTK_RESPONSE_DELETE_EVENT)
@@ -3098,8 +3109,8 @@ img_pattern_clicked(GtkMenuItem *item,
 							GTK_RESPONSE_ACCEPT,
 							NULL);
 
-	if (img->project_current_dir)
-		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fc),img->project_current_dir);
+	/*if (img->project_current_dir)
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fc),img->project_current_dir);*/
 
 	/* Image files filter */
 	png_filter = gtk_file_filter_new ();

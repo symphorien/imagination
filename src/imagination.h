@@ -345,6 +345,11 @@ struct _img_window_struct
   	GtkTreeIter      prev_ss_iter;
   	GtkTreePath 	*first_selected_path;
   	guint		     source_id;
+  	gboolean	     gradient_slide; /* Flag to allow the hack when transitioning
+										from an empty slide with fade gradient */
+	gdouble			g_stop_color[3]; /* Backup stop color to allow the transition
+										from image_from painted with the second color
+										set in the empty slide fade gradient */
 
 	/* Counters that control animation flow */
 	guint  total_nr_frames;    /* Total number of frames */

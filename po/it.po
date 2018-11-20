@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: imagination 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-16 17:22+0000\n"
+"POT-Creation-Date: 2018-11-18 20:40+0000\n"
 "PO-Revision-Date: 2011-06-11 20:47+0100\n"
 "Last-Translator: Robert Chéramy <robert@cheramy.net>\n"
 "Language-Team: Italian\n"
@@ -162,7 +162,7 @@ msgstr "_Zoom"
 msgid "Add empt_y slide"
 msgstr "Aggiungi diapositiva vuota"
 
-#: ../src/main-window.c:381 ../src/callbacks.c:2390
+#: ../src/main-window.c:381 ../src/callbacks.c:2392
 #, fuzzy
 msgid "Edit empty slide"
 msgstr "Aggiungi diapositiva vuota"
@@ -272,7 +272,7 @@ msgstr "Dimensioni normali"
 msgid "Fit Zoom in Window"
 msgstr "Adatta lo zoom nella finestra"
 
-#: ../src/main-window.c:611 ../src/callbacks.c:1483
+#: ../src/main-window.c:611 ../src/callbacks.c:1485
 #, fuzzy
 msgid "Starts the preview without music"
 msgstr "Avvia l'anteprima"
@@ -514,8 +514,8 @@ msgstr ""
 "Clicca sulla diapositiva per far sì che Imagination la selezioni "
 "automaticamente."
 
-#: ../src/callbacks.c:134 ../src/callbacks.c:515 ../src/callbacks.c:1539
-#: ../src/callbacks.c:1621
+#: ../src/callbacks.c:134 ../src/callbacks.c:515 ../src/callbacks.c:1541
+#: ../src/callbacks.c:1623
 msgid "You didn't save your slideshow yet. Are you sure you want to close it?"
 msgstr ""
 "La presentazione non è stata ancora salvata, sei sicuro di volerla chiudere?"
@@ -533,7 +533,7 @@ msgstr "Importazione audio, usa MAIUSC per la selezione multipla"
 msgid "All audio files"
 msgstr "Tutti i file audio"
 
-#: ../src/callbacks.c:310 ../src/callbacks.c:385 ../src/callbacks.c:1566
+#: ../src/callbacks.c:310 ../src/callbacks.c:385 ../src/callbacks.c:1568
 #: ../src/support.c:358
 msgid "All files"
 msgstr "Tutti i file"
@@ -557,62 +557,62 @@ msgstr[1] "%d x %d pixel"
 msgid "translator-credits"
 msgstr "Giuseppe Torelli <colossus73@gmail.com>"
 
-#: ../src/callbacks.c:1490
+#: ../src/callbacks.c:1492
 msgid "Stops the preview"
 msgstr "Ferma l'anteprima"
 
-#: ../src/callbacks.c:1549
+#: ../src/callbacks.c:1551
 msgid "Load an Imagination slideshow project"
 msgstr "Carica una presentazione di Imagination"
 
-#: ../src/callbacks.c:1550
+#: ../src/callbacks.c:1552
 msgid "Save an Imagination slideshow project"
 msgstr "Salva una presentazione di Imagination"
 
-#: ../src/callbacks.c:1560
+#: ../src/callbacks.c:1562
 #, fuzzy
 msgid "Imagination projects (*.img)"
 msgstr "Progetti di Imagination (*.img)"
 
-#: ../src/callbacks.c:2390
+#: ../src/callbacks.c:2392
 msgid "Create empty slide"
 msgstr "Crea una diapositiva vuota"
 
-#: ../src/callbacks.c:2401
+#: ../src/callbacks.c:2403
 msgid "Empty slide options:"
 msgstr "Opzioni per la diapositiva vuota:"
 
-#: ../src/callbacks.c:2411
+#: ../src/callbacks.c:2413
 #, fuzzy
 msgid "_Solid color"
 msgstr "U_sa un colore pieno"
 
-#: ../src/callbacks.c:2417
+#: ../src/callbacks.c:2419
 #, fuzzy
 msgid "_Linear gradient"
 msgstr "Usa un gradiente _lineare"
 
-#: ../src/callbacks.c:2423
+#: ../src/callbacks.c:2425
 #, fuzzy
 msgid "_Radial gradient"
 msgstr "Usa un gradiente _radiale"
 
-#: ../src/callbacks.c:2429
+#: ../src/callbacks.c:2431
 #, fuzzy
 msgid "_Fade gradient"
 msgstr "Usa un gradiente _radiale"
 
-#: ../src/callbacks.c:3078
+#: ../src/callbacks.c:3094
 #, fuzzy
 msgid "Please choose a PNG file"
 msgstr "Prego scegliere il nome dei file audio da importare"
 
-#: ../src/callbacks.c:3092
+#: ../src/callbacks.c:3108
 #, fuzzy
 msgid "PNG files"
 msgstr "Tutti i file"
 
-#: ../src/callbacks.c:3099
+#: ../src/callbacks.c:3115
 msgid "Delete current pattern"
 msgstr ""
 
@@ -772,27 +772,27 @@ msgstr "Progresso complessivo:"
 msgid "Elapsed time:"
 msgstr ""
 
-#: ../src/export.c:453 ../src/export.c:905
+#: ../src/export.c:452 ../src/export.c:904
 #, c-format
 msgid "Slide %d export progress:"
 msgstr "Progresso esportazione diapositiva %d"
 
-#: ../src/export.c:482
+#: ../src/export.c:481
 msgid "Close"
 msgstr ""
 
-#: ../src/export.c:486
+#: ../src/export.c:485
 #, c-format
 msgid ""
 "Elapsed time: %s\n"
 "\n"
 msgstr ""
 
-#: ../src/export.c:755
+#: ../src/export.c:754
 msgid "Failed to launch the encoder!"
 msgstr "Non è stato possibile mandare in esecuzione l'encoder!"
 
-#: ../src/export.c:903
+#: ../src/export.c:902
 #, c-format
 msgid "Final transition export progress:"
 msgstr "Progresso esportazione diapositiva finale:"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: imagination 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-16 17:22+0000\n"
+"POT-Creation-Date: 2018-11-18 20:40+0000\n"
 "PO-Revision-Date: 2009-02-24 11:55+0100\n"
 "Last-Translator: tadeboro <tadeboro@gmail.com>\n"
 "Language-Team: Slovenian\n"
@@ -166,7 +166,7 @@ msgstr "Po_večava"
 msgid "Add empt_y slide"
 msgstr "Dodaj prazen diapozitiv"
 
-#: ../src/main-window.c:381 ../src/callbacks.c:2390
+#: ../src/main-window.c:381 ../src/callbacks.c:2392
 #, fuzzy
 msgid "Edit empty slide"
 msgstr "Dodaj prazen diapozitiv"
@@ -280,7 +280,7 @@ msgstr "Normalna velikost"
 msgid "Fit Zoom in Window"
 msgstr ""
 
-#: ../src/main-window.c:611 ../src/callbacks.c:1483
+#: ../src/main-window.c:611 ../src/callbacks.c:1485
 #, fuzzy
 msgid "Starts the preview without music"
 msgstr "Požene predogled"
@@ -524,8 +524,8 @@ msgstr ""
 "Prehodi, ki so uporabljeni le enkrat, niso prikazani.\n"
 "Kliknite diapozitiv, če ga želite prikazati v urejevalniku."
 
-#: ../src/callbacks.c:134 ../src/callbacks.c:515 ../src/callbacks.c:1539
-#: ../src/callbacks.c:1621
+#: ../src/callbacks.c:134 ../src/callbacks.c:515 ../src/callbacks.c:1541
+#: ../src/callbacks.c:1623
 msgid "You didn't save your slideshow yet. Are you sure you want to close it?"
 msgstr "Projekt ni bil shranjen. Ste prepričani da ga želite zapreti?"
 
@@ -543,7 +543,7 @@ msgstr "Uvoz diapozitivov, uporabite SHIFT za izbor večih slik"
 msgid "All audio files"
 msgstr "Vse glasbene datoteke"
 
-#: ../src/callbacks.c:310 ../src/callbacks.c:385 ../src/callbacks.c:1566
+#: ../src/callbacks.c:310 ../src/callbacks.c:385 ../src/callbacks.c:1568
 #: ../src/support.c:358
 msgid "All files"
 msgstr "Vse datoteke"
@@ -570,63 +570,63 @@ msgstr[3] "%d x %d pik"
 msgid "translator-credits"
 msgstr "Tadej Borovšak <tadeboro@gmail.com>"
 
-#: ../src/callbacks.c:1490
+#: ../src/callbacks.c:1492
 msgid "Stops the preview"
 msgstr "Ustavi predogled"
 
-#: ../src/callbacks.c:1549
+#: ../src/callbacks.c:1551
 msgid "Load an Imagination slideshow project"
 msgstr "Odpri Domišljijin projekt"
 
-#: ../src/callbacks.c:1550
+#: ../src/callbacks.c:1552
 msgid "Save an Imagination slideshow project"
 msgstr "Shrani Domišljijin projekt"
 
-#: ../src/callbacks.c:1560
+#: ../src/callbacks.c:1562
 #, fuzzy
 msgid "Imagination projects (*.img)"
 msgstr "Domišljija"
 
-#: ../src/callbacks.c:2390
+#: ../src/callbacks.c:2392
 #, fuzzy
 msgid "Create empty slide"
 msgstr "Ustvari nov diapozitiv"
 
-#: ../src/callbacks.c:2401
+#: ../src/callbacks.c:2403
 msgid "Empty slide options:"
 msgstr "Možnosti praznega diapozitiva:"
 
-#: ../src/callbacks.c:2411
+#: ../src/callbacks.c:2413
 #, fuzzy
 msgid "_Solid color"
 msgstr "Uporabi či_sto barvo"
 
-#: ../src/callbacks.c:2417
+#: ../src/callbacks.c:2419
 #, fuzzy
 msgid "_Linear gradient"
 msgstr "Uporabi _linearni gradient"
 
-#: ../src/callbacks.c:2423
+#: ../src/callbacks.c:2425
 #, fuzzy
 msgid "_Radial gradient"
 msgstr "Uporabi _radialni gradient"
 
-#: ../src/callbacks.c:2429
+#: ../src/callbacks.c:2431
 #, fuzzy
 msgid "_Fade gradient"
 msgstr "Uporabi _radialni gradient"
 
-#: ../src/callbacks.c:3078
+#: ../src/callbacks.c:3094
 #, fuzzy
 msgid "Please choose a PNG file"
 msgstr "Prosimo izberite glasbene datoteke za uvoz"
 
-#: ../src/callbacks.c:3092
+#: ../src/callbacks.c:3108
 #, fuzzy
 msgid "PNG files"
 msgstr "Vse datoteke"
 
-#: ../src/callbacks.c:3099
+#: ../src/callbacks.c:3115
 msgid "Delete current pattern"
 msgstr ""
 
@@ -789,27 +789,27 @@ msgstr "Skupni napredek:"
 msgid "Elapsed time:"
 msgstr ""
 
-#: ../src/export.c:453 ../src/export.c:905
+#: ../src/export.c:452 ../src/export.c:904
 #, c-format
 msgid "Slide %d export progress:"
 msgstr "Napredek izvoza diapozitiva %d:"
 
-#: ../src/export.c:482
+#: ../src/export.c:481
 msgid "Close"
 msgstr ""
 
-#: ../src/export.c:486
+#: ../src/export.c:485
 #, c-format
 msgid ""
 "Elapsed time: %s\n"
 "\n"
 msgstr ""
 
-#: ../src/export.c:755
+#: ../src/export.c:754
 msgid "Failed to launch the encoder!"
 msgstr "Ne morem zagnati šifrirnika!"
 
-#: ../src/export.c:903
+#: ../src/export.c:902
 #, c-format
 msgid "Final transition export progress:"
 msgstr "Napredek izvoza zadnjega prehoda:"

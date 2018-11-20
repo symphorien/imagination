@@ -1,6 +1,7 @@
 Imagination changelog
 
-xx/xx/19 - 3.4		- Fixed seg-fault when trying to delete a slide when preview is running.
+xx/xx/19 - 3.4		- Added a nice fading gradient in the Add/Edit slide dialog.
+			- Fixed seg-fault when trying to delete a slide when preview is running.
 			- Current slideshow is no more closed if user cancels when opening a new one.
 			- Enjoy FULLSCREEN preview with background music and continuos mode. WOOOOOOOOOOW !!!
 			- The CTRL+A shortcut doesn't select all the slides anymore when pressed from the subtitle widget entry.

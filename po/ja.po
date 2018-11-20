@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: imagination 1.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-16 17:22+0000\n"
+"POT-Creation-Date: 2018-11-18 20:40+0000\n"
 "PO-Revision-Date: 2009-09-26 20:47+0100\n"
 "Last-Translator: YannUbuntu & Yukimi <yann_ubuntu-1@yahoo.fr>\n"
 "Language-Team: Japanese <xfce-users-jp@ml.fdiary.net>\n"
@@ -165,7 +165,7 @@ msgstr "ズーム(_Z)"
 msgid "Add empt_y slide"
 msgstr "空のスライドを追加(_y)"
 
-#: ../src/main-window.c:381 ../src/callbacks.c:2390
+#: ../src/main-window.c:381 ../src/callbacks.c:2392
 #, fuzzy
 msgid "Edit empty slide"
 msgstr "空のスライドを追加(_y)"
@@ -277,7 +277,7 @@ msgstr "普通サイズ"
 msgid "Fit Zoom in Window"
 msgstr ""
 
-#: ../src/main-window.c:611 ../src/callbacks.c:1483
+#: ../src/main-window.c:611 ../src/callbacks.c:1485
 #, fuzzy
 msgid "Starts the preview without music"
 msgstr "プレビューを開始"
@@ -522,8 +522,8 @@ msgstr ""
 "一つトランジションだけあるスライドを表示しない.\n"
 "スライドをクリークして、選択します."
 
-#: ../src/callbacks.c:134 ../src/callbacks.c:515 ../src/callbacks.c:1539
-#: ../src/callbacks.c:1621
+#: ../src/callbacks.c:134 ../src/callbacks.c:515 ../src/callbacks.c:1541
+#: ../src/callbacks.c:1623
 msgid "You didn't save your slideshow yet. Are you sure you want to close it?"
 msgstr "まだスライドショーを保存していません。本当に閉じますか？"
 
@@ -541,7 +541,7 @@ msgstr "画像を選んで下さい（SHIFTキーで複数のファイルを選�
 msgid "All audio files"
 msgstr "全てのオーディオファイル"
 
-#: ../src/callbacks.c:310 ../src/callbacks.c:385 ../src/callbacks.c:1566
+#: ../src/callbacks.c:310 ../src/callbacks.c:385 ../src/callbacks.c:1568
 #: ../src/support.c:358
 msgid "All files"
 msgstr "全てのファイル"
@@ -566,63 +566,63 @@ msgstr[1] "%d x %d ピクセル"
 msgid "translator-credits"
 msgstr "翻訳協力者"
 
-#: ../src/callbacks.c:1490
+#: ../src/callbacks.c:1492
 msgid "Stops the preview"
 msgstr "プレビューを停止する"
 
-#: ../src/callbacks.c:1549
+#: ../src/callbacks.c:1551
 msgid "Load an Imagination slideshow project"
 msgstr "Imaginationスライドショーを開く"
 
-#: ../src/callbacks.c:1550
+#: ../src/callbacks.c:1552
 msgid "Save an Imagination slideshow project"
 msgstr "Imaginationスライドショーを保存する"
 
-#: ../src/callbacks.c:1560
+#: ../src/callbacks.c:1562
 #, fuzzy
 msgid "Imagination projects (*.img)"
 msgstr "Imagination"
 
-#: ../src/callbacks.c:2390
+#: ../src/callbacks.c:2392
 #, fuzzy
 msgid "Create empty slide"
 msgstr "新しいスライドショーを作成する"
 
-#: ../src/callbacks.c:2401
+#: ../src/callbacks.c:2403
 msgid "Empty slide options:"
 msgstr "スライドの設定を削除する"
 
-#: ../src/callbacks.c:2411
+#: ../src/callbacks.c:2413
 #, fuzzy
 msgid "_Solid color"
 msgstr "均一色を使います (_s)"
 
-#: ../src/callbacks.c:2417
+#: ../src/callbacks.c:2419
 #, fuzzy
 msgid "_Linear gradient"
 msgstr "線形グラデーションを使います (_l)"
 
-#: ../src/callbacks.c:2423
+#: ../src/callbacks.c:2425
 #, fuzzy
 msgid "_Radial gradient"
 msgstr "丸形グラデーションを使います (_r)"
 
-#: ../src/callbacks.c:2429
+#: ../src/callbacks.c:2431
 #, fuzzy
 msgid "_Fade gradient"
 msgstr "丸形グラデーションを使います (_r)"
 
-#: ../src/callbacks.c:3078
+#: ../src/callbacks.c:3094
 #, fuzzy
 msgid "Please choose a PNG file"
 msgstr "音楽を選んで下さい（SHIFTキーで複数のファイルを選択出来ます）"
 
-#: ../src/callbacks.c:3092
+#: ../src/callbacks.c:3108
 #, fuzzy
 msgid "PNG files"
 msgstr "全てのファイル"
 
-#: ../src/callbacks.c:3099
+#: ../src/callbacks.c:3115
 msgid "Delete current pattern"
 msgstr ""
 
@@ -781,27 +781,27 @@ msgstr "全体の進捗:"
 msgid "Elapsed time:"
 msgstr ""
 
-#: ../src/export.c:453 ../src/export.c:905
+#: ../src/export.c:452 ../src/export.c:904
 #, c-format
 msgid "Slide %d export progress:"
 msgstr " %d スライドを作成しています:"
 
-#: ../src/export.c:482
+#: ../src/export.c:481
 msgid "Close"
 msgstr ""
 
-#: ../src/export.c:486
+#: ../src/export.c:485
 #, c-format
 msgid ""
 "Elapsed time: %s\n"
 "\n"
 msgstr ""
 
-#: ../src/export.c:755
+#: ../src/export.c:754
 msgid "Failed to launch the encoder!"
 msgstr "エンコーダは始めることが出来ませんでした！"
 
-#: ../src/export.c:903
+#: ../src/export.c:902
 #, c-format
 msgid "Final transition export progress:"
 msgstr "最後のスライドを作成しています:"

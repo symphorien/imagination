@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: imagination 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-16 17:22+0000\n"
+"POT-Creation-Date: 2018-11-18 20:40+0000\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Robert Chéramy <robert@cheramy.net>\n"
 "Language-Team: \n"
@@ -168,7 +168,7 @@ msgstr "_Přiblížení"
 msgid "Add empt_y slide"
 msgstr "Přidat prá_zdný snímek"
 
-#: ../src/main-window.c:381 ../src/callbacks.c:2390
+#: ../src/main-window.c:381 ../src/callbacks.c:2392
 #, fuzzy
 msgid "Edit empty slide"
 msgstr "Přidat prá_zdný snímek"
@@ -279,7 +279,7 @@ msgstr "Běžná velikost"
 msgid "Fit Zoom in Window"
 msgstr "Přizpůsobit přiblížení velikosti okna"
 
-#: ../src/main-window.c:611 ../src/callbacks.c:1483
+#: ../src/main-window.c:611 ../src/callbacks.c:1485
 #, fuzzy
 msgid "Starts the preview without music"
 msgstr "Spouští náhled"
@@ -519,8 +519,8 @@ msgstr ""
 "Snímky, jejichž přechod se použije pouze jednou, se zde nezobrazují.\n"
 "Aplikace Imagination snímek automaticky vybere po kliknutí na něj."
 
-#: ../src/callbacks.c:134 ../src/callbacks.c:515 ../src/callbacks.c:1539
-#: ../src/callbacks.c:1621
+#: ../src/callbacks.c:134 ../src/callbacks.c:515 ../src/callbacks.c:1541
+#: ../src/callbacks.c:1623
 msgid "You didn't save your slideshow yet. Are you sure you want to close it?"
 msgstr "Dosud jste prezentaci neuložili. Opravdu ji chcete zavřít?"
 
@@ -537,7 +537,7 @@ msgstr "Import zvukových souborů, více souborů vyberete použitím klávesy 
 msgid "All audio files"
 msgstr "Všechny zvukové soubory"
 
-#: ../src/callbacks.c:310 ../src/callbacks.c:385 ../src/callbacks.c:1566
+#: ../src/callbacks.c:310 ../src/callbacks.c:385 ../src/callbacks.c:1568
 #: ../src/support.c:358
 msgid "All files"
 msgstr "Všechny soubory"
@@ -562,62 +562,62 @@ msgstr[2] "%d x %d obrazových bodů"
 msgid "translator-credits"
 msgstr "Michal Várady <miko.vaji@gmail.com>"
 
-#: ../src/callbacks.c:1490
+#: ../src/callbacks.c:1492
 msgid "Stops the preview"
 msgstr "Zastaví náhled"
 
-#: ../src/callbacks.c:1549
+#: ../src/callbacks.c:1551
 msgid "Load an Imagination slideshow project"
 msgstr "Načtení projektu prezentace aplikace Imagination"
 
-#: ../src/callbacks.c:1550
+#: ../src/callbacks.c:1552
 msgid "Save an Imagination slideshow project"
 msgstr "Uložení projektu prezentace aplikace Imagination"
 
-#: ../src/callbacks.c:1560
+#: ../src/callbacks.c:1562
 #, fuzzy
 msgid "Imagination projects (*.img)"
 msgstr "Projekty aplikace Imagination (*.img)"
 
-#: ../src/callbacks.c:2390
+#: ../src/callbacks.c:2392
 msgid "Create empty slide"
 msgstr "Vytvořit prázdný snímek"
 
-#: ../src/callbacks.c:2401
+#: ../src/callbacks.c:2403
 msgid "Empty slide options:"
 msgstr "Možnosti prázdného snímku:"
 
-#: ../src/callbacks.c:2411
+#: ../src/callbacks.c:2413
 #, fuzzy
 msgid "_Solid color"
 msgstr "Použít _jednu barvu"
 
-#: ../src/callbacks.c:2417
+#: ../src/callbacks.c:2419
 #, fuzzy
 msgid "_Linear gradient"
 msgstr "Použít _lineární přechod"
 
-#: ../src/callbacks.c:2423
+#: ../src/callbacks.c:2425
 #, fuzzy
 msgid "_Radial gradient"
 msgstr "Použít _radiální přechod"
 
-#: ../src/callbacks.c:2429
+#: ../src/callbacks.c:2431
 #, fuzzy
 msgid "_Fade gradient"
 msgstr "Použít _radiální přechod"
 
-#: ../src/callbacks.c:3078
+#: ../src/callbacks.c:3094
 #, fuzzy
 msgid "Please choose a PNG file"
 msgstr "Zvolte zvukové soubory pro import"
 
-#: ../src/callbacks.c:3092
+#: ../src/callbacks.c:3108
 #, fuzzy
 msgid "PNG files"
 msgstr "Všechny soubory"
 
-#: ../src/callbacks.c:3099
+#: ../src/callbacks.c:3115
 msgid "Delete current pattern"
 msgstr ""
 
@@ -781,27 +781,27 @@ msgstr "Celkový průběh:"
 msgid "Elapsed time:"
 msgstr ""
 
-#: ../src/export.c:453 ../src/export.c:905
+#: ../src/export.c:452 ../src/export.c:904
 #, c-format
 msgid "Slide %d export progress:"
 msgstr "Průběh exportu snímku %d:"
 
-#: ../src/export.c:482
+#: ../src/export.c:481
 msgid "Close"
 msgstr ""
 
-#: ../src/export.c:486
+#: ../src/export.c:485
 #, c-format
 msgid ""
 "Elapsed time: %s\n"
 "\n"
 msgstr ""
 
-#: ../src/export.c:755
+#: ../src/export.c:754
 msgid "Failed to launch the encoder!"
 msgstr "Nepodařilo se spustit enkodér."
 
-#: ../src/export.c:903
+#: ../src/export.c:902
 #, c-format
 msgid "Final transition export progress:"
 msgstr "Průběh exportu hotových přechodů"

@@ -34,7 +34,7 @@ rm -rf %buildroot
 
 %files
 %defattr(-,root,root)
-%doc AUTHORS COPYING ChangeLog README INSTALL NEWS
+%doc AUTHORS COPYING Changelog README INSTALL NEWS
 %{_bindir}/%{name}
 %{_datadir}/%{name}/pixmaps/*.png
 %{_datadir}/locale/*/LC_MESSAGES/*.mo

@@ -378,7 +378,7 @@ img_window_struct *img_create_window (void)
 	g_signal_connect( G_OBJECT( add_slide ), "activate",
 					  G_CALLBACK( img_add_empty_slide ), img_struct );
 
-	img_struct->edit_empty_slide = gtk_image_menu_item_new_with_mnemonic (_("Edit empty slide"));
+	img_struct->edit_empty_slide = gtk_image_menu_item_new_with_mnemonic (_("Edit _empty slide"));
 	gtk_container_add (GTK_CONTAINER (slide_menu), img_struct->edit_empty_slide);
 	gtk_widget_add_accelerator( img_struct->edit_empty_slide, "activate", img_struct->accel_group,	GDK_e, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE );
 	g_signal_connect( G_OBJECT( img_struct->edit_empty_slide ), "activate",
