@@ -44,20 +44,6 @@
 /* ****************************************************************************
  * Subtitles related definitions
  * ************************************************************************* */
-/* Enum that holds all available positions of text. */
-typedef enum
-{
-	IMG_SUB_POS_TOP_LEFT = 0,
-	IMG_SUB_POS_TOP_CENTER,
-	IMG_SUB_POS_TOP_RIGHT,
-	IMG_SUB_POS_MIDDLE_LEFT,
-	IMG_SUB_POS_MIDDLE_CENTER,
-	IMG_SUB_POS_MIDDLE_RIGHT,
-	IMG_SUB_POS_BOTTOM_LEFT,
-	IMG_SUB_POS_BOTTOM_CENTER,
-	IMG_SUB_POS_BOTTOM_RIGHT
-}
-ImgSubPos;
 
 /* Enum with relative placings */
 typedef enum
@@ -103,11 +89,14 @@ typedef void (*TextAnimationFunc)( cairo_t     *cr,
 								   gint         lh,
 								   gint         posx,
 								   gint         posy,
+								   gint         angle,
 								   gchar		*pattern_filename,
 								   gdouble      progress,
 								   gdouble     *font_color,
 								   gdouble     *font_brdr_color,
-                                   gdouble     *font_bg_color );
+                                   gdouble     *font_bg_color,
+                                   gdouble     *border_color,
+                                   gint			border_width );
 
 
 /* ****************************************************************************
@@ -186,14 +175,18 @@ struct _slide_struct
 	gchar                *subtitle;        /* Subtitle text */
 	gchar			 	 *pattern_filename;/* Pattern image file */
 	TextAnimationFunc     anim;            /* Animation functions */
+	gint                  posX;       	   /* subtitle X position */
+	gint                  posY;        	   /* subtitle Y position */
+	gint                  subtitle_angle;  /* subtitle rotation angle */
 	gint                  anim_id;         /* Animation id */
 	gint                  anim_duration;   /* Duration of animation */
-	ImgSubPos             position;        /* Final position of subtitle */
 	ImgRelPlacing         placing;         /* Relative placing */
 	PangoFontDescription *font_desc;       /* Font description */
 	gdouble               font_color[4];   /* Font color (RGBA format) */
     gdouble               font_brdr_color[4]; /* Font border color (RGBA format) */
     gdouble               font_bg_color[4]; /* Font background color (RGBA format) */
+    gdouble               border_color[4]; /* Border on background color (RGBA format) */
+    gint               	  border_width;		/* Border on background color (RGBA format) */
 };
 
 typedef struct _img_window_struct img_window_struct;
@@ -234,7 +227,6 @@ struct _img_window_struct
 	GtkWidget	*filename_data;
 	GtkTextBuffer *slide_text_buffer;
 	GtkWidget	*scrolled_win;
-	GtkWidget	*expand_button;
 	GtkWidget   *text_pos_button;
 	GtkWidget 	*thumb_scrolledwindow;
   	GtkWidget	*thumbnail_iconview;
@@ -274,12 +266,20 @@ struct _img_window_struct
 	GtkWidget *sub_color;         /* Font color selector button */
     GtkWidget *sub_brdr_color;    /* Border font color selector button */
     GtkWidget *sub_bgcolor;       /* Background font color selector button */
+    GtkWidget *sub_border_color;  /* Border on font background color selector button */
+    GtkWidget *sub_border_width;  /* Border width on font background button */
     GtkWidget *pattern_image;	  /* Font Pattern */
 	GtkWidget *sub_anim;          /* Animation combo box */
 	GtkWidget *sub_anim_duration; /* Animation duration spin button */
 	GtkWidget *sub_placing;       /* Placing combo box */
-	GtkWidget *sub_pos;           /* Position selector button */
-
+	GtkWidget *sub_posX;          /* Position X hscale range */
+	GtkWidget *sub_posY;          /* Position Y hscale range */
+	GtkWidget *x_justify;         /* Button to justify text on x axis */
+	GtkWidget *y_justify;         /* Button to justify text on y axis */
+	GtkWidget *reset_angle;       /* Button to reset the angle to 0 */
+	GtkWidget *sub_angle;          /* Text angle hscale range */
+	GtkAdjustment *sub_posX_adj;	/* Gtk Adjustment for pos x scale */
+	GtkAdjustment *sub_posY_adj;	/* Gtk Adjustment for pos y scale */
 	/* Import slides dialog variables */
 	GtkWidget	*dim_label;
 	GtkWidget	*size_label;
@@ -309,6 +309,7 @@ struct _img_window_struct
 	gboolean	distort_images;
 	gboolean	bye_bye_transition;
 	gboolean	project_is_modified;
+	gboolean	relative_filenames;
     GtkWidget   *video_format_combo;
     GtkWidget   *bye_bye_transition_checkbox;
 	gint        video_format_index;

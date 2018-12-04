@@ -21,7 +21,6 @@ imagination_SOURCES = \
 	audio.c audio.h \
 	export.c export.h \
 	subtitles.c subtitles.h \
-	imgtablebutton.c imgtablebutton.h \
 	imgcellrendererpixbuf.c imgcellrendererpixbuf.h \
 	img_sox.c img_sox.h \
 	video_formats.c video_formats.h

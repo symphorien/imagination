@@ -1,4 +1,5 @@
 /*
+** Copyright (C) 2009-2018 Giuseppe Torelli <colossus73@gmail.com>
 ** Copyright (C) 2009 Tadej Borovšak <tadeboro@gmail.com>
 ** Copyright (C) 2010 Robert Chéramy <robert@cheramy.net>
 **  
@@ -30,15 +31,6 @@
  * Local declarations
  * ************************************************************************* */
 static void
-img_calc_text_pos( gint      surface_w,
-				   gint      surface_h,
-				   gint      layout_w,
-				   gint      layout_h,
-				   ImgSubPos position,
-				   gint     *posx,
-				   gint     *posy );
-
-static void
 img_text_ani_fade( cairo_t     *cr,
 				   PangoLayout *layout,
 				   gint         sw,
@@ -47,21 +39,27 @@ img_text_ani_fade( cairo_t     *cr,
 				   gint         lh,
 				   gint         posx,
 				   gint         posy,
+				   gint         angle,
 				   gchar		*pattern_filename,
 				   gdouble      progress,
 				   gdouble     *font_color,
 				   gdouble     *font_brdr_color,
-				   gdouble     *font_bgcolor);
+				   gdouble     *font_bgcolor,
+				   gdouble     *border_color,
+                   gint			border_width);
 
 static void
 img_text_draw_layout( cairo_t     *cr,
                       PangoLayout *layout,
                       gint			posx,
                       gint 			posy,
+                      gint 			angle,
                       gchar	  	  *pattern_filename,
                       gdouble     *font_color,
                       gdouble     *font_brdr_color,
-                      gdouble     *font_bg_color);
+                      gdouble     *font_bg_color,
+                      gdouble     *border_color,
+                      gint	      border_width);
 
 static void
 img_text_from_left( cairo_t     *cr,
@@ -72,11 +70,14 @@ img_text_from_left( cairo_t     *cr,
  					gint         lh,
  					gint         posx,
  					gint         posy,
+ 					gint         angle,
  					gchar		*pattern_filename,
  					gdouble      progress,
                     gdouble     *font_color,
                     gdouble     *font_brdr_color,
-                    gdouble     *font_bgcolor);
+                    gdouble     *font_bgcolor,
+                    gdouble     *border_color,
+                    gint	     border_width);
 
 static void
 img_text_from_right( cairo_t     *cr,
@@ -87,11 +88,14 @@ img_text_from_right( cairo_t     *cr,
  					 gint         lh,
  					 gint         posx,
  					 gint         posy,
+ 					 gint         angle,
  					 gchar		*pattern_filename,
  					 gdouble      progress,
                      gdouble     *font_color,
                      gdouble     *font_brdr_color,
-                     gdouble     *font_bgcolor);
+                     gdouble     *font_bgcolor,
+                     gdouble     *border_color,
+                     gint	      border_width);
 
 static void
 img_text_from_top( cairo_t     *cr,
@@ -102,12 +106,15 @@ img_text_from_top( cairo_t     *cr,
 				   gint         lh,
 				   gint         posx,
 				   gint         posy,
+				   gint         angle,
 				   gchar		*pattern_filename,
 				   gdouble      progress,
                    gdouble     *font_color,
                    gdouble     *font_brdr_color,
-                   gdouble     *font_bgcolor);
-
+                   gdouble     *font_bgcolor,
+                   gdouble     *border_color,
+                   gint	      border_width);
+                
 static void
 img_text_from_bottom( cairo_t     *cr,
 					  PangoLayout *layout,
@@ -117,11 +124,14 @@ img_text_from_bottom( cairo_t     *cr,
   					  gint         lh,
   					  gint         posx,
   					  gint         posy,
+  					  gint         angle,
   					  gchar			*pattern_filename,
   					  gdouble      progress,
                       gdouble     *font_color,
                       gdouble     *font_brdr_color,
-                      gdouble     *font_bgcolor);
+                      gdouble     *font_bgcolor,
+                      gdouble     *border_color,
+                      gint	      border_width);
 
 static void
 img_text_grow( cairo_t     *cr,
@@ -132,11 +142,14 @@ img_text_grow( cairo_t     *cr,
 			   gint         lh,
 			   gint         posx,
 			   gint         posy,
+			   gint         angle,
 			   gchar		*pattern_filename,
                gdouble      progress,
 			   gdouble     *font_color,
                gdouble     *font_brdr_color,
-               gdouble     *font_bgcolor);
+               gdouble     *font_bgcolor,
+               gdouble     *border_color,
+               gint	      border_width);
 
 static void
 img_text_bottom_to_top( cairo_t     *cr,
@@ -147,11 +160,14 @@ img_text_bottom_to_top( cairo_t     *cr,
  					gint         lh,
  					gint         posx,
  					gint         posy,
+ 					gint         angle,
  					gchar		*pattern_filename,
  					gdouble      progress,
                     gdouble     *font_color,
                     gdouble     *font_brdr_color,
-                    gdouble     *font_bgcolor);
+                    gdouble     *font_bgcolor,
+                    gdouble     *border_color,
+                    gint	      border_width);
 
 static void
 img_text_right_to_left( cairo_t     *cr,
@@ -162,11 +178,14 @@ img_text_right_to_left( cairo_t     *cr,
  					gint         lh,
  					gint         posx,
  					gint         posy,
+ 					gint         angle,
  					gchar		*pattern_filename,
  					gdouble      progress,
                     gdouble     *font_color,
                     gdouble     *font_brdr_color,
-                    gdouble     *font_bgcolor);
+                    gdouble     *font_bgcolor,
+                    gdouble     *border_color,
+                    gint	    border_width);
                       
 /* ****************************************************************************
  * Function definitions
@@ -270,11 +289,14 @@ img_free_text_animation_list( gint           no_animations,
 }
 
 void
-img_render_subtitle( cairo_t              *cr,
+img_render_subtitle( img_window_struct 	  *img,
+					 cairo_t              *cr,
 					 gint                  width,
 					 gint                  height,
 					 gdouble               zoom,
-					 ImgSubPos             position,
+					 gint				   posx,
+					 gint				   posy,
+					 gint				   angle,
 					 ImgRelPlacing         placing,
 					 gdouble               factor,
 					 gdouble               offx,
@@ -285,13 +307,14 @@ img_render_subtitle( cairo_t              *cr,
 					 gdouble              *font_color,
                      gdouble              *font_brdr_color,
                      gdouble              *font_bg_color,
+                     gdouble              *border_color,
+                     gint	              border_width,
                      TextAnimationFunc     func,
 					 gdouble               progress )
 {
 	gint		 lw,     /* Layout width */
-				 lh,     /* Layout height */
-				 posx,   /* Final subtitle position */
-				 posy;
+				 lh;     /* Layout height */
+
 	PangoLayout *layout;
 
 	/* Save cairo state */
@@ -312,26 +335,6 @@ img_render_subtitle( cairo_t              *cr,
 	/* Disable wrapping
 	pango_layout_set_wrap( layout, PANGO_WRAP_WORD );
 	*/
-	switch( position )
-	{
-		case IMG_SUB_POS_TOP_LEFT:
-		case IMG_SUB_POS_MIDDLE_LEFT:
-		case IMG_SUB_POS_BOTTOM_LEFT:
-			pango_layout_set_alignment( layout, PANGO_ALIGN_LEFT );
-			break;
-			
-		case IMG_SUB_POS_TOP_CENTER:
-		case IMG_SUB_POS_MIDDLE_CENTER:
-		case IMG_SUB_POS_BOTTOM_CENTER:
-			pango_layout_set_alignment( layout, PANGO_ALIGN_CENTER );
-			break;
-			
-		case IMG_SUB_POS_TOP_RIGHT:
-		case IMG_SUB_POS_MIDDLE_RIGHT:
-		case IMG_SUB_POS_BOTTOM_RIGHT:
-			pango_layout_set_alignment( layout, PANGO_ALIGN_RIGHT );
-			break;
-	}
 	pango_layout_set_text( layout, subtitle, -1 );
 	pango_layout_get_size( layout, &lw, &lh );
 	lw /= PANGO_SCALE;
@@ -346,16 +349,13 @@ img_render_subtitle( cairo_t              *cr,
 	*/
 	lh /= PANGO_SCALE;
 
-	/* Calculate relative dimensions and final position of this subtitle */
-	img_calc_text_pos( width, height, lw, lh, position, &posx, &posy );
-
 	/* Do animation */
 	if( func )
-		(*func)( cr, layout, width, height, lw, lh, posx, posy, pattern_filename, progress, font_color, font_brdr_color, font_bg_color );
+		(*func)( cr, layout, width, height, lw, lh, posx, posy, angle, pattern_filename, progress, font_color, font_brdr_color, font_bg_color, border_color, border_width );
 	else
 	{
 		/* No animation renderer */
-        img_text_draw_layout(cr, layout, posx, posy, pattern_filename, font_color, font_brdr_color, font_bg_color);
+        img_text_draw_layout(cr, layout, posx, posy, angle, pattern_filename, font_color, font_brdr_color, font_bg_color, border_color, border_width);
 	}
 
 	/* Destroy layout */
@@ -364,65 +364,6 @@ img_render_subtitle( cairo_t              *cr,
 	/* Restore cairo */
 	cairo_restore( cr );
 }
-
-static void
-img_calc_text_pos( gint      surface_w,
-				   gint      surface_h,
-				   gint      layout_w,
-				   gint      layout_h,
-				   ImgSubPos position,
-				   gint     *posx,
-				   gint     *posy )
-{
-	switch( position )
-	{
-		case IMG_SUB_POS_TOP_LEFT:
-			*posx = BORDER;
-			*posy = BORDER;
-			break;
-
-		case IMG_SUB_POS_TOP_CENTER:
-			*posx = ( surface_w - layout_w ) / 2;
-			*posy = BORDER;
-			break;
-
-		case IMG_SUB_POS_TOP_RIGHT:
-			*posx = surface_w - BORDER - layout_w;
-			*posy = BORDER;
-			break;
-
-		case IMG_SUB_POS_MIDDLE_LEFT:
-			*posx = BORDER;
-			*posy = ( surface_h - layout_h ) / 2;
-			break;
-
-		case IMG_SUB_POS_MIDDLE_CENTER:
-			*posx = ( surface_w - layout_w ) / 2;
-			*posy = ( surface_h - layout_h ) / 2;
-			break;
-
-		case IMG_SUB_POS_MIDDLE_RIGHT:
-			*posx = surface_w - BORDER - layout_w;
-			*posy = ( surface_h - layout_h ) / 2;
-			break;
-
-		case IMG_SUB_POS_BOTTOM_LEFT:
-			*posx = BORDER;
-			*posy = surface_h - BORDER - layout_h;
-			break;
-
-		case IMG_SUB_POS_BOTTOM_CENTER:
-			*posx = ( surface_w - layout_w ) / 2;
-			*posy = surface_h - BORDER - layout_h;
-			break;
-
-		case IMG_SUB_POS_BOTTOM_RIGHT:
-			*posx = surface_w - BORDER - layout_w;
-			*posy = surface_h - BORDER - layout_h;
-			break;
-	}
-}
-
 
 /* ****************************************************************************
  * Text animation renderers
@@ -436,13 +377,16 @@ img_text_ani_fade( cairo_t     *cr,
 				   gint         lh,
 				   gint         posx,
 				   gint         posy,
+				   gint         angle,
 				   gchar		*filename,
 				   gdouble      progress,
                    gdouble     *font_color,
                    gdouble     *font_brdr_color,
-                   gdouble     *font_bgcolor)
+                   gdouble     *font_bgcolor,
+                   gdouble     *border_color,
+                   gint			border_width)
 {
-    gdouble  progress_font_color[4], progress_font_brdr_color[4], progress_font_bgcolor[4];
+    gdouble  progress_font_color[4], progress_font_brdr_color[4], progress_font_bgcolor[4], progress_border_color[4];
 
 	/* Calculate colors */
     progress_font_color[0] = font_color[0];
@@ -461,7 +405,7 @@ img_text_ani_fade( cairo_t     *cr,
     progress_font_bgcolor[3] = font_bgcolor[3] * pow(progress, 6);
 
     /* Paint text */
-    img_text_draw_layout(cr, layout, posx, posy, filename, progress_font_color, progress_font_brdr_color, progress_font_bgcolor);
+    img_text_draw_layout(cr, layout, posx, posy, angle, filename, progress_font_color, progress_font_brdr_color, progress_font_bgcolor, progress_border_color, border_width);
 }
 
 void
@@ -472,12 +416,16 @@ img_set_slide_text_info( slide_struct      *slide,
 						 gchar				*pattern_filename,
 						 gint	            anim_id,
 						 gint               anim_duration,
-						 gint               position,
+						 gint               posx,
+						 gint               posy,
+						 gint               angle,
 						 gint               placing,
 						 const gchar       *font_desc,
 						 gdouble           *font_color,
                          gdouble           *font_brdr_color,
                          gdouble           *font_bg_color,
+                         gdouble           *border_color,
+                         gint	           border_width,
 						 img_window_struct *img )
 {
 	/* Set the slide text info parameters */
@@ -523,8 +471,13 @@ img_set_slide_text_info( slide_struct      *slide,
 		img_sync_timings( slide, img );
 	}
 
-	if( ( position > -1 ) && ( position != slide->position ) )
-		slide->position = position;
+	if (posx > -1 || posy > -1)
+	{
+		slide->posX = posx;
+		slide->posY = posy;
+	}
+	
+	slide->subtitle_angle = angle;
 
 	if( ( placing > -1 ) && ( placing != slide->placing ) )
 		slide->placing = placing;
@@ -559,6 +512,16 @@ img_set_slide_text_info( slide_struct      *slide,
         slide->font_bg_color[2] = font_bg_color[2];
         slide->font_bg_color[3] = font_bg_color[3];
     }
+    
+    if( border_color )
+    {
+        slide->border_color[0] = border_color[0];
+        slide->border_color[1] = border_color[1];
+        slide->border_color[2] = border_color[2];
+        slide->border_color[3] = border_color[3];
+    }
+    
+    slide->border_width = border_width;
 }								
 
 static void
@@ -566,13 +529,25 @@ img_text_draw_layout( cairo_t     *cr,
                       PangoLayout *layout,
                       gint         posx,
                       gint         posy,
+                      gint         angle,
                       gchar	  	  *pattern_filename,
                       gdouble     *font_color,
                       gdouble     *font_brdr_color,
-                      gdouble     *font_bg_color)
+                      gdouble     *font_bg_color,
+                      gdouble     *border_color,
+                      gint	      border_width)
 {
 	cairo_pattern_t  *font_pattern = NULL;
     gint x,y,w,h;
+	gdouble cairo_factor;
+
+	pango_layout_set_alignment( layout, PANGO_ALIGN_CENTER );
+
+	/* Subtitle angle */
+	cairo_translate (cr, posx, posy);
+	cairo_rotate (cr, angle * G_PI / 180.0);
+	cairo_translate (cr, -posx, -posy);
+	pango_cairo_update_layout (cr, layout);
 
 	/* Paint the background only if the user
 	 * chose an alpha value greater than 0 */
@@ -584,8 +559,33 @@ img_text_draw_layout( cairo_t     *cr,
                               font_bg_color[2],
                               font_bg_color[3] );
                               
-        cairo_rectangle(cr, posx - 5, posy, w + 8, h);
+        cairo_rectangle(cr, posx - 5, posy, w + 8, h + 5);
 		cairo_fill(cr);
+	}
+	
+	if (border_color[3] > 0)
+	{
+		pango_layout_get_pixel_size (layout, &w, &h );
+		cairo_set_line_width(cr, (gdouble) border_width);
+		cairo_set_source_rgba(cr, border_color[0],
+							  border_color[1],
+                              border_color[2],
+                              border_color[3] );
+        
+        if (border_width % 2 == 0)
+			cairo_factor = 0;
+		else
+			cairo_factor = 0.5;
+
+        /* Top border */
+		cairo_move_to(cr, posx - 5, posy + cairo_factor);  
+		cairo_line_to(cr, (posx + 3) + w, posy + cairo_factor);
+		
+		/* Bottom border */
+		cairo_move_to(cr, posx - 5, posy + h + 5 + cairo_factor);  
+		cairo_line_to(cr, (posx + 3) + w, posy + h + 5 + cairo_factor);
+		
+		cairo_stroke(cr);
 	}
 
 	/* Draw the border only if the user
@@ -643,17 +643,22 @@ img_text_from_left( cairo_t     *cr,
  					gint         lh,
  					gint         posx,
  					gint         posy,
+ 					gint         angle,
  					gchar	  	*filename,
  					gdouble      progress,
                     gdouble     *font_color,
                     gdouble     *font_brdr_color,
-                    gdouble     *font_bgcolor)
+                    gdouble     *font_bgcolor,
+                    gdouble     *border_color,
+                    gint		border_width)
 {
     img_text_draw_layout(cr, layout,
                          posx * progress - lw * ( 1 - progress ),
                          posy,
+                         angle,
                          filename,
-                         font_color, font_brdr_color, font_bgcolor);
+                         font_color, font_brdr_color, font_bgcolor,
+                         border_color, border_width);
 }
 
 static void
@@ -665,17 +670,22 @@ img_text_from_right( cairo_t     *cr,
  					 gint         lh,
  					 gint         posx,
  					 gint         posy,
+ 					 gint         angle,
  					 gchar	  	  *filename,
  					 gdouble      progress,
                      gdouble     *font_color,
                      gdouble     *font_brdr_color,
-                     gdouble     *font_bgcolor)
+                     gdouble     *font_bgcolor,
+                     gdouble     *border_color,
+                    gint		border_width)
 {
     img_text_draw_layout(cr, layout,
                          posx * progress + sw * ( 1 - progress ),
                          posy,
+                         angle,
                          filename,
-                         font_color, font_brdr_color, font_bgcolor);
+                         font_color, font_brdr_color, font_bgcolor,
+                         border_color, border_width);
 }
 
 static void
@@ -687,17 +697,22 @@ img_text_from_top( cairo_t     *cr,
 				   gint         lh,
 				   gint         posx,
 				   gint         posy,
+				   gint         angle,
 				   gchar	    *filename,
 				   gdouble      progress,
                    gdouble     *font_color,
                    gdouble     *font_brdr_color,
-                   gdouble     *font_bgcolor)
+                   gdouble     *font_bgcolor,
+                   gdouble     *border_color,
+                    gint		border_width)
 {
     img_text_draw_layout(cr, layout,
                          posx,
                          posy * progress - lh * ( 1 - progress ),
+                         angle,
                          filename,
-                         font_color, font_brdr_color, font_bgcolor);
+                         font_color, font_brdr_color, font_bgcolor,
+                         border_color, border_width);
 }
 
 static void
@@ -709,17 +724,22 @@ img_text_from_bottom( cairo_t     *cr,
   					  gint         lh,
   					  gint         posx,
   					  gint         posy,
+  					  gint         angle,
   					  gchar	  	  *filename,
   					  gdouble      progress,
                       gdouble     *font_color,
                       gdouble     *font_brdr_color,
-                      gdouble     *font_bgcolor)
+                      gdouble     *font_bgcolor,
+                      gdouble     *border_color,
+					  gint		border_width)
 {
     img_text_draw_layout(cr, layout,
                          posx,
                          posy * progress + sh * ( 1 - progress ),
+                         angle,
                          filename,
-                         font_color, font_brdr_color, font_bgcolor);
+                         font_color, font_brdr_color, font_bgcolor,
+                         border_color, border_width);
 }
 
 static void
@@ -731,11 +751,14 @@ img_text_grow( cairo_t     *cr,
 			   gint         lh,
 			   gint         posx,
 			   gint         posy,
+			   gint         angle,
 			   gchar	    *filename,
 			   gdouble      progress,
                gdouble     *font_color,
                gdouble     *font_brdr_color,
-               gdouble     *font_bgcolor)
+               gdouble     *font_bgcolor,
+               gdouble     *border_color,
+			   gint		border_width)
 {
 	cairo_translate( cr, posx + lw * 0.5, posy + lh * 0.5 );
 	cairo_scale( cr, progress, progress );
@@ -743,8 +766,10 @@ img_text_grow( cairo_t     *cr,
     img_text_draw_layout(cr, layout,
                          - lw * 0.5,
                          - lh * 0.5,
+                         angle,
                          filename,
-                         font_color, font_brdr_color, font_bgcolor);
+                         font_color, font_brdr_color, font_bgcolor,
+                         border_color, border_width);
 }
 
 static void
@@ -756,17 +781,22 @@ img_text_bottom_to_top( cairo_t     *cr,
 				   gint         lh,
 				   gint         posx,
 				   gint         posy,
+				   gint         angle,
 				   gchar	   *filename,
 				   gdouble      progress,
                    gdouble     *font_color,
                    gdouble     *font_brdr_color,
-                   gdouble     *font_bgcolor)
+                   gdouble     *font_bgcolor,
+                   gdouble     *border_color,
+					gint		border_width)
 {
     img_text_draw_layout(cr, layout,
                          posx,
                          sh * (1 - progress) - lh * progress,
+                         angle,
                          filename,
-                         font_color, font_brdr_color, font_bgcolor);
+                         font_color, font_brdr_color, font_bgcolor,
+                         border_color, border_width);
 }
 
 static void
@@ -778,15 +808,19 @@ img_text_right_to_left( cairo_t     *cr,
 				   gint         lh,
 				   gint         posx,
 				   gint         posy,
+				   gint         angle,
 				   gchar	  *filename,
 				   gdouble      progress,
                    gdouble     *font_color,
                    gdouble     *font_brdr_color,
-                   gdouble     *font_bgcolor)
+                   gdouble     *font_bgcolor,
+                   gdouble     *border_color,
+					gint		border_width)
 {
     img_text_draw_layout(cr, layout,
                          sw * (1 - progress) - lw * progress,
-                         posy,
+                         posy, angle,
                          filename,
-                         font_color, font_brdr_color, font_bgcolor);
+                         font_color, font_brdr_color, font_bgcolor,
+                         border_color, border_width);
 }

@@ -1018,7 +1018,8 @@ img_render_transition_frame( img_window_struct *img )
 
 		p_draw_point = ( img->point1 ? img->point1 : &point );
 
-		img_render_subtitle( cr,
+		img_render_subtitle( img,
+							 cr,
 							 img->video_size[0],
 							 img->video_size[1],
 							 1.0,
@@ -1148,11 +1149,14 @@ img_render_still_frame( img_window_struct *img,
 		progress = CLAMP( progress, 0, 1 );
 		img->cur_text_frame++;
 
-		img_render_subtitle( cr,
+		img_render_subtitle( img,
+							 cr,
 							 img->video_size[0],
 							 img->video_size[1],
 							 1.0,
-							 img->work_slide->position,
+							 img->work_slide->posX,
+							 img->work_slide->posY,
+							 img->work_slide->subtitle_angle,
 							 img->work_slide->placing,
 							 p_draw_point->zoom,
 							 p_draw_point->offx,
@@ -1163,6 +1167,8 @@ img_render_still_frame( img_window_struct *img,
 							 img->work_slide->font_color,
                              img->work_slide->font_brdr_color,
                              img->work_slide->font_bg_color,
+                             img->current_slide->border_color,
+                             img->current_slide->border_width,
 							 img->work_slide->anim,
 							 progress );
 	}

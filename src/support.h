@@ -100,6 +100,7 @@ img_set_slide_ken_burns_info( slide_struct *slide,
 
 void img_free_slide_struct( slide_struct * );
 
+void img_save_relative_filenames(GtkCheckButton *togglebutton, img_window_struct *img);
 
 gboolean
 img_set_total_slideshow_duration( img_window_struct *img );

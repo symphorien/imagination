@@ -25,7 +25,8 @@ static gboolean img_populate_hash_table( GtkTreeModel *, GtkTreePath *, GtkTreeI
 
 void
 img_save_slideshow( img_window_struct *img,
-					const gchar       *output )
+					const gchar       *output,
+					gboolean		  relative )
 {
 	GKeyFile *img_key_file;
 	gchar *conf, *string, *path, *filename, *file, *font_desc;
@@ -87,6 +88,12 @@ img_save_slideshow( img_window_struct *img,
         else
             filename = entry->original_filename;
 
+		if (relative && filename)
+		{
+			gchar *_filename;
+			_filename = g_path_get_basename(filename);
+			filename = _filename;
+		}
         if (filename)
 		{
 			/* Save original filename and rotation */
@@ -140,17 +147,30 @@ img_save_slideshow( img_window_struct *img,
 		if( entry->subtitle )
 			g_key_file_set_string (img_key_file, conf,"text",			entry->subtitle);
 		if( entry->pattern_filename )
-			g_key_file_set_string (img_key_file, conf,"pattern filename",			entry->pattern_filename);
-
+		{
+			if (relative)
+			{
+				gchar *dummy;
+				dummy = g_path_get_basename(entry->pattern_filename);
+				g_key_file_set_string (img_key_file, conf,"pattern filename", dummy);
+				g_free(dummy);
+			}
+			else
+				g_key_file_set_string (img_key_file, conf,"pattern filename", entry->pattern_filename);
+		}
 		font_desc = pango_font_description_to_string(entry->font_desc);
 		g_key_file_set_integer(img_key_file,conf, "anim id",		entry->anim_id);
 		g_key_file_set_integer(img_key_file,conf, "anim duration",	entry->anim_duration);
-		g_key_file_set_integer(img_key_file,conf, "text pos",		entry->position);
+		g_key_file_set_integer(img_key_file,conf, "posX",		entry->posX);
+		g_key_file_set_integer(img_key_file,conf, "posY",		entry->posY);
+		g_key_file_set_integer(img_key_file,conf, "subtitle angle",		entry->subtitle_angle);
 		g_key_file_set_integer(img_key_file,conf, "placing",		entry->placing);
 		g_key_file_set_string (img_key_file, conf,"font",			font_desc);
 		g_key_file_set_double_list(img_key_file, conf,"font color",entry->font_color,4);
         g_key_file_set_double_list(img_key_file, conf,"font bgcolor",entry->font_brdr_color,4);
         g_key_file_set_double_list(img_key_file, conf,"font bgcolor2",entry->font_bg_color,4);
+        g_key_file_set_double_list(img_key_file, conf,"border color",entry->border_color,4);
+        g_key_file_set_integer(img_key_file, conf,"border width",entry->border_width);
 		g_free(font_desc);
 		g_free(conf);
 	}
@@ -167,9 +187,15 @@ img_save_slideshow( img_window_struct *img,
 			count++;
 			gtk_tree_model_get(model, &iter, 0, &path, 1, &filename ,-1);
 			conf = g_strdup_printf("music_%d",count);
-			file = g_build_filename(path, filename, NULL);
-			g_free(path);
-			g_free(filename);
+			if (! relative)
+			{
+				file = g_build_filename(path, filename, NULL);
+				g_free(path);
+				g_free(filename);
+			}
+			else
+				file = filename;
+
 			g_key_file_set_string(img_key_file, "music", conf, file);
 			g_free(file);
 			g_free(conf);
@@ -204,13 +230,13 @@ img_load_slideshow( img_window_struct *img,
 	GKeyFile *img_key_file;
 	gchar *dummy, *slide_filename, *time;
 	GtkWidget *dialog;
-	gint number,i,transition_id, no_points, previous_nr_of_slides;
+	gint number,i,transition_id, no_points, previous_nr_of_slides, border_width;
 	guint speed;
 	GtkTreeModel *model;
 	void (*render);
 	GHashTable *table;
 	gchar      *spath, *conf;
-	gdouble    duration, *color, *font_color, *font_brdr_color, *font_bg_color;
+	gdouble    duration, *color, *font_color, *font_brdr_color, *font_bg_color, *border_color;
 	gboolean   first_slide = TRUE;
     gchar      *video_config_name, *aspect_ratio, *fps;
     gchar      *bitrate;
@@ -240,6 +266,11 @@ img_load_slideshow( img_window_struct *img,
 		return;
 	}
 	g_free( dummy );
+
+	if (img->project_current_dir)
+		g_free(img->project_current_dir);
+
+	img->project_current_dir = g_path_get_dirname(input);
 
 	/* Create hash table for efficient searching */
 	table = g_hash_table_new_full( g_direct_hash, g_direct_equal,
@@ -271,6 +302,11 @@ img_load_slideshow( img_window_struct *img,
                           "video width", NULL);
 	img->video_size[1] = g_key_file_get_integer(img_key_file, "slideshow settings",
                           "video height", NULL);
+
+	/* Set the max value of slide subtitles hrange scale
+	 * according to the new video size */
+	gtk_adjustment_set_upper( img->sub_posX_adj, (gdouble)img->video_size[0]);
+	gtk_adjustment_set_upper( img->sub_posY_adj, (gdouble)img->video_size[1]);
 
 	/* fps */
 	fps = g_key_file_get_string(img_key_file, "slideshow settings", "fps", NULL);
@@ -341,7 +377,8 @@ img_load_slideshow( img_window_struct *img,
 
 	gchar *subtitle = NULL, *pattern_name = NULL, *font_desc;
 	gdouble *my_points = NULL, *p_start, *p_stop, *c_start, *c_stop;
-	gsize length;		gint anim_id,anim_duration, text_pos, placing, gradient;
+	gsize length;
+	gint anim_id,anim_duration, posx, posy, placing, gradient, subtitle_angle;
 	GdkPixbuf *pix = NULL;
     gboolean      load_ok, img_load_ok;
 	gchar *original_filename = NULL;
@@ -374,13 +411,17 @@ img_load_slideshow( img_window_struct *img,
 		{
 			conf = g_strdup_printf("slide %d", i);
 			slide_filename = g_key_file_get_string(img_key_file,conf,"filename", NULL);
-            original_filename = g_strdup (slide_filename);
-	
+
 			if( slide_filename )
 			{
+				if ( g_path_is_absolute(slide_filename) == FALSE)
+					original_filename = g_strconcat(img->project_current_dir, "/", slide_filename, NULL);
+				else
+					original_filename = g_strdup (slide_filename);
+
 				angle = (ImgAngle)g_key_file_get_integer( img_key_file, conf,
 														  "angle", NULL );
-				load_ok = img_scale_image( slide_filename, img->video_ratio,
+				load_ok = img_scale_image( original_filename, img->video_ratio,
 										   88, 0, img->distort_images,
 										   img->background_color, &thumb, NULL );
                 img_load_ok = load_ok;
@@ -439,12 +480,16 @@ img_load_slideshow( img_window_struct *img,
 				pattern_name  =	g_key_file_get_string (img_key_file, conf, "pattern filename",	NULL);
 				anim_id 	  = g_key_file_get_integer(img_key_file, conf, "anim id", 		NULL);
 				anim_duration = g_key_file_get_integer(img_key_file, conf, "anim duration",	NULL);
-				text_pos      = g_key_file_get_integer(img_key_file, conf, "text pos",		NULL);
+				posx     	  = g_key_file_get_integer(img_key_file, conf, "posX",		NULL);
+				posy       	  = g_key_file_get_integer(img_key_file, conf, "posY",		NULL);
+				subtitle_angle= g_key_file_get_integer(img_key_file, conf, "subtitle angle",		NULL);
 				placing 	  = g_key_file_get_integer(img_key_file, conf, "placing",		NULL);
 				font_desc     = g_key_file_get_string (img_key_file, conf, "font", 			NULL);
 				font_color 	  = g_key_file_get_double_list(img_key_file, conf, "font color", NULL, NULL );
                 font_brdr_color  = g_key_file_get_double_list(img_key_file, conf, "font bgcolor", NULL, NULL );
                 font_bg_color = g_key_file_get_double_list(img_key_file, conf, "font bgcolor2", NULL, NULL );
+                border_color = g_key_file_get_double_list(img_key_file, conf, "border color", NULL, NULL );
+                border_width = g_key_file_get_integer(img_key_file, conf, "border width", NULL);
 
 				/* Get the mem address of the transition */
 				spath = (gchar *)g_hash_table_lookup( table, GINT_TO_POINTER( transition_id ) );
@@ -455,7 +500,7 @@ img_load_slideshow( img_window_struct *img,
 				if( slide_info )
 				{
 					if( slide_filename )
-						img_set_slide_file_info( slide_info, slide_filename );
+						img_set_slide_file_info( slide_info, original_filename );
 					else
 						img_set_slide_gradient_info( slide_info, gradient,
 													 c_start, c_stop,
@@ -500,10 +545,17 @@ img_load_slideshow( img_window_struct *img,
 					}
 
 					/* Set subtitle */
+					if ( pattern_name && g_path_is_absolute(pattern_name) == FALSE)
+					{
+						gchar *_pattern_filename;
+						_pattern_filename = g_strconcat(img->project_current_dir, "/", pattern_name, NULL);
+						g_free(pattern_name);
+						pattern_name = _pattern_filename;
+					}
 					img_set_slide_text_info( slide_info, img->thumbnail_model,
 											 &iter, subtitle, pattern_name, anim_id,
-											 anim_duration, text_pos, placing,
-											 font_desc, font_color, font_brdr_color, font_bg_color, img );
+											 anim_duration, posx, posy, subtitle_angle, placing,
+											 font_desc, font_color, font_brdr_color, font_bg_color, border_color, border_width, img );
 
 					/* If we're loading the first slide, apply some of it's
 				 	 * data to final pseudo-slide */
@@ -547,6 +599,13 @@ img_load_slideshow( img_window_struct *img,
 	{
 		dummy = g_strdup_printf("music_%d", i);
 		slide_filename = g_key_file_get_string(img_key_file, "music", dummy, NULL);
+		if ( g_path_is_absolute(slide_filename) == FALSE)
+		{
+			gchar *_slide_filename;
+			_slide_filename = g_strconcat(img->project_current_dir, "/", slide_filename, NULL);
+			g_free(slide_filename);
+			slide_filename = _slide_filename;
+		}
 		img_add_audio_files(slide_filename, img);
 
 		/* slide_filename is freed in img_add_audio_files */

@@ -23,7 +23,6 @@
 #include <gtk/gtk.h>
 #include "support.h"
 #include "imagination.h"
-#include "imgtablebutton.h"
 
 img_window_struct *img_create_window(void);
 void img_iconview_selection_changed (GtkIconView *, img_window_struct *);
@@ -44,15 +43,13 @@ void
 img_font_brdr_color_changed( GtkColorButton    *button,
                           img_window_struct *img );
 
+void img_sub_border_color_changed( GtkColorButton    *button,
+                          img_window_struct *img );
+
 void
 img_font_bg_color_changed( GtkColorButton    *button,
                           img_window_struct *img );
                           
-void
-img_text_pos_changed( ImgTableButton    *button,
-					  gint               item,
-					  img_window_struct *img );
-
 void
 img_placing_changed( GtkComboBox   *combo,
 					 img_window_struct *img );
@@ -74,18 +71,23 @@ img_update_sub_properties( img_window_struct *img,
 						   TextAnimationFunc  anim,
 						   gint               anim_id,
 						   gdouble            anim_duration,
-						   ImgSubPos          position,
 						   ImgRelPlacing      placing,
 						   const gchar       *desc,
 						   gdouble           *color,
                            gdouble           *brdr_color,
-                           gdouble           *bg_color );
+                           gdouble           *bg_color,
+                           gdouble           *border_color,
+                           gint		         border_width );
 
 void img_combo_box_transition_type_changed (GtkComboBox *,
 											img_window_struct *);
 
 void
 img_combo_box_anim_speed_changed( GtkSpinButton       *spinbutton,
+								  img_window_struct *img );
+								  
+void
+img_sub_border_width_changed( GtkSpinButton       *spinbutton,
 								  img_window_struct *img );
 
 void

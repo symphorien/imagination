@@ -349,7 +349,6 @@ void img_add_audio_files (gchar *filename, img_window_struct *img)
 	{
 		gtk_list_store_append(img->music_file_liststore, &iter);
 		gtk_list_store_set (img->music_file_liststore, &iter, 0, path, 1, file, 2, time, 3, secs, -1);
-
 		g_free(time);
 	}
 	g_free(path);
@@ -482,7 +481,10 @@ gboolean img_key_pressed(GtkWidget *widget, GdkEventKey *event, img_window_struc
 		if (event->keyval == GDK_KEY_F11 || event->keyval == GDK_KEY_Escape)
 			img_exit_fullscreen(img);
 		else if (event->keyval == GDK_space)
+		{
+			img->music_preview = TRUE;
 			img_start_stop_preview(NULL, img);
+		}
 	}
 
 	return FALSE;
@@ -1340,11 +1342,14 @@ img_on_expose_event( GtkWidget         *widget,
 
 		/* Render subtitle if present */
 		if( img->current_slide->subtitle )
-			img_render_subtitle( cr,
+			img_render_subtitle( img,
+								 cr,
 								 img->video_size[0],
 								 img->video_size[1],
 								 img->image_area_zoom,
-								 img->current_slide->position,
+								 img->current_slide->posX,
+								 img->current_slide->posY,
+								 img->current_slide->subtitle_angle,
 								 img->current_slide->placing,
 								 img->current_point.zoom,
 								 img->current_point.offx,
@@ -1355,6 +1360,8 @@ img_on_expose_event( GtkWidget         *widget,
 								 img->current_slide->font_color,
                                  img->current_slide->font_brdr_color,
                                  img->current_slide->font_bg_color,
+                                 img->current_slide->border_color,
+                                 img->current_slide->border_width,
 								 img->current_slide->anim,
 								 1.0 );
 
@@ -1539,7 +1546,7 @@ void img_choose_slideshow_filename(GtkWidget *widget, img_window_struct *img)
 {
 	GtkWidget *fc;
 	GtkFileChooserAction action = 0;
-	gint response;
+	gint	 response;
 	gchar *filename = NULL;
     GtkFileFilter *project_filter, *all_files_filter;
 
@@ -1586,11 +1593,19 @@ void img_choose_slideshow_filename(GtkWidget *widget, img_window_struct *img)
 
         /* if we are saving, propose a default filename */
         if (action == GTK_FILE_CHOOSER_ACTION_SAVE)
-            gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER (fc), "unknown.img");
-
-        /*if (img->project_current_dir)
-            gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fc),img->project_current_dir);*/
-
+        {
+			gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER (fc), "unknown.img");
+			/* Add the checkbok to save filenames only */
+			GtkWidget *box = gtk_hbox_new (TRUE, 0);
+			GtkWidget *relative_names = gtk_check_button_new_with_mnemonic(_("Don't include folder names in the filenames"));
+			gtk_widget_set_tooltip_text(relative_names, _("If you check this button, be sure to include ALL the project files in the SAME folder before attempting to open it again."));
+			gtk_box_pack_start (GTK_BOX (box), relative_names, FALSE, FALSE, 0);
+			gtk_widget_show(relative_names);
+			g_signal_connect (relative_names, "toggled", G_CALLBACK (img_save_relative_filenames), img);
+			gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER(fc), box );
+		}
+		if (img->project_current_dir)
+            gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fc),img->project_current_dir);
 
 		gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER (fc),TRUE);
 		response = gtk_dialog_run (GTK_DIALOG (fc));
@@ -1625,7 +1640,7 @@ void img_choose_slideshow_filename(GtkWidget *widget, img_window_struct *img)
 		img_load_slideshow( img, filename );
 	}
 	else
-		img_save_slideshow( img, filename );
+		img_save_slideshow( img, filename, img->relative_filenames );
 
 	g_free( filename );
 }
@@ -1803,7 +1818,7 @@ img_image_area_button_release(	GtkWidget			*widget,
  * This function calculates offsets from stored button press coordinates and
  * queue redraw of the preview area.
  *
- * Return value: TRUE if moune button 1 has been pressed during drag, else
+ * Return value: TRUE if mouse button 1 has been pressed during drag, else
  * FALSE.
  */
 gboolean
@@ -1821,8 +1836,31 @@ img_image_area_motion( GtkWidget         *widget,
 	img->current_point.offy = CLAMP( deltay + img->bak_offy, img->maxoffy, 0 );
 
 	gtk_widget_queue_draw( img->image_area );
-
+	
 	return( TRUE );
+}
+
+void img_text_pos_changed( GtkRange *range, img_window_struct *img)
+{
+	gdouble value;
+
+	if (range == GTK_RANGE(img->sub_posX))
+	{
+		value = gtk_range_get_value( range );
+		img->current_slide->posX = (gint)value;
+	}
+	else if (range == GTK_RANGE(img->sub_posY))
+	{
+		value = gtk_range_get_value( range );
+		img->current_slide->posY = (gint)value;
+	}
+	else
+	{
+		value = gtk_range_get_value( range );
+		img->current_slide->subtitle_angle = (gint)value;
+	}
+
+	gtk_widget_queue_draw(img->image_area);
 }
 
 /* Zoom callback functions */
@@ -2114,14 +2152,20 @@ img_update_subtitles_widgets( img_window_struct *img )
                                      img_font_brdr_color_changed, img );
 	g_signal_handlers_block_by_func( img->sub_bgcolor,
                                      img_font_bg_color_changed, img );
+	g_signal_handlers_block_by_func( img->sub_border_color,
+                                     img_sub_border_color_changed, img );
+    g_signal_handlers_block_by_func( img->sub_border_width,
+                                     img_sub_border_width_changed, img );                                    
 	g_signal_handlers_block_by_func( img->sub_anim,
 									 img_text_anim_set, img );
 	g_signal_handlers_block_by_func( img->sub_anim_duration,
 									 img_combo_box_anim_speed_changed, img );
 	g_signal_handlers_block_by_func( img->sub_placing,
 									 img_placing_changed, img );
-	g_signal_handlers_block_by_func( img->sub_pos, img_text_pos_changed, img );
-
+	g_signal_handlers_block_by_func( img->sub_posX, img_text_pos_changed, img );
+	g_signal_handlers_block_by_func( img->sub_posY, img_text_pos_changed, img );
+	g_signal_handlers_block_by_func( img->sub_angle,
+									   img_text_pos_changed, img );
 	/* Update text field */
 	string = ( img->current_slide->subtitle ?
 			   img->current_slide->subtitle :
@@ -2172,7 +2216,19 @@ img_update_subtitles_widgets( img_window_struct *img )
     gtk_color_button_set_color( GTK_COLOR_BUTTON( img->sub_bgcolor ), &color ); 
     gtk_color_button_set_alpha( GTK_COLOR_BUTTON( img->sub_bgcolor ),
                                 (gint)(f_colors[3] * 0xffff ) );
+                                
+     /* Update border color button */
+    f_colors = img->current_slide->border_color;
+    color.red   = (gint)( f_colors[0] * 0xffff );
+    color.green = (gint)( f_colors[1] * 0xffff );
+    color.blue  = (gint)( f_colors[2] * 0xffff );
+    gtk_color_button_set_color( GTK_COLOR_BUTTON( img->sub_border_color ), &color ); 
+    gtk_color_button_set_alpha( GTK_COLOR_BUTTON( img->sub_border_color ),
+                                (gint)(f_colors[3] * 0xffff ) );
 
+	/* Update spinbutton border with*/
+	gtk_spin_button_set_value( GTK_SPIN_BUTTON( img->sub_border_width ), img->current_slide->border_width );
+	
 	/* Update animation */
 	gtk_combo_box_set_active( GTK_COMBO_BOX( img->sub_anim ),
 							  img->current_slide->anim_id );
@@ -2186,8 +2242,9 @@ img_update_subtitles_widgets( img_window_struct *img )
 							  img->current_slide->placing );
 
 	/* Update position */
-	img_table_button_set_active_item( IMG_TABLE_BUTTON( img->sub_pos ),
-									  img->current_slide->position );
+	gtk_range_set_value( GTK_RANGE(img->sub_posX), (gdouble) img->current_slide->posX);
+	gtk_range_set_value( GTK_RANGE(img->sub_posY), (gdouble) img->current_slide->posY);
+	gtk_range_set_value( GTK_RANGE(img->sub_angle), (gdouble) img->current_slide->subtitle_angle);
 
 	/* Unblock all handlers */
 	g_signal_handlers_unblock_by_func( img->slide_text_buffer,
@@ -2200,14 +2257,22 @@ img_update_subtitles_widgets( img_window_struct *img )
                                        img_font_brdr_color_changed, img );
 	g_signal_handlers_unblock_by_func( img->sub_bgcolor,
                                        img_font_bg_color_changed, img );
+	g_signal_handlers_unblock_by_func( img->sub_border_color,
+                                       img_sub_border_color_changed, img );                                       
+	g_signal_handlers_unblock_by_func( img->sub_border_width,
+                                     img_sub_border_width_changed, img );  
 	g_signal_handlers_unblock_by_func( img->sub_anim,
 									   img_text_anim_set, img );
 	g_signal_handlers_unblock_by_func( img->sub_anim_duration,
 									   img_combo_box_anim_speed_changed, img );
 	g_signal_handlers_unblock_by_func( img->sub_placing,
 									   img_placing_changed, img );
-	g_signal_handlers_unblock_by_func( img->sub_pos,
+	g_signal_handlers_unblock_by_func( img->sub_posX,
 									   img_text_pos_changed, img );
+	g_signal_handlers_unblock_by_func( img->sub_posY,
+									   img_text_pos_changed, img );
+	g_signal_handlers_unblock_by_func( img->sub_angle,
+									   img_text_pos_changed, img );									   								   
 }
 
 void
@@ -3092,6 +3157,20 @@ img_notebook_switch_page (GtkNotebook       *notebook,
         gtk_label_set_attributes(GTK_LABEL(img->message_label), pango_list);
         pango_attr_list_unref (pango_list);
     }
+}
+
+void img_align_text_horizontally(GtkMenuItem *item,
+					img_window_struct *img)
+{
+	gint lw, lh, value;
+	
+	img->current_slide->posX = value;
+	gtk_widget_queue_draw(img->image_area);
+}
+
+void img_align_text_vertically(GtkMenuItem *item,
+					img_window_struct *img)
+{
 }
 
 void

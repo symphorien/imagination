@@ -418,7 +418,8 @@ img_create_new_slide( void )
 
 		/* Subtitles */
 		slide->anim_duration = 1;
-		slide->position = IMG_SUB_POS_MIDDLE_CENTER;
+		slide->posX = 0;
+		slide->posY = 1;
 		slide->placing = IMG_REL_PLACING_EXPORTED_VIDEO;
 		slide->font_desc = pango_font_description_from_string( "Sans 12" );
 		slide->font_color[0] = 0; /* R */
@@ -435,7 +436,12 @@ img_create_new_slide( void )
         slide->font_bg_color[1] = 1; /* G */
         slide->font_bg_color[2] = 1; /* B */
         slide->font_bg_color[3] = 0; /* A */
-        
+        /* default: no font border color */
+        slide->border_color[0] = 1; /* R */
+        slide->border_color[1] = 1; /* G */
+        slide->border_color[2] = 1; /* B */
+        slide->border_color[3] = 0; /* A */
+
         /* Load error handling */
         slide->load_ok = TRUE;
         slide->original_filename = NULL;
@@ -1165,7 +1171,8 @@ void img_delete_subtitle_pattern(GtkButton *button, img_window_struct *img)
 	
 	gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(img->pattern_image), tmp_image);
 	gtk_widget_set_sensitive(img->sub_color, TRUE);
-	
+	gtk_widget_set_tooltip_text(img->sub_color, _("Click to choose the font color"));
+
 	fc = gtk_widget_get_toplevel(GTK_WIDGET(button));
 	gtk_widget_destroy(fc);
 	gtk_widget_queue_draw( img->image_area );
@@ -1255,4 +1262,12 @@ void img_play_next_audio_during_preview (GPid pid, gint status, img_window_struc
 	if (ret && img->music_preview &&
 			gtk_tree_model_iter_next( model, &img->next_audio_iter ) )
 		img->audio_source_id = g_child_watch_add(img->play_child_pid, (GChildWatchFunc) img_play_next_audio_during_preview, img);
+}
+
+void img_save_relative_filenames(GtkCheckButton *togglebutton, img_window_struct *img)
+{
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(togglebutton)))
+		img->relative_filenames = TRUE;
+	else
+		img->relative_filenames = FALSE;
 }

@@ -40,11 +40,14 @@ img_free_text_animation_list( gint           no_animations,
 							  TextAnimation *animations );
 
 void
-img_render_subtitle( cairo_t              *cr,
+img_render_subtitle( img_window_struct	  *img,
+					 cairo_t              *cr,
 					 gint                  width,
 					 gint                  height,
 					 gdouble               zoom,
-					 ImgSubPos             position,
+					 gint					posx,
+					 gint					posy,
+					 gint					angle,
 					 ImgRelPlacing         placing,
 					 gdouble               factor,
 					 gdouble               offx,
@@ -55,6 +58,8 @@ img_render_subtitle( cairo_t              *cr,
 					 gdouble              *font_color,
 					 gdouble              *font_brdr_color,
                      gdouble              *font_bg_color,
+                     gdouble              *border_color,
+                     gint	              border_width,
 					 TextAnimationFunc     func,
 					 gdouble               progress );
 
@@ -66,12 +71,16 @@ img_set_slide_text_info( slide_struct      *slide,
 						 gchar		       *pattern_filename,
 						 gint	            anim_id,
 						 gint               anim_duration,
-						 gint               position,
+						 gint               posx,
+						 gint               posy,
+						 gint               angle,
 						 gint               placing,
 						 const gchar       *font_desc,
 						 gdouble           *font_color,
                          gdouble           *font_brdr_color,
                          gdouble           *font_bgcolor,
+                         gdouble           *border_color,
+                         gint	           border_width,
 						 img_window_struct *img );
 
 #endif

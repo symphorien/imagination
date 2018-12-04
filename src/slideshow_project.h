@@ -30,7 +30,8 @@
 
 void
 img_save_slideshow( img_window_struct *img,
-					const gchar       *output );
+					const gchar       *output,
+					gboolean		   relative );
 
 void
 img_load_slideshow( img_window_struct *img,

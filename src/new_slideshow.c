@@ -206,6 +206,7 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 	{
 		if (! flag)
 			img_close_slideshow(NULL, img);
+
 		gboolean dist = img->distort_images;
 		GdkColor new;
 		gboolean c_dist,
@@ -225,6 +226,11 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 
 		img->video_ratio = (gdouble)img->video_size[0] / img->video_size[1];
 
+		/* Set the max value of slide subtitles hrange scale
+		* according to the new video size */
+		gtk_adjustment_set_upper( img->sub_posX_adj, (gdouble)img->video_size[0]);
+		gtk_adjustment_set_upper( img->sub_posY_adj, (gdouble)img->video_size[1]);
+	
 		/* Get color settings */
 		gtk_color_button_get_color( GTK_COLOR_BUTTON( bg_button ), &new );
 		img->background_color[0] = (gdouble)new.red   / 0xffff;

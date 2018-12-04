@@ -68,11 +68,6 @@ transition_render( cairo_t         *cr,
 				   gdouble          progress,
 				   gint             direction )
 {
-	gint width, height;
-
-	width  = cairo_image_surface_get_width( image_from );
-	height = cairo_image_surface_get_height( image_from );
-
 	cairo_set_source_surface( cr, image_from, 0, 0 );
 	cairo_paint( cr );
 

@@ -72,18 +72,10 @@ gboolean img_image_area_motion( GtkWidget *, GdkEventMotion *, img_window_struct
 void img_clipboard_cut_copy_operation(img_window_struct *, ImgClipboardMode );
 void img_clipboard_clear (GtkClipboard *, img_window_struct *);
 void img_clipboard_get (GtkClipboard *, GtkSelectionData *, guint , img_window_struct *);
-
-void
-img_zoom_in( GtkWidget         *item,
-			 img_window_struct *img );
-
-void
-img_zoom_out( GtkWidget         *item,
-			  img_window_struct *img );
-
-void
-img_zoom_reset( GtkWidget         *item,
-				img_window_struct *img );
+void img_text_pos_changed( GtkRange *range, img_window_struct *);
+void img_zoom_in ( GtkWidget         *item, img_window_struct *img );
+void img_zoom_out( GtkWidget        *item, img_window_struct *img );
+void img_zoom_reset( GtkWidget      *item, img_window_struct *img );
 
 void
 img_zoom_fit( GtkWidget         *item,
@@ -153,6 +145,12 @@ img_notebook_switch_page (GtkNotebook       *notebook,
                           GtkNotebookPage   *page,
                           guint              page_num,
                           img_window_struct *img);
+
+void img_align_text_horizontally(GtkMenuItem *item,
+					img_window_struct *img);
+
+void img_align_text_vertically(GtkMenuItem *item,
+					img_window_struct *img);
 
 void
 img_pattern_clicked(GtkMenuItem *item,
