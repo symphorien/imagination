@@ -96,6 +96,8 @@ typedef void (*TextAnimationFunc)( cairo_t     *cr,
 								   gdouble     *font_brdr_color,
                                    gdouble     *font_bg_color,
                                    gdouble     *border_color,
+                                   gboolean		top_border,
+                                   gboolean		bottom_border,
                                    gint			border_width );
 
 
@@ -186,6 +188,8 @@ struct _slide_struct
     gdouble               font_brdr_color[4]; /* Font border color (RGBA format) */
     gdouble               font_bg_color[4]; /* Font background color (RGBA format) */
     gdouble               border_color[4]; /* Border on background color (RGBA format) */
+    gboolean           	  top_border;
+    gboolean           	  bottom_border;
     gint               	  border_width;		/* Border on background color (RGBA format) */
 };
 
@@ -267,6 +271,8 @@ struct _img_window_struct
     GtkWidget *sub_brdr_color;    /* Border font color selector button */
     GtkWidget *sub_bgcolor;       /* Background font color selector button */
     GtkWidget *sub_border_color;  /* Border on font background color selector button */
+    GtkWidget *border_top;  	  /* Border top widget */
+    GtkWidget *border_bottom;  	  /* Border bottom widget */
     GtkWidget *sub_border_width;  /* Border width on font background button */
     GtkWidget *pattern_image;	  /* Font Pattern */
 	GtkWidget *sub_anim;          /* Animation combo box */

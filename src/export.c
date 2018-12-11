@@ -988,7 +988,7 @@ img_render_transition_frame( img_window_struct *img )
 	/* Do image composing here and place result in exported_image */
 	
 	/* Create first image
-	 * this is a dirt hack to have Imagination use the from image painted
+	 * this is a dirt hack to have Imagination use the image_from painted
 	 * with the second color set in the empty slide fade gradient */
 	if (img->work_slide->o_filename && img->gradient_slide)
 	{
@@ -1032,6 +1032,8 @@ img_render_transition_frame( img_window_struct *img )
 							 img->work_slide->font_desc,
 							 img->work_slide->font_color,
 							 img->work_slide->anim,
+							 FALSE,
+							 FALSE,
 							 progress );
 	}
 #endif
@@ -1167,9 +1169,13 @@ img_render_still_frame( img_window_struct *img,
 							 img->work_slide->font_color,
                              img->work_slide->font_brdr_color,
                              img->work_slide->font_bg_color,
-                             img->current_slide->border_color,
-                             img->current_slide->border_width,
+                             img->work_slide->border_color,
+                             img->work_slide->top_border,
+                             img->work_slide->bottom_border,
+                             img->work_slide->border_width,
 							 img->work_slide->anim,
+							 FALSE,
+							 FALSE,
 							 progress );
 	}
 

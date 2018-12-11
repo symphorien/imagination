@@ -145,34 +145,38 @@ img_save_slideshow( img_window_struct *img,
 
 		/* Subtitle */
 		if( entry->subtitle )
-			g_key_file_set_string (img_key_file, conf,"text",			entry->subtitle);
-		if( entry->pattern_filename )
 		{
-			if (relative)
+			g_key_file_set_string (img_key_file, conf,"text",			entry->subtitle);
+			if( entry->pattern_filename )
 			{
-				gchar *dummy;
-				dummy = g_path_get_basename(entry->pattern_filename);
-				g_key_file_set_string (img_key_file, conf,"pattern filename", dummy);
-				g_free(dummy);
+				if (relative)
+				{
+					gchar *dummy;
+					dummy = g_path_get_basename(entry->pattern_filename);
+					g_key_file_set_string (img_key_file, conf,"pattern filename", dummy);
+					g_free(dummy);
+				}
+				else
+					g_key_file_set_string (img_key_file, conf,"pattern filename", entry->pattern_filename);
 			}
-			else
-				g_key_file_set_string (img_key_file, conf,"pattern filename", entry->pattern_filename);
+			font_desc = pango_font_description_to_string(entry->font_desc);
+			g_key_file_set_integer(img_key_file,conf, "anim id",		entry->anim_id);
+			g_key_file_set_integer(img_key_file,conf, "anim duration",	entry->anim_duration);
+			g_key_file_set_integer(img_key_file,conf, "posX",		entry->posX);
+			g_key_file_set_integer(img_key_file,conf, "posY",		entry->posY);
+			g_key_file_set_integer(img_key_file,conf, "subtitle angle",		entry->subtitle_angle);
+			g_key_file_set_integer(img_key_file,conf, "placing",		entry->placing);
+			g_key_file_set_string (img_key_file, conf,"font",			font_desc);
+			g_key_file_set_double_list(img_key_file, conf,"font color",entry->font_color,4);
+			g_key_file_set_double_list(img_key_file, conf,"font bgcolor",entry->font_brdr_color,4);
+			g_key_file_set_double_list(img_key_file, conf,"font bgcolor2",entry->font_bg_color,4);
+			g_key_file_set_double_list(img_key_file, conf,"border color",entry->border_color,4);
+			g_key_file_set_boolean(img_key_file, conf,"top border",entry->top_border);
+			g_key_file_set_boolean(img_key_file, conf,"bottom border",entry->bottom_border);
+			g_key_file_set_integer(img_key_file, conf,"border width",entry->border_width);
+			g_free(font_desc);
 		}
-		font_desc = pango_font_description_to_string(entry->font_desc);
-		g_key_file_set_integer(img_key_file,conf, "anim id",		entry->anim_id);
-		g_key_file_set_integer(img_key_file,conf, "anim duration",	entry->anim_duration);
-		g_key_file_set_integer(img_key_file,conf, "posX",		entry->posX);
-		g_key_file_set_integer(img_key_file,conf, "posY",		entry->posY);
-		g_key_file_set_integer(img_key_file,conf, "subtitle angle",		entry->subtitle_angle);
-		g_key_file_set_integer(img_key_file,conf, "placing",		entry->placing);
-		g_key_file_set_string (img_key_file, conf,"font",			font_desc);
-		g_key_file_set_double_list(img_key_file, conf,"font color",entry->font_color,4);
-        g_key_file_set_double_list(img_key_file, conf,"font bgcolor",entry->font_brdr_color,4);
-        g_key_file_set_double_list(img_key_file, conf,"font bgcolor2",entry->font_bg_color,4);
-        g_key_file_set_double_list(img_key_file, conf,"border color",entry->border_color,4);
-        g_key_file_set_integer(img_key_file, conf,"border width",entry->border_width);
-		g_free(font_desc);
-		g_free(conf);
+			g_free(conf);
 	}
 	while (gtk_tree_model_iter_next (model,&iter));
 	count = 0;
@@ -380,7 +384,7 @@ img_load_slideshow( img_window_struct *img,
 	gsize length;
 	gint anim_id,anim_duration, posx, posy, placing, gradient, subtitle_angle;
 	GdkPixbuf *pix = NULL;
-    gboolean      load_ok, img_load_ok;
+    gboolean      load_ok, img_load_ok, top_border, bottom_border;
 	gchar *original_filename = NULL;
 	GtkIconTheme *icon_theme;
 	GtkIconInfo  *icon_info;
@@ -489,6 +493,8 @@ img_load_slideshow( img_window_struct *img,
                 font_brdr_color  = g_key_file_get_double_list(img_key_file, conf, "font bgcolor", NULL, NULL );
                 font_bg_color = g_key_file_get_double_list(img_key_file, conf, "font bgcolor2", NULL, NULL );
                 border_color = g_key_file_get_double_list(img_key_file, conf, "border color", NULL, NULL );
+                top_border = g_key_file_get_boolean(img_key_file, conf, "top border", NULL);
+                bottom_border = g_key_file_get_boolean(img_key_file, conf, "bottom border", NULL);
                 border_width = g_key_file_get_integer(img_key_file, conf, "border width", NULL);
 
 				/* Get the mem address of the transition */
@@ -545,18 +551,21 @@ img_load_slideshow( img_window_struct *img,
 					}
 
 					/* Set subtitle */
-					if ( pattern_name && g_path_is_absolute(pattern_name) == FALSE)
+					if (subtitle)
 					{
-						gchar *_pattern_filename;
-						_pattern_filename = g_strconcat(img->project_current_dir, "/", pattern_name, NULL);
-						g_free(pattern_name);
-						pattern_name = _pattern_filename;
+						if ( pattern_name && g_path_is_absolute(pattern_name) == FALSE)
+						{
+							gchar *_pattern_filename;
+							_pattern_filename = g_strconcat(img->project_current_dir, "/", pattern_name, NULL);
+							g_free(pattern_name);
+							pattern_name = _pattern_filename;
+						}
+						img_set_slide_text_info( slide_info, img->thumbnail_model,
+												 &iter, subtitle, pattern_name, anim_id,
+												 anim_duration, posx, posy, subtitle_angle, placing,
+												 font_desc, font_color, font_brdr_color, font_bg_color, border_color, 
+												 top_border, bottom_border, border_width, img );
 					}
-					img_set_slide_text_info( slide_info, img->thumbnail_model,
-											 &iter, subtitle, pattern_name, anim_id,
-											 anim_duration, posx, posy, subtitle_angle, placing,
-											 font_desc, font_color, font_brdr_color, font_bg_color, border_color, border_width, img );
-
 					/* If we're loading the first slide, apply some of it's
 				 	 * data to final pseudo-slide */
 					if( first_slide && img->bye_bye_transition)

@@ -146,13 +146,16 @@ img_notebook_switch_page (GtkNotebook       *notebook,
                           guint              page_num,
                           img_window_struct *img);
 
-void img_align_text_horizontally(GtkMenuItem *item,
-					img_window_struct *img);
-
-void img_align_text_vertically(GtkMenuItem *item,
+void img_align_text_horizontally_vertically(GtkMenuItem *item,
 					img_window_struct *img);
 
 void
 img_pattern_clicked(GtkMenuItem *item,
 					img_window_struct *img);
+
+void img_subtitle_top_border_toggled (GtkToggleButton *button, img_window_struct *img);
+
+void img_subtitle_bottom_border_toggled (GtkToggleButton *button, img_window_struct *img);
+
+void img_spinbutton_value_changed (GtkSpinButton *spinbutton, img_window_struct *img);
 #endif

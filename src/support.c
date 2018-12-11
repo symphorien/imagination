@@ -442,6 +442,8 @@ img_create_new_slide( void )
         slide->border_color[2] = 1; /* B */
         slide->border_color[3] = 0; /* A */
 
+		slide->border_width = 1;
+
         /* Load error handling */
         slide->load_ok = TRUE;
         slide->original_filename = NULL;
@@ -1178,13 +1180,13 @@ void img_delete_subtitle_pattern(GtkButton *button, img_window_struct *img)
 	gtk_widget_queue_draw( img->image_area );
 }
 
-void img_preview_with_music(img_window_struct *img)
+void img_preview_with_music(img_window_struct *img, gint offset)
 {
 	GtkTreeModel *model;
 	GtkTreeIter iter;
-	gchar	*cmd_line, *path, *filename, *file;
+	gchar	*cmd_line, *path, *filename, *file, *time;
 	gchar 	**argv;
-	gint argc;
+	gint argc, selected_slide_number, count = 0;
 	gboolean ret;
 
 	model = gtk_tree_view_get_model( GTK_TREE_VIEW( img->music_file_treeview ) );
@@ -1199,7 +1201,48 @@ void img_preview_with_music(img_window_struct *img)
 
 	path = g_shell_quote( file );
 
-	cmd_line = g_strdup_printf("play -t %s %s", img_get_audio_filetype(file), path);
+	if (offset > 0)
+	{
+		/* User started the preview NOT from
+		 * first slide, let's calculate the
+		 * total time from the first slide
+		 * up the one before the selected one */
+		 
+		GList *selected;
+		GtkTreeIter iter;
+		GtkTreeIter next_iter;
+		GtkTreeModel *model;
+		slide_struct *info_slide;
+
+		offset = 0;
+		model = GTK_TREE_MODEL( img->thumbnail_model );
+		selected = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(img->active_icon));
+
+		if (selected == NULL)
+			return;
+
+		selected_slide_number = gtk_tree_path_get_indices(selected->data)[0];
+
+		gtk_tree_model_get_iter_first(model, &iter);
+		gtk_tree_model_get(model, &iter,1,&info_slide,-1);
+		
+		offset = (gint) (info_slide->speed + info_slide->duration); 
+		gtk_tree_model_get_iter_first(model, &next_iter);
+		
+		while( count < selected_slide_number - 1)
+		{
+			gtk_tree_model_iter_next( model, &next_iter);
+			gtk_tree_model_get(model, &next_iter, 1 , &info_slide, -1);
+			offset += (gint) (info_slide->speed + info_slide->duration);
+			count++;
+		}
+
+		time = img_convert_seconds_to_time(offset);
+		cmd_line = g_strdup_printf("play -t %s %s trim %s", img_get_audio_filetype(file), path, time);
+		g_free(time);
+	}
+	else
+		cmd_line = g_strdup_printf("play -t %s %s", img_get_audio_filetype(file), path);
 	g_free( path );
 	g_free( file );
 

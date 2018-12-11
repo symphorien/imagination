@@ -21,9 +21,6 @@
 #include "subtitles.h"
 #include "support.h"
 
-/* Border width around image (no text is placed there) */
-#define BORDER 5
-
 /* Wrap width for subtitles (fraction of image size) */
 #define WRAP_WIDTH 0.75
 
@@ -46,6 +43,8 @@ img_text_ani_fade( cairo_t     *cr,
 				   gdouble     *font_brdr_color,
 				   gdouble     *font_bgcolor,
 				   gdouble     *border_color,
+				   gboolean		top_border,
+                   gboolean		bottom_border,
                    gint			border_width);
 
 static void
@@ -59,6 +58,8 @@ img_text_draw_layout( cairo_t     *cr,
                       gdouble     *font_brdr_color,
                       gdouble     *font_bg_color,
                       gdouble     *border_color,
+                      gboolean		top_border,
+                      gboolean		bottom_border,
                       gint	      border_width);
 
 static void
@@ -77,6 +78,8 @@ img_text_from_left( cairo_t     *cr,
                     gdouble     *font_brdr_color,
                     gdouble     *font_bgcolor,
                     gdouble     *border_color,
+                    gboolean	top_border,
+                    gboolean	bottom_border,
                     gint	     border_width);
 
 static void
@@ -95,6 +98,8 @@ img_text_from_right( cairo_t     *cr,
                      gdouble     *font_brdr_color,
                      gdouble     *font_bgcolor,
                      gdouble     *border_color,
+                     gboolean	top_border,
+                     gboolean	bottom_border,
                      gint	      border_width);
 
 static void
@@ -113,6 +118,8 @@ img_text_from_top( cairo_t     *cr,
                    gdouble     *font_brdr_color,
                    gdouble     *font_bgcolor,
                    gdouble     *border_color,
+                   gboolean		top_border,
+                   gboolean		bottom_border,
                    gint	      border_width);
                 
 static void
@@ -131,6 +138,8 @@ img_text_from_bottom( cairo_t     *cr,
                       gdouble     *font_brdr_color,
                       gdouble     *font_bgcolor,
                       gdouble     *border_color,
+                      gboolean		top_border,
+                      gboolean		bottom_border,
                       gint	      border_width);
 
 static void
@@ -149,6 +158,8 @@ img_text_grow( cairo_t     *cr,
                gdouble     *font_brdr_color,
                gdouble     *font_bgcolor,
                gdouble     *border_color,
+			   gboolean		top_border,
+               gboolean		bottom_border,
                gint	      border_width);
 
 static void
@@ -167,6 +178,8 @@ img_text_bottom_to_top( cairo_t     *cr,
                     gdouble     *font_brdr_color,
                     gdouble     *font_bgcolor,
                     gdouble     *border_color,
+                    gboolean		top_border,
+                    gboolean		bottom_border,
                     gint	      border_width);
 
 static void
@@ -185,6 +198,8 @@ img_text_right_to_left( cairo_t     *cr,
                     gdouble     *font_brdr_color,
                     gdouble     *font_bgcolor,
                     gdouble     *border_color,
+                    gboolean		top_border,
+                    gboolean		bottom_border,
                     gint	    border_width);
                       
 /* ****************************************************************************
@@ -308,8 +323,12 @@ img_render_subtitle( img_window_struct 	  *img,
                      gdouble              *font_brdr_color,
                      gdouble              *font_bg_color,
                      gdouble              *border_color,
+                     gboolean				top_border,
+                     gboolean				bottom_border,
                      gint	              border_width,
                      TextAnimationFunc     func,
+                     gboolean				centerX,
+                     gboolean				centerY,
 					 gdouble               progress )
 {
 	gint		 lw,     /* Layout width */
@@ -332,13 +351,15 @@ img_render_subtitle( img_window_struct 	  *img,
 	/* Create pango layout and measure it */
 	layout = pango_cairo_create_layout( cr );
 	pango_layout_set_font_description( layout, font_desc );
+	
 	/* Disable wrapping
 	pango_layout_set_wrap( layout, PANGO_WRAP_WORD );
 	*/
 	pango_layout_set_text( layout, subtitle, -1 );
 	pango_layout_get_size( layout, &lw, &lh );
 	lw /= PANGO_SCALE;
-
+	lh /= PANGO_SCALE;
+	
 	/* Disable wrapping
 	if( lw > ( width * WRAP_WIDTH ) )
 	{
@@ -347,15 +368,28 @@ img_render_subtitle( img_window_struct 	  *img,
 		lw /= PANGO_SCALE;
 	}
 	*/
-	lh /= PANGO_SCALE;
+	if (centerX)
+	{
+		posx = (img->video_size[0] - lw) /2;
+		img->current_slide->posX = posx;
+		gtk_range_set_value( GTK_RANGE(img->sub_posX), (gdouble) img->current_slide->posX);
+	}
+	if (centerY)
+	{
+		posy = (img->video_size[1] - lh) /2;
+		img->current_slide->posY = posy;
+		gtk_range_set_value( GTK_RANGE(img->sub_posY), (gdouble) img->current_slide->posY);
+	}
 
 	/* Do animation */
 	if( func )
-		(*func)( cr, layout, width, height, lw, lh, posx, posy, angle, pattern_filename, progress, font_color, font_brdr_color, font_bg_color, border_color, border_width );
+		(*func)( cr, layout, width, height, lw, lh, posx, posy, angle, pattern_filename, progress, font_color, font_brdr_color, font_bg_color, border_color,
+				top_border, bottom_border, border_width );
 	else
 	{
 		/* No animation renderer */
-        img_text_draw_layout(cr, layout, posx, posy, angle, pattern_filename, font_color, font_brdr_color, font_bg_color, border_color, border_width);
+        img_text_draw_layout(cr, layout, posx, posy, angle, pattern_filename, font_color, font_brdr_color, font_bg_color, border_color,
+        top_border, bottom_border, border_width);
 	}
 
 	/* Destroy layout */
@@ -384,6 +418,8 @@ img_text_ani_fade( cairo_t     *cr,
                    gdouble     *font_brdr_color,
                    gdouble     *font_bgcolor,
                    gdouble     *border_color,
+                   gboolean		top_border,
+                   gboolean		bottom_border,
                    gint			border_width)
 {
     gdouble  progress_font_color[4], progress_font_brdr_color[4], progress_font_bgcolor[4], progress_border_color[4];
@@ -403,9 +439,14 @@ img_text_ani_fade( cairo_t     *cr,
     progress_font_bgcolor[1] = font_bgcolor[1];
     progress_font_bgcolor[2] = font_bgcolor[2];
     progress_font_bgcolor[3] = font_bgcolor[3] * pow(progress, 6);
+    
+    progress_border_color[0] = border_color[0];
+    progress_border_color[1] = border_color[1];
+    progress_border_color[2] = border_color[2];
+    progress_border_color[3] = border_color[3] * pow(progress, 6);
 
     /* Paint text */
-    img_text_draw_layout(cr, layout, posx, posy, angle, filename, progress_font_color, progress_font_brdr_color, progress_font_bgcolor, progress_border_color, border_width);
+    img_text_draw_layout(cr, layout, posx, posy, angle, filename, progress_font_color, progress_font_brdr_color, progress_font_bgcolor, progress_border_color, top_border, bottom_border, border_width);
 }
 
 void
@@ -425,6 +466,8 @@ img_set_slide_text_info( slide_struct      *slide,
                          gdouble           *font_brdr_color,
                          gdouble           *font_bg_color,
                          gdouble           *border_color,
+                         gboolean			top_border,
+						 gboolean			bottom_border,
                          gint	           border_width,
 						 img_window_struct *img )
 {
@@ -521,7 +564,11 @@ img_set_slide_text_info( slide_struct      *slide,
         slide->border_color[3] = border_color[3];
     }
     
-    slide->border_width = border_width;
+    slide->top_border = top_border;
+    slide->bottom_border = bottom_border;
+    
+	if( border_width > 0)
+		slide->border_width = border_width;
 }								
 
 static void
@@ -535,7 +582,9 @@ img_text_draw_layout( cairo_t     *cr,
                       gdouble     *font_brdr_color,
                       gdouble     *font_bg_color,
                       gdouble     *border_color,
-                      gint	      border_width)
+                      gboolean		top_border,
+                      gboolean		bottom_border,
+                      gint			border_width)
 {
 	cairo_pattern_t  *font_pattern = NULL;
     gint x,y,w,h;
@@ -559,11 +608,11 @@ img_text_draw_layout( cairo_t     *cr,
                               font_bg_color[2],
                               font_bg_color[3] );
                               
-        cairo_rectangle(cr, posx - 5, posy, w + 8, h + 5);
+        cairo_rectangle(cr, posx - 5, posy, w + 12, h + 5);
 		cairo_fill(cr);
 	}
 	
-	if (border_color[3] > 0)
+	if (top_border || bottom_border)
 	{
 		pango_layout_get_pixel_size (layout, &w, &h );
 		cairo_set_line_width(cr, (gdouble) border_width);
@@ -577,14 +626,17 @@ img_text_draw_layout( cairo_t     *cr,
 		else
 			cairo_factor = 0.5;
 
-        /* Top border */
-		cairo_move_to(cr, posx - 5, posy + cairo_factor);  
-		cairo_line_to(cr, (posx + 3) + w, posy + cairo_factor);
-		
-		/* Bottom border */
-		cairo_move_to(cr, posx - 5, posy + h + 5 + cairo_factor);  
-		cairo_line_to(cr, (posx + 3) + w, posy + h + 5 + cairo_factor);
-		
+        
+        if (top_border)
+		{
+			cairo_move_to(cr, posx - 5, posy + cairo_factor);  
+			cairo_line_to(cr, (posx + 3) + w + 4, posy + cairo_factor);
+		}
+		if (bottom_border)
+		{
+			cairo_move_to(cr, posx - 5, posy + h + 5 + cairo_factor);  
+			cairo_line_to(cr, (posx + 3) + w + 4, posy + h + 5 + cairo_factor);
+		}
 		cairo_stroke(cr);
 	}
 
@@ -650,6 +702,8 @@ img_text_from_left( cairo_t     *cr,
                     gdouble     *font_brdr_color,
                     gdouble     *font_bgcolor,
                     gdouble     *border_color,
+                    gboolean	top_border,
+                    gboolean	bottom_border,
                     gint		border_width)
 {
     img_text_draw_layout(cr, layout,
@@ -658,7 +712,7 @@ img_text_from_left( cairo_t     *cr,
                          angle,
                          filename,
                          font_color, font_brdr_color, font_bgcolor,
-                         border_color, border_width);
+                         border_color, top_border, bottom_border, border_width);
 }
 
 static void
@@ -677,6 +731,8 @@ img_text_from_right( cairo_t     *cr,
                      gdouble     *font_brdr_color,
                      gdouble     *font_bgcolor,
                      gdouble     *border_color,
+                     gboolean	top_border,
+                     gboolean	bottom_border,
                     gint		border_width)
 {
     img_text_draw_layout(cr, layout,
@@ -685,7 +741,7 @@ img_text_from_right( cairo_t     *cr,
                          angle,
                          filename,
                          font_color, font_brdr_color, font_bgcolor,
-                         border_color, border_width);
+                         border_color, top_border, bottom_border, border_width);
 }
 
 static void
@@ -704,6 +760,8 @@ img_text_from_top( cairo_t     *cr,
                    gdouble     *font_brdr_color,
                    gdouble     *font_bgcolor,
                    gdouble     *border_color,
+                   gboolean	top_border,
+                   gboolean	bottom_border,
                     gint		border_width)
 {
     img_text_draw_layout(cr, layout,
@@ -712,7 +770,7 @@ img_text_from_top( cairo_t     *cr,
                          angle,
                          filename,
                          font_color, font_brdr_color, font_bgcolor,
-                         border_color, border_width);
+                         border_color, top_border, bottom_border, border_width);
 }
 
 static void
@@ -731,6 +789,8 @@ img_text_from_bottom( cairo_t     *cr,
                       gdouble     *font_brdr_color,
                       gdouble     *font_bgcolor,
                       gdouble     *border_color,
+                      gboolean	top_border,
+                      gboolean	bottom_border,
 					  gint		border_width)
 {
     img_text_draw_layout(cr, layout,
@@ -739,7 +799,7 @@ img_text_from_bottom( cairo_t     *cr,
                          angle,
                          filename,
                          font_color, font_brdr_color, font_bgcolor,
-                         border_color, border_width);
+                        border_color, top_border, bottom_border, border_width);
 }
 
 static void
@@ -758,6 +818,8 @@ img_text_grow( cairo_t     *cr,
                gdouble     *font_brdr_color,
                gdouble     *font_bgcolor,
                gdouble     *border_color,
+			   gboolean	top_border,
+               gboolean	bottom_border,
 			   gint		border_width)
 {
 	cairo_translate( cr, posx + lw * 0.5, posy + lh * 0.5 );
@@ -769,7 +831,7 @@ img_text_grow( cairo_t     *cr,
                          angle,
                          filename,
                          font_color, font_brdr_color, font_bgcolor,
-                         border_color, border_width);
+                         border_color, top_border, bottom_border, border_width);
 }
 
 static void
@@ -788,6 +850,8 @@ img_text_bottom_to_top( cairo_t     *cr,
                    gdouble     *font_brdr_color,
                    gdouble     *font_bgcolor,
                    gdouble     *border_color,
+                    gboolean	top_border,
+                    gboolean	bottom_border,
 					gint		border_width)
 {
     img_text_draw_layout(cr, layout,
@@ -796,7 +860,7 @@ img_text_bottom_to_top( cairo_t     *cr,
                          angle,
                          filename,
                          font_color, font_brdr_color, font_bgcolor,
-                         border_color, border_width);
+                         border_color, top_border, bottom_border, border_width);
 }
 
 static void
@@ -815,12 +879,14 @@ img_text_right_to_left( cairo_t     *cr,
                    gdouble     *font_brdr_color,
                    gdouble     *font_bgcolor,
                    gdouble     *border_color,
-					gint		border_width)
+                   gboolean	top_border,
+                   gboolean	bottom_border,
+				   gint		border_width)
 {
     img_text_draw_layout(cr, layout,
                          sw * (1 - progress) - lw * progress,
                          posy, angle,
                          filename,
                          font_color, font_brdr_color, font_bgcolor,
-                         border_color, border_width);
+                         border_color, top_border, bottom_border, border_width);
 }

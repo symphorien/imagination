@@ -77,6 +77,8 @@ img_update_sub_properties( img_window_struct *img,
                            gdouble           *brdr_color,
                            gdouble           *bg_color,
                            gdouble           *border_color,
+                           gboolean			 top_border,
+						   gboolean			 bottom_border,
                            gint		         border_width );
 
 void img_combo_box_transition_type_changed (GtkComboBox *,

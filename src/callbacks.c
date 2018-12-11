@@ -1035,6 +1035,9 @@ void img_start_stop_preview(GtkWidget *item, img_window_struct *img)
 		{
 			gtk_tree_model_get_iter( model, &prev, path );
 			gtk_tree_model_get( model, &prev, 1, &entry, -1 );
+			
+			if (img->music_preview)
+				img_preview_with_music(img, 255);
 
 			if( ! entry->o_filename )
 			{
@@ -1056,6 +1059,9 @@ void img_start_stop_preview(GtkWidget *item, img_window_struct *img)
 		else
 		{
 			cairo_t *cr;
+
+			if (img->music_preview)
+				img_preview_with_music(img, 0);
 
 			img->image1 = cairo_image_surface_create( CAIRO_FORMAT_RGB24,
 													  img->video_size[0],
@@ -1103,9 +1109,6 @@ void img_start_stop_preview(GtkWidget *item, img_window_struct *img)
 														  img->video_size[0],
 														  img->video_size[1] );
 //img_run_encoder(img);
-		if (img->music_preview)
-			img_preview_with_music(img);
-
 		img->source_id = g_timeout_add( 1000 / img->preview_fps,
 										(GSourceFunc)img_transition_timeout,
 										img );
@@ -1361,8 +1364,12 @@ img_on_expose_event( GtkWidget         *widget,
                                  img->current_slide->font_brdr_color,
                                  img->current_slide->font_bg_color,
                                  img->current_slide->border_color,
+                                 img->current_slide->top_border,
+                                 img->current_slide->bottom_border,
                                  img->current_slide->border_width,
 								 img->current_slide->anim,
+								 FALSE,
+								 FALSE,
 								 1.0 );
 
 		cairo_destroy( cr );
@@ -2027,7 +2034,7 @@ img_update_stop_point( GtkSpinButton  *button,
 	point->zoom = gtk_range_get_value( GTK_RANGE( img->ken_zoom ) );
 	
 	/* Update display */
-	//img_update_stop_display( img, FALSE );
+	img_update_stop_display( img, FALSE );
 
 	/* Sync timings */
 	img_sync_timings( img->current_slide, img );
@@ -2080,8 +2087,15 @@ img_update_stop_display( img_window_struct *img,
 
 	if( ! full )
 		full = img->current_slide->duration;
+	
+	g_signal_handlers_block_by_func( img->duration,
+									 img_spinbutton_value_changed, img );
+	
 	gtk_spin_button_set_value( GTK_SPIN_BUTTON( img->duration ), full );
-
+	
+	g_signal_handlers_unblock_by_func( img->duration,
+									 img_spinbutton_value_changed, img );
+									 
 	/* Set point count */
 	string = g_strdup_printf( "%d", img->current_slide->no_points );
 	gtk_label_set_text( GTK_LABEL( img->total_stop_points_label), string );
@@ -2166,6 +2180,10 @@ img_update_subtitles_widgets( img_window_struct *img )
 	g_signal_handlers_block_by_func( img->sub_posY, img_text_pos_changed, img );
 	g_signal_handlers_block_by_func( img->sub_angle,
 									   img_text_pos_changed, img );
+	g_signal_handlers_block_by_func( img->border_top,
+									   img_subtitle_top_border_toggled, img );
+	g_signal_handlers_block_by_func( img->border_bottom,
+									   img_subtitle_bottom_border_toggled, img );
 	/* Update text field */
 	string = ( img->current_slide->subtitle ?
 			   img->current_slide->subtitle :
@@ -2226,6 +2244,10 @@ img_update_subtitles_widgets( img_window_struct *img )
     gtk_color_button_set_alpha( GTK_COLOR_BUTTON( img->sub_border_color ),
                                 (gint)(f_colors[3] * 0xffff ) );
 
+	/* Update toggle buttons top/bottom borders */
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(img->border_top), img->current_slide->top_border);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(img->border_bottom), img->current_slide->bottom_border);
+
 	/* Update spinbutton border with*/
 	gtk_spin_button_set_value( GTK_SPIN_BUTTON( img->sub_border_width ), img->current_slide->border_width );
 	
@@ -2272,7 +2294,11 @@ img_update_subtitles_widgets( img_window_struct *img )
 	g_signal_handlers_unblock_by_func( img->sub_posY,
 									   img_text_pos_changed, img );
 	g_signal_handlers_unblock_by_func( img->sub_angle,
-									   img_text_pos_changed, img );									   								   
+									   img_text_pos_changed, img );
+	g_signal_handlers_unblock_by_func( img->border_top,
+									   img_subtitle_top_border_toggled, img );
+	g_signal_handlers_unblock_by_func( img->border_bottom,
+									   img_subtitle_bottom_border_toggled, img );								   								   
 }
 
 void
@@ -3159,18 +3185,57 @@ img_notebook_switch_page (GtkNotebook       *notebook,
     }
 }
 
-void img_align_text_horizontally(GtkMenuItem *item,
-					img_window_struct *img)
+void img_align_text_horizontally_vertically(GtkMenuItem *item, img_window_struct *img)
 {
-	gint lw, lh, value;
-	
-	img->current_slide->posX = value;
-	gtk_widget_queue_draw(img->image_area);
-}
+	cairo_t	*cr;
+	gboolean centerX = FALSE, centerY = FALSE;
 
-void img_align_text_vertically(GtkMenuItem *item,
-					img_window_struct *img)
-{
+	cr = gdk_cairo_create( img->image_area->window );
+	
+	if (GTK_WIDGET(item) == img->x_justify)
+	{
+		centerX = TRUE;
+		centerY = FALSE;
+	}
+	else if (GTK_WIDGET(item) == img->y_justify)
+	{
+		centerX = FALSE;
+		centerY = TRUE;
+	}
+	else
+	{	
+		img->current_slide->subtitle_angle = 0;
+		gtk_range_set_value( GTK_RANGE(img->sub_angle), 0);
+	}
+
+	img_render_subtitle( img,
+								 cr,
+								 img->video_size[0],
+								 img->video_size[1],
+								 img->image_area_zoom,
+								 img->current_slide->posX,
+								 img->current_slide->posY,
+								 img->current_slide->subtitle_angle,
+								 img->current_slide->placing,
+								 img->current_point.zoom,
+								 img->current_point.offx,
+								 img->current_point.offy,
+								 img->current_slide->subtitle,
+								 img->current_slide->pattern_filename,
+								 img->current_slide->font_desc,
+								 img->current_slide->font_color,
+                                 img->current_slide->font_brdr_color,
+                                 img->current_slide->font_bg_color,
+                                 img->current_slide->border_color,
+                                 img->current_slide->top_border,
+                                 img->current_slide->bottom_border,
+                                 img->current_slide->border_width,
+								 img->current_slide->anim,
+								 centerX,
+								 centerY,
+								 1.0 );
+
+	gtk_widget_queue_draw(img->image_area);
 }
 
 void
@@ -3247,4 +3312,52 @@ img_pattern_clicked(GtkMenuItem *item,
 	}
 	if (GTK_IS_WIDGET(fc))
 		gtk_widget_destroy(fc);
+}
+
+void img_subtitle_top_border_toggled (GtkToggleButton *button, img_window_struct *img)
+{
+	img_update_sub_properties( img, NULL, -1, -1, -1, NULL, NULL, NULL, NULL, NULL, 
+							gtk_toggle_button_get_active(button),
+							img->current_slide->bottom_border, -1);
+	
+	gtk_widget_queue_draw(img->image_area);
+}
+
+void img_subtitle_bottom_border_toggled (GtkToggleButton *button, img_window_struct *img)
+{
+	img_update_sub_properties( img, NULL, -1, -1, -1, NULL, NULL, NULL, NULL, NULL, 
+								img->current_slide->top_border,
+								gtk_toggle_button_get_active(button), -1);
+	
+	gtk_widget_queue_draw(img->image_area);
+}
+
+void img_spinbutton_value_changed (GtkSpinButton *spinbutton, img_window_struct *img)
+{
+	gdouble duration = 0;
+	GList *selected, *bak;
+	GtkTreeIter iter;
+	GtkTreeModel *model;
+	slide_struct *info_slide;
+
+	model = GTK_TREE_MODEL( img->thumbnail_model );
+	selected = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(img->active_icon));
+	if (selected == NULL)
+		return;
+
+	duration = gtk_spin_button_get_value(spinbutton);
+	bak = selected;
+	while (selected)
+	{
+		gtk_tree_model_get_iter(model, &iter,selected->data);
+		gtk_tree_model_get(model, &iter,1,&info_slide,-1);
+		img_set_slide_still_info( info_slide, duration, img );
+		selected = selected->next;
+	}
+
+	g_list_foreach (bak, (GFunc)gtk_tree_path_free, NULL);
+	g_list_free(bak);
+
+	/* Sync timings */
+	img_sync_timings( img->current_slide, img );
 }

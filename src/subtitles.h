@@ -59,8 +59,12 @@ img_render_subtitle( img_window_struct	  *img,
 					 gdouble              *font_brdr_color,
                      gdouble              *font_bg_color,
                      gdouble              *border_color,
+                     gboolean				top_border,
+                     gboolean				bottom_border,
                      gint	              border_width,
 					 TextAnimationFunc     func,
+					 gboolean				centerX,
+					 gboolean				centerY,
 					 gdouble               progress );
 
 void
@@ -80,6 +84,8 @@ img_set_slide_text_info( slide_struct      *slide,
                          gdouble           *font_brdr_color,
                          gdouble           *font_bgcolor,
                          gdouble           *border_color,
+                         gboolean			top_border,
+						 gboolean			bottom_border,
                          gint	           border_width,
 						 img_window_struct *img );
 
