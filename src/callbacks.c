@@ -1340,7 +1340,7 @@ img_on_expose_event( GtkWidget         *widget,
 		cr = gdk_cairo_create( widget->window );
 		
 		/* Do the drawing */
-		img_draw_image_on_surface( cr, img->image_area->allocation.width, img->image_area->allocation.height,
+		img_draw_image_on_surface( cr, img->image_area->allocation.width,
 								   img->current_image, &img->current_point, img );
 
 		/* Render subtitle if present */
@@ -1391,34 +1391,26 @@ img_on_expose_event( GtkWidget         *widget,
 void
 img_draw_image_on_surface( cairo_t           *cr,
 						   gint               width,
-						   gint               height,
 						   cairo_surface_t   *surface,
 						   ImgStopPoint      *point,
 						   img_window_struct *img )
 {
 	gdouble  offxr, offyr;  /* Relative offsets */
-	gdouble  factor_c_x;    /* X Scaling factor for cairo context */
-	gdouble  factor_c_y;    /* Y Scaling factor for cairo context */
-	gdouble  factor_o_x;    /* X Scaling factor for offset mods */
-	gdouble  factor_o_y;    /* Y Scaling factor for offset mods */
+	gdouble  factor_c;      /* Scaling factor for cairo context */
+	gdouble  factor_o;      /* Scalng factor for offset mods */
 	gint     cw;            /* Width of the surface */
-	gint     ch;            /* Height of the surface */
 
 	cw = cairo_image_surface_get_width( surface );
-	ch = cairo_image_surface_get_height( surface );
+	factor_c = (gdouble)width / cw * point->zoom;
+	factor_o = (gdouble)img->video_size[0] / cw * point->zoom;
 
-	factor_c_x = (gdouble)width / cw * point->zoom;
-	factor_c_y = (gdouble)height / ch * point->zoom;
-	factor_o_x = (gdouble)img->video_size[0] / cw * point->zoom;
-	factor_o_y = (gdouble)img->video_size[1] / ch * point->zoom;
-	
-	offxr = point->offx / factor_o_x;
-	offyr = point->offy / factor_o_y;
+	offxr = point->offx / factor_o;
+	offyr = point->offy / factor_o;
 
 	/* Make sure that matrix modifications are only visible from this function
 	 * and they don't interfere with text drawing. */
 	cairo_save( cr );
-	cairo_scale( cr, factor_c_x, factor_c_y );
+	cairo_scale( cr, factor_c, factor_c );
 	cairo_set_source_surface( cr, surface, offxr, offyr );
 	cairo_paint( cr );
 	cairo_restore( cr );

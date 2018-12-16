@@ -369,10 +369,7 @@ img_load_slideshow( img_window_struct *img,
         img->bitrate_index = i;
     }
 
-	if (img->aspect_ratio_index == 0)
-			img->video_ratio = 4 / 3;
-		else
-			img->video_ratio = 16 / 9;
+	img->video_ratio = (gdouble)img->video_size[0] / img->video_size[1];
 
     img_zoom_fit(NULL, img);
 
