@@ -45,14 +45,6 @@
  * Subtitles related definitions
  * ************************************************************************* */
 
-/* Enum with relative placings */
-typedef enum
-{
-	IMG_REL_PLACING_EXPORTED_VIDEO = 0,
-	IMG_REL_PLACING_ORIGINAL_IMAGE
-}
-ImgRelPlacing;
-
 typedef enum
 {
 	ANGLE_0 = 0,
@@ -182,7 +174,7 @@ struct _slide_struct
 	gint                  subtitle_angle;  /* subtitle rotation angle */
 	gint                  anim_id;         /* Animation id */
 	gint                  anim_duration;   /* Duration of animation */
-	ImgRelPlacing         placing;         /* Relative placing */
+	//ImgRelPlacing         placing;         /* Relative placing */
 	PangoFontDescription *font_desc;       /* Font description */
 	gdouble               font_color[4];   /* Font color (RGBA format) */
     gdouble               font_brdr_color[4]; /* Font border color (RGBA format) */
@@ -277,7 +269,6 @@ struct _img_window_struct
     GtkWidget *pattern_image;	  /* Font Pattern */
 	GtkWidget *sub_anim;          /* Animation combo box */
 	GtkWidget *sub_anim_duration; /* Animation duration spin button */
-	GtkWidget *sub_placing;       /* Placing combo box */
 	GtkWidget *sub_posX;          /* Position X hscale range */
 	GtkWidget *sub_posY;          /* Position Y hscale range */
 	GtkWidget *x_justify;         /* Button to justify text on x axis */

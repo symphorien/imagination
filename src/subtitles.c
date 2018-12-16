@@ -312,7 +312,6 @@ img_render_subtitle( img_window_struct 	  *img,
 					 gint				   posx,
 					 gint				   posy,
 					 gint				   angle,
-					 ImgRelPlacing         placing,
 					 gdouble               factor,
 					 gdouble               offx,
 					 gdouble               offy,
@@ -339,14 +338,7 @@ img_render_subtitle( img_window_struct 	  *img,
 	/* Save cairo state */
 	cairo_save( cr );
 
-	/* Transform cairo context to get proper text measurements */
-	if( placing == IMG_REL_PLACING_ORIGINAL_IMAGE )
-	{
-		cairo_scale( cr, factor * zoom, factor * zoom );
-		cairo_translate( cr, offx / factor, offy / factor );
-	}
-	else
-		cairo_scale( cr, zoom, zoom );
+	cairo_scale( cr, zoom, zoom );
 
 	/* Create pango layout and measure it */
 	layout = pango_cairo_create_layout( cr );
@@ -460,7 +452,6 @@ img_set_slide_text_info( slide_struct      *slide,
 						 gint               posx,
 						 gint               posy,
 						 gint               angle,
-						 gint               placing,
 						 const gchar       *font_desc,
 						 gdouble           *font_color,
                          gdouble           *font_brdr_color,
@@ -521,9 +512,6 @@ img_set_slide_text_info( slide_struct      *slide,
 	}
 	
 	slide->subtitle_angle = angle;
-
-	if( ( placing > -1 ) && ( placing != slide->placing ) )
-		slide->placing = placing;
 
 	if( font_desc )
 	{

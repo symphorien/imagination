@@ -87,6 +87,7 @@ img_quality_toggled( GtkCheckMenuItem  *item,
 void
 img_draw_image_on_surface( cairo_t           *cr,
 						   gint               width,
+						   gint               height,
 						   cairo_surface_t   *surface,
 						   ImgStopPoint      *point,
 						   img_window_struct *img );

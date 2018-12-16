@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-10 17:12+0000\n"
+"POT-Creation-Date: 2018-12-11 14:37+0000\n"
 "PO-Revision-Date: 2011-06-11 20:50+0100\n"
 "Last-Translator: Robert Chéramy <robert@cheramy.net>\n"
 "Language-Team: Chinese Traditional\n"
@@ -108,61 +108,61 @@ msgstr[0] "選擇的檔案中有 %d 個與其他不同格式的音效檔"
 msgid "Please check audio tab for more information."
 msgstr "請檢查音效分頁以檢視更多訊息"
 
-#: ../src/main-window.c:219
+#: ../src/main-window.c:218
 msgid "_Slideshow"
 msgstr "影片秀(_S)"
 
-#: ../src/main-window.c:233
+#: ../src/main-window.c:232
 msgid "Import slideshow"
 msgstr "匯出影片秀"
 
-#: ../src/main-window.c:257
+#: ../src/main-window.c:256
 msgid "Import p_ictures"
 msgstr "匯入圖片(_i)"
 
-#: ../src/main-window.c:267
+#: ../src/main-window.c:266
 msgid "Import _music"
 msgstr "匯入音樂(_m)"
 
-#: ../src/main-window.c:284
+#: ../src/main-window.c:283
 msgid "Preview"
 msgstr "預覽"
 
-#: ../src/main-window.c:292
+#: ../src/main-window.c:291
 #, fuzzy
 msgid "With music"
 msgstr "匯入音樂"
 
-#: ../src/main-window.c:301
+#: ../src/main-window.c:300
 #, fuzzy
 msgid "Without music"
 msgstr "匯入音樂"
 
-#: ../src/main-window.c:308
+#: ../src/main-window.c:307
 #, fuzzy
 msgid "Continuos"
 msgstr "內容"
 
-#: ../src/main-window.c:315
+#: ../src/main-window.c:314
 #, fuzzy
 msgid "Ex_port"
 msgstr "匯出"
 
 #. Slide menu
-#: ../src/main-window.c:331
+#: ../src/main-window.c:330
 msgid "_Slide"
 msgstr "場景(_S)"
 
 #. Zoom controls
-#: ../src/main-window.c:350
+#: ../src/main-window.c:349
 msgid "_Zoom"
 msgstr "縮放(_Z)"
 
-#: ../src/main-window.c:374
+#: ../src/main-window.c:373
 msgid "Add empt_y slide"
 msgstr "新增場景(_y)"
 
-#: ../src/main-window.c:380
+#: ../src/main-window.c:379
 #, fuzzy
 msgid "Edit _empty slide"
 msgstr "新增場景(_y)"
@@ -271,7 +271,7 @@ msgstr "正常"
 msgid "Fit Zoom in Window"
 msgstr "縮放至視窗大小"
 
-#: ../src/main-window.c:610 ../src/callbacks.c:1505
+#: ../src/main-window.c:610 ../src/callbacks.c:1510
 #, fuzzy
 msgid "Starts the preview without music"
 msgstr "開始預覽"
@@ -378,7 +378,7 @@ msgstr "<b>字幕設定</b>"
 msgid "Click to choose the font"
 msgstr "選擇字型"
 
-#: ../src/main-window.c:951 ../src/support.c:1174
+#: ../src/main-window.c:951 ../src/support.c:1176
 msgid "Click to choose the font color"
 msgstr "選擇字型顏色"
 
@@ -506,7 +506,7 @@ msgstr "清除所有檔案"
 msgid "Messages"
 msgstr "訊息"
 
-#: ../src/main-window.c:1674 ../src/callbacks.c:1241
+#: ../src/main-window.c:1674 ../src/callbacks.c:1244
 msgid "Sorry, I could not perform the operation!"
 msgstr "抱歉, 無法執行!"
 
@@ -524,20 +524,20 @@ msgid "Type"
 msgstr "類型"
 
 #. No animation function (id = 0)
-#: ../src/main-window.c:2143 ../src/main-window.c:2145 ../src/support.c:183
+#: ../src/main-window.c:2113 ../src/main-window.c:2115 ../src/support.c:183
 #: ../src/subtitles.c:239
 msgid "None"
 msgstr "無"
 
-#: ../src/main-window.c:2579
+#: ../src/main-window.c:2558
 msgid "Please delete the pattern to choose the color"
 msgstr ""
 
-#: ../src/main-window.c:2737
+#: ../src/main-window.c:2718
 msgid "Slides Transitions Report Dialog"
 msgstr "轉場回報對話方塊"
 
-#: ../src/main-window.c:2817
+#: ../src/main-window.c:2798
 msgid ""
 "\n"
 "<span weight='bold'>Note:</span>\n"
@@ -551,8 +551,8 @@ msgstr ""
 "場景當轉換時不能進行播放.\n"
 "按這場景程式會自動選擇它."
 
-#: ../src/callbacks.c:134 ../src/callbacks.c:518 ../src/callbacks.c:1565
-#: ../src/callbacks.c:1655
+#: ../src/callbacks.c:134 ../src/callbacks.c:518 ../src/callbacks.c:1570
+#: ../src/callbacks.c:1660
 msgid "You didn't save your slideshow yet. Are you sure you want to close it?"
 msgstr "尚未儲存影片秀,您確定要關閉？"
 
@@ -569,7 +569,7 @@ msgstr "音效檔匯入,使用CTRL鍵可以多重選擇"
 msgid "All audio files"
 msgstr "全部音效檔"
 
-#: ../src/callbacks.c:310 ../src/callbacks.c:384 ../src/callbacks.c:1592
+#: ../src/callbacks.c:310 ../src/callbacks.c:384 ../src/callbacks.c:1597
 #: ../src/support.c:358
 msgid "All files"
 msgstr "全部檔案"
@@ -592,76 +592,76 @@ msgstr[0] "%d x %d 像素"
 msgid "translator-credits"
 msgstr "中文翻譯 村仔 <tw.chi.ming@gmail.com>"
 
-#: ../src/callbacks.c:1512
+#: ../src/callbacks.c:1517
 msgid "Stops the preview"
 msgstr "停止預覽"
 
-#: ../src/callbacks.c:1575
+#: ../src/callbacks.c:1580
 msgid "Load an Imagination slideshow project"
 msgstr "載入一個影片秀專案"
 
-#: ../src/callbacks.c:1576
+#: ../src/callbacks.c:1581
 msgid "Save an Imagination slideshow project"
 msgstr "儲存一個影片秀專案"
 
-#: ../src/callbacks.c:1586
+#: ../src/callbacks.c:1591
 #, fuzzy
 msgid "Imagination projects (*.img)"
 msgstr "Imagination 想像 (*.img)"
 
-#: ../src/callbacks.c:1602
+#: ../src/callbacks.c:1607
 msgid "Don't include folder names in the filenames"
 msgstr ""
 
-#: ../src/callbacks.c:1603
+#: ../src/callbacks.c:1608
 msgid ""
 "If you check this button, be sure to include ALL the project files in the "
 "SAME folder before attempting to open it again."
 msgstr ""
 
-#: ../src/callbacks.c:2486
+#: ../src/callbacks.c:2498
 #, fuzzy
 msgid "Edit empty slide"
 msgstr "新增場景(_y)"
 
-#: ../src/callbacks.c:2486
+#: ../src/callbacks.c:2498
 msgid "Create empty slide"
 msgstr "新增場景"
 
-#: ../src/callbacks.c:2497
+#: ../src/callbacks.c:2509
 msgid "Empty slide options:"
 msgstr "空白場景選項:"
 
-#: ../src/callbacks.c:2507
+#: ../src/callbacks.c:2519
 #, fuzzy
 msgid "_Solid color"
 msgstr "使用純色(_s)"
 
-#: ../src/callbacks.c:2513
+#: ../src/callbacks.c:2525
 #, fuzzy
 msgid "_Linear gradient"
 msgstr "線性漸層(_l)"
 
-#: ../src/callbacks.c:2519
+#: ../src/callbacks.c:2531
 #, fuzzy
 msgid "_Radial gradient"
 msgstr "放射狀漸層(_r)"
 
-#: ../src/callbacks.c:2525
+#: ../src/callbacks.c:2537
 #, fuzzy
 msgid "_Fade gradient"
 msgstr "放射狀漸層(_r)"
 
-#: ../src/callbacks.c:3239
+#: ../src/callbacks.c:3253
 msgid "Please choose a PNG file"
 msgstr ""
 
-#: ../src/callbacks.c:3253
+#: ../src/callbacks.c:3267
 #, fuzzy
 msgid "PNG files"
 msgstr "全部檔案"
 
-#: ../src/callbacks.c:3260
+#: ../src/callbacks.c:3274
 msgid "Delete current pattern"
 msgstr ""
 
@@ -719,16 +719,16 @@ msgstr ""
 msgid "Select blank slide color:"
 msgstr "選擇背景顏色:"
 
-#: ../src/slideshow_project.c:263
+#: ../src/slideshow_project.c:265
 msgid "This is not an Imagination project file!"
 msgstr "這不是一個影片秀專案!"
 
-#: ../src/slideshow_project.c:440
+#: ../src/slideshow_project.c:442
 #, c-format
 msgid "Slide %i: can't load image %s\n"
 msgstr "場景 %i: 無法載入圖片 %s\n"
 
-#: ../src/slideshow_project.c:581
+#: ../src/slideshow_project.c:585
 #, c-format
 msgid "Can't load image %s\n"
 msgstr "無法載入圖片 %s\n"

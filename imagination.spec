@@ -1,6 +1,6 @@
-Summary:        DVD to MPEG-4 converter
+Summary:        Slideshow maker
 Name:           imagination
-Version:        1.0
+Version:        3.4
 Release:        1.%{?dist}
 License:        GPL
 Group:          Video
@@ -12,8 +12,8 @@ Requires:	glib2, gtk2
 Requires:	ffmpeg >= 0.4.9
 
 %description
-Imagination is a DVD-slideshow application built with the GTK+2 toolkit.
-It allows you to create a slideshow of pictures to be viewed on a home DVD player.
+Imagination is a slideshow maker application built with the GTK+2 toolkit.
+It allows you to create a slideshow of pictures to be encoded into a movie.
 
 %prep
 %setup -q -n %{name}-%{version}

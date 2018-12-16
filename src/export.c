@@ -1002,7 +1002,7 @@ img_render_transition_frame( img_window_struct *img )
 	{
 		cr = cairo_create( img->image_from );
 		if (img->work_slide->gradient != 3)
-			img_draw_image_on_surface( cr, img->video_size[0], img->image1,
+			img_draw_image_on_surface( cr, img->video_size[0], img->video_size[1], img->image1,
 								( img->point1 ? img->point1 : &point ), img );
 	}
 #if 0
@@ -1024,7 +1024,6 @@ img_render_transition_frame( img_window_struct *img )
 							 img->video_size[1],
 							 1.0,
 							 img->work_slide->position,
-							 img->work_slide->placing,
 							 p_draw_point->zoom,
 							 p_draw_point->offx,
 							 p_draw_point->offy,
@@ -1042,7 +1041,7 @@ img_render_transition_frame( img_window_struct *img )
 	/* Create second image */
 	cr = cairo_create( img->image_to );
 	if (img->work_slide->gradient != 3)
-		img_draw_image_on_surface( cr, img->video_size[0], img->image2,
+		img_draw_image_on_surface( cr, img->video_size[0], img->video_size[1], img->image2,
 							   ( img->point2 ? img->point2 : &point ), img );
 	/* FIXME: Add subtitles here */
 	cairo_destroy( cr );
@@ -1136,10 +1135,10 @@ img_render_still_frame( img_window_struct *img,
 	/* Paint surface */
 	cr = cairo_create( img->exported_image );
 	if (img->work_slide->gradient == 3)
-		img_draw_image_on_surface( cr, img->video_size[0], img->image_to,
+		img_draw_image_on_surface( cr, img->video_size[0], img->video_size[1], img->image_to,
 							   p_draw_point, img );
 	else
-		img_draw_image_on_surface( cr, img->video_size[0], img->image2,
+		img_draw_image_on_surface( cr, img->video_size[0], img->video_size[1], img->image2,
 							   p_draw_point, img );
 
 	/* Render subtitle if present */
@@ -1159,7 +1158,6 @@ img_render_still_frame( img_window_struct *img,
 							 img->work_slide->posX,
 							 img->work_slide->posY,
 							 img->work_slide->subtitle_angle,
-							 img->work_slide->placing,
 							 p_draw_point->zoom,
 							 p_draw_point->offx,
 							 p_draw_point->offy,

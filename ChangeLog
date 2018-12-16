@@ -1,17 +1,20 @@
 Imagination changelog
 
-xx/xx/19 - 3.4		- Project can be ported to other media as filenames are saved without their path.
+xx/xx/19 - 3.4		- Subtitle info are no more saved in the project file if the slide hasn't any text.
+			- Starting the preview from the middle plays music accordingly to its timing in the slideshow.
+			- Project can be ported to other media as filenames can be saved without their path.
 			- Subtitle can be now rotated.
 			- Subtitle can now be freely positioned on the slide.
-			- Added a nice fading gradient in the Add/Edit slide dialog.
+			- Added a nice fading gradient animation in the Add/Edit slide dialog.
 			- Fixed seg-fault when trying to delete a slide when preview is running.
 			- Current slideshow is no more closed if user cancels when opening a new one.
 			- Enjoy FULLSCREEN preview with background music and continuos mode. WOOOOOOOOOOW !!!
 			- The CTRL+A shortcut doesn't select all the slides anymore when pressed from the subtitle widget entry.
 			- Subtitles can now have a pattern.
-			- Empty slide background can now be edited. 
-			- Added optional background to the slide subtitle. 
+			- Empty slide background can now be edited.
+			- Subtitle can have a background.
 			- Got rid of Update button in the Slide Motion as it's now automatic.
+			- Got rid of subtitle placing option.
 			- Moved Add and Remove buttons in the Slide Motion on the right.
 14/10/18 - 3.1:
 			- Export is now much faster than 3.0!

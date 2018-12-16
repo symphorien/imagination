@@ -420,7 +420,6 @@ img_create_new_slide( void )
 		slide->anim_duration = 1;
 		slide->posX = 0;
 		slide->posY = 1;
-		slide->placing = IMG_REL_PLACING_EXPORTED_VIDEO;
 		slide->font_desc = pango_font_description_from_string( "Sans 12" );
 		slide->font_color[0] = 0; /* R */
 		slide->font_color[1] = 0; /* G */
@@ -743,9 +742,10 @@ img_scale_image( const gchar      *filename,
 	gdouble min_skew = ( 1 - max_stretch ) * max_crop;
 
 	/* Obtain information about image being loaded */
-
-	if( ! gdk_pixbuf_get_file_info( filename, &i_width, &i_height ) )
-		return( FALSE );
+	if (filename)
+		gdk_pixbuf_get_file_info( filename, &i_width, &i_height );
+	else
+		return FALSE;
 
 	/* How distorted images would be if we scaled them */
 	i_ratio = (gdouble)i_width / i_height;

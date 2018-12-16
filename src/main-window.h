@@ -51,10 +51,6 @@ img_font_bg_color_changed( GtkColorButton    *button,
                           img_window_struct *img );
                           
 void
-img_placing_changed( GtkComboBox   *combo,
-					 img_window_struct *img );
-
-void
 img_disable_videotab (img_window_struct *img);
 
 void
@@ -71,7 +67,6 @@ img_update_sub_properties( img_window_struct *img,
 						   TextAnimationFunc  anim,
 						   gint               anim_id,
 						   gdouble            anim_duration,
-						   ImgRelPlacing      placing,
 						   const gchar       *desc,
 						   gdouble           *color,
                            gdouble           *brdr_color,

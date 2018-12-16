@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: imagination\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-10 17:12+0000\n"
+"POT-Creation-Date: 2018-12-11 14:37+0000\n"
 "PO-Revision-Date: 2011-06-11 20:51+0100\n"
 "Last-Translator: Robert Chéramy <robert@cheramy.net>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -110,61 +110,61 @@ msgstr[1] ""
 msgid "Please check audio tab for more information."
 msgstr "Kontrollera ljudfliken för mer information."
 
-#: ../src/main-window.c:219
+#: ../src/main-window.c:218
 msgid "_Slideshow"
 msgstr "_Bildspel"
 
-#: ../src/main-window.c:233
+#: ../src/main-window.c:232
 msgid "Import slideshow"
 msgstr "Importera bildspel"
 
-#: ../src/main-window.c:257
+#: ../src/main-window.c:256
 msgid "Import p_ictures"
 msgstr "Importera bil_der"
 
-#: ../src/main-window.c:267
+#: ../src/main-window.c:266
 msgid "Import _music"
 msgstr "Importera _musik"
 
-#: ../src/main-window.c:284
+#: ../src/main-window.c:283
 msgid "Preview"
 msgstr "Förhandsgranska"
 
-#: ../src/main-window.c:292
+#: ../src/main-window.c:291
 #, fuzzy
 msgid "With music"
 msgstr "Importera musik"
 
-#: ../src/main-window.c:301
+#: ../src/main-window.c:300
 #, fuzzy
 msgid "Without music"
 msgstr "Importera musik"
 
-#: ../src/main-window.c:308
+#: ../src/main-window.c:307
 #, fuzzy
 msgid "Continuos"
 msgstr "Innehåll"
 
-#: ../src/main-window.c:315
+#: ../src/main-window.c:314
 #, fuzzy
 msgid "Ex_port"
 msgstr "Exportera"
 
 #. Slide menu
-#: ../src/main-window.c:331
+#: ../src/main-window.c:330
 msgid "_Slide"
 msgstr "_Bild"
 
 #. Zoom controls
-#: ../src/main-window.c:350
+#: ../src/main-window.c:349
 msgid "_Zoom"
 msgstr "_Zooma"
 
-#: ../src/main-window.c:374
+#: ../src/main-window.c:373
 msgid "Add empt_y slide"
 msgstr "Lägg till t_om bild"
 
-#: ../src/main-window.c:380
+#: ../src/main-window.c:379
 #, fuzzy
 msgid "Edit _empty slide"
 msgstr "Lägg till t_om bild"
@@ -274,7 +274,7 @@ msgstr "Normal storlek"
 msgid "Fit Zoom in Window"
 msgstr "Anpassa zoom till fönstret"
 
-#: ../src/main-window.c:610 ../src/callbacks.c:1505
+#: ../src/main-window.c:610 ../src/callbacks.c:1510
 #, fuzzy
 msgid "Starts the preview without music"
 msgstr "Startar förhandsgranskningen"
@@ -381,7 +381,7 @@ msgstr "<b>Bildtext</b>"
 msgid "Click to choose the font"
 msgstr "Klicka för att välja typsnitt"
 
-#: ../src/main-window.c:951 ../src/support.c:1174
+#: ../src/main-window.c:951 ../src/support.c:1176
 msgid "Click to choose the font color"
 msgstr "Klicka för att välja typsnittsfärg"
 
@@ -509,7 +509,7 @@ msgstr "Töm alla filer"
 msgid "Messages"
 msgstr "Meddelanden"
 
-#: ../src/main-window.c:1674 ../src/callbacks.c:1241
+#: ../src/main-window.c:1674 ../src/callbacks.c:1244
 msgid "Sorry, I could not perform the operation!"
 msgstr "Tyvärr, jag kunde inte genomföra åtgärden!"
 
@@ -527,20 +527,20 @@ msgid "Type"
 msgstr "Typ"
 
 #. No animation function (id = 0)
-#: ../src/main-window.c:2143 ../src/main-window.c:2145 ../src/support.c:183
+#: ../src/main-window.c:2113 ../src/main-window.c:2115 ../src/support.c:183
 #: ../src/subtitles.c:239
 msgid "None"
 msgstr "Ingen"
 
-#: ../src/main-window.c:2579
+#: ../src/main-window.c:2558
 msgid "Please delete the pattern to choose the color"
 msgstr ""
 
-#: ../src/main-window.c:2737
+#: ../src/main-window.c:2718
 msgid "Slides Transitions Report Dialog"
 msgstr "Rapportdialog för bildövergångar"
 
-#: ../src/main-window.c:2817
+#: ../src/main-window.c:2798
 msgid ""
 "\n"
 "<span weight='bold'>Note:</span>\n"
@@ -554,8 +554,8 @@ msgstr ""
 "Bilder vars övergångar endast tillämpas en gång kommer inte att visas här.\n"
 "Klicka på bilden för att få Imagination att automatiskt välja den."
 
-#: ../src/callbacks.c:134 ../src/callbacks.c:518 ../src/callbacks.c:1565
-#: ../src/callbacks.c:1655
+#: ../src/callbacks.c:134 ../src/callbacks.c:518 ../src/callbacks.c:1570
+#: ../src/callbacks.c:1660
 msgid "You didn't save your slideshow yet. Are you sure you want to close it?"
 msgstr ""
 "Du har inte sparat ditt bildspel än. Är du säker på att du vill stänga det?"
@@ -573,7 +573,7 @@ msgstr "Importera ljudfiler, använd Control-tangenten för flera markeringar"
 msgid "All audio files"
 msgstr "Alla ljudfiler"
 
-#: ../src/callbacks.c:310 ../src/callbacks.c:384 ../src/callbacks.c:1592
+#: ../src/callbacks.c:310 ../src/callbacks.c:384 ../src/callbacks.c:1597
 #: ../src/support.c:358
 msgid "All files"
 msgstr "Alla filer"
@@ -601,77 +601,77 @@ msgstr ""
 "Skicka synpunkter på översättningen till\n"
 "<tp-sv@listor.tp-sv.se>."
 
-#: ../src/callbacks.c:1512
+#: ../src/callbacks.c:1517
 msgid "Stops the preview"
 msgstr "Stoppar förhandsgranskningen"
 
-#: ../src/callbacks.c:1575
+#: ../src/callbacks.c:1580
 msgid "Load an Imagination slideshow project"
 msgstr "Läs in ett Imagination-bildspelsprojekt"
 
-#: ../src/callbacks.c:1576
+#: ../src/callbacks.c:1581
 msgid "Save an Imagination slideshow project"
 msgstr "Spara ett Imagination-bildspelsprojekt"
 
-#: ../src/callbacks.c:1586
+#: ../src/callbacks.c:1591
 #, fuzzy
 msgid "Imagination projects (*.img)"
 msgstr "Imagination-projekt (*.img)"
 
-#: ../src/callbacks.c:1602
+#: ../src/callbacks.c:1607
 msgid "Don't include folder names in the filenames"
 msgstr ""
 
-#: ../src/callbacks.c:1603
+#: ../src/callbacks.c:1608
 msgid ""
 "If you check this button, be sure to include ALL the project files in the "
 "SAME folder before attempting to open it again."
 msgstr ""
 
-#: ../src/callbacks.c:2486
+#: ../src/callbacks.c:2498
 #, fuzzy
 msgid "Edit empty slide"
 msgstr "Lägg till t_om bild"
 
-#: ../src/callbacks.c:2486
+#: ../src/callbacks.c:2498
 msgid "Create empty slide"
 msgstr "Skapa tom bild"
 
-#: ../src/callbacks.c:2497
+#: ../src/callbacks.c:2509
 msgid "Empty slide options:"
 msgstr "Alternativ för tom bild:"
 
-#: ../src/callbacks.c:2507
+#: ../src/callbacks.c:2519
 #, fuzzy
 msgid "_Solid color"
 msgstr "Använd _enfärgad"
 
-#: ../src/callbacks.c:2513
+#: ../src/callbacks.c:2525
 #, fuzzy
 msgid "_Linear gradient"
 msgstr "Använd _linjär gradient"
 
-#: ../src/callbacks.c:2519
+#: ../src/callbacks.c:2531
 #, fuzzy
 msgid "_Radial gradient"
 msgstr "Använd _radiell gradient"
 
-#: ../src/callbacks.c:2525
+#: ../src/callbacks.c:2537
 #, fuzzy
 msgid "_Fade gradient"
 msgstr "Använd _radiell gradient"
 
-#: ../src/callbacks.c:3239
+#: ../src/callbacks.c:3253
 #, fuzzy
 msgid "Please choose a PNG file"
 msgstr "Välj ljudfilerna att importera"
 
-#: ../src/callbacks.c:3253
+#: ../src/callbacks.c:3267
 #, fuzzy
 msgid "PNG files"
 msgstr "Alla filer"
 
-#: ../src/callbacks.c:3260
+#: ../src/callbacks.c:3274
 msgid "Delete current pattern"
 msgstr ""
 
@@ -728,16 +728,16 @@ msgstr ""
 msgid "Select blank slide color:"
 msgstr "Välj bakgrundsfärg:"
 
-#: ../src/slideshow_project.c:263
+#: ../src/slideshow_project.c:265
 msgid "This is not an Imagination project file!"
 msgstr "Detta är inte en projektfil för Imagination!"
 
-#: ../src/slideshow_project.c:440
+#: ../src/slideshow_project.c:442
 #, c-format
 msgid "Slide %i: can't load image %s\n"
 msgstr "Bild %i: kan inte läsa in bilden %s\n"
 
-#: ../src/slideshow_project.c:581
+#: ../src/slideshow_project.c:585
 #, c-format
 msgid "Can't load image %s\n"
 msgstr "Kan inte läsa in bilden %s\n"

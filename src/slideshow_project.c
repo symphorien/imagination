@@ -165,7 +165,6 @@ img_save_slideshow( img_window_struct *img,
 			g_key_file_set_integer(img_key_file,conf, "posX",		entry->posX);
 			g_key_file_set_integer(img_key_file,conf, "posY",		entry->posY);
 			g_key_file_set_integer(img_key_file,conf, "subtitle angle",		entry->subtitle_angle);
-			g_key_file_set_integer(img_key_file,conf, "placing",		entry->placing);
 			g_key_file_set_string (img_key_file, conf,"font",			font_desc);
 			g_key_file_set_double_list(img_key_file, conf,"font color",entry->font_color,4);
 			g_key_file_set_double_list(img_key_file, conf,"font bgcolor",entry->font_brdr_color,4);
@@ -370,7 +369,11 @@ img_load_slideshow( img_window_struct *img,
         img->bitrate_index = i;
     }
 
-	img->video_ratio = (gdouble)img->video_size[0] / img->video_size[1];
+	if (img->aspect_ratio_index == 0)
+			img->video_ratio = 4 / 3;
+		else
+			img->video_ratio = 16 / 9;
+
     img_zoom_fit(NULL, img);
 
 	/* Make loading more efficient by removing model from icon view */
@@ -382,7 +385,7 @@ img_load_slideshow( img_window_struct *img,
 	gchar *subtitle = NULL, *pattern_name = NULL, *font_desc;
 	gdouble *my_points = NULL, *p_start, *p_stop, *c_start, *c_stop;
 	gsize length;
-	gint anim_id,anim_duration, posx, posy, placing, gradient, subtitle_angle;
+	gint anim_id,anim_duration, posx, posy, gradient, subtitle_angle;
 	GdkPixbuf *pix = NULL;
     gboolean      load_ok, img_load_ok, top_border, bottom_border;
 	gchar *original_filename = NULL;
@@ -487,7 +490,6 @@ img_load_slideshow( img_window_struct *img,
 				posx     	  = g_key_file_get_integer(img_key_file, conf, "posX",		NULL);
 				posy       	  = g_key_file_get_integer(img_key_file, conf, "posY",		NULL);
 				subtitle_angle= g_key_file_get_integer(img_key_file, conf, "subtitle angle",		NULL);
-				placing 	  = g_key_file_get_integer(img_key_file, conf, "placing",		NULL);
 				font_desc     = g_key_file_get_string (img_key_file, conf, "font", 			NULL);
 				font_color 	  = g_key_file_get_double_list(img_key_file, conf, "font color", NULL, NULL );
                 font_brdr_color  = g_key_file_get_double_list(img_key_file, conf, "font bgcolor", NULL, NULL );
@@ -562,7 +564,7 @@ img_load_slideshow( img_window_struct *img,
 						}
 						img_set_slide_text_info( slide_info, img->thumbnail_model,
 												 &iter, subtitle, pattern_name, anim_id,
-												 anim_duration, posx, posy, subtitle_angle, placing,
+												 anim_duration, posx, posy, subtitle_angle,
 												 font_desc, font_color, font_brdr_color, font_bg_color, border_color, 
 												 top_border, bottom_border, border_width, img );
 					}

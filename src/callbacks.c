@@ -834,7 +834,7 @@ void img_show_about_dialog (GtkMenuItem *item,img_window_struct *img_struct)
 {
 	static GtkWidget *about = NULL;
 	static gchar version[] = VERSION "-" REVISION;
-    const char *authors[] = {"\nDevelopers:\nGiuseppe Torelli <colossus73@gmail.com>\nTadej Borovšak <tadeboro@gmail.com>\nRobert Chéramy <robert@cheramy.net>\n\nImagination logo:\nhttp://linuxgraphicsusers.com\n\nInsert Transitions Family:\nJean-Pierre Redonnet <inphilly@gmail.com>",NULL};
+    const char *authors[] = {"\nDevelopers:\nGiuseppe Torelli <colossus73@gmail.com>\nTadej Borovšak <tadeboro@gmail.com>\n",NULL};
     
 	if (about == NULL)
 	{
@@ -847,7 +847,7 @@ void img_show_about_dialog (GtkMenuItem *item,img_window_struct *img_struct)
 			"name", "Imagination",
 			"version", strcmp(REVISION, "-1") == 0 ? VERSION : version,
 			"copyright","Copyright \xC2\xA9 2009-2018 Giuseppe Torelli",
-			"comments","A simple and lightweight DVD slideshow maker",
+			"comments","A simple and lightweight slideshow maker",
 			"authors",authors,
 			"documenters",NULL,
 			"translator_credits",_("translator-credits"),
@@ -1340,7 +1340,7 @@ img_on_expose_event( GtkWidget         *widget,
 		cr = gdk_cairo_create( widget->window );
 		
 		/* Do the drawing */
-		img_draw_image_on_surface( cr, img->image_area->allocation.width,
+		img_draw_image_on_surface( cr, img->image_area->allocation.width, img->image_area->allocation.height,
 								   img->current_image, &img->current_point, img );
 
 		/* Render subtitle if present */
@@ -1353,7 +1353,6 @@ img_on_expose_event( GtkWidget         *widget,
 								 img->current_slide->posX,
 								 img->current_slide->posY,
 								 img->current_slide->subtitle_angle,
-								 img->current_slide->placing,
 								 img->current_point.zoom,
 								 img->current_point.offx,
 								 img->current_point.offy,
@@ -1392,26 +1391,34 @@ img_on_expose_event( GtkWidget         *widget,
 void
 img_draw_image_on_surface( cairo_t           *cr,
 						   gint               width,
+						   gint               height,
 						   cairo_surface_t   *surface,
 						   ImgStopPoint      *point,
 						   img_window_struct *img )
 {
 	gdouble  offxr, offyr;  /* Relative offsets */
-	gdouble  factor_c;      /* Scaling factor for cairo context */
-	gdouble  factor_o;      /* Scalng factor for offset mods */
+	gdouble  factor_c_x;    /* X Scaling factor for cairo context */
+	gdouble  factor_c_y;    /* Y Scaling factor for cairo context */
+	gdouble  factor_o_x;    /* X Scaling factor for offset mods */
+	gdouble  factor_o_y;    /* Y Scaling factor for offset mods */
 	gint     cw;            /* Width of the surface */
+	gint     ch;            /* Height of the surface */
 
 	cw = cairo_image_surface_get_width( surface );
-	factor_c = (gdouble)width / cw * point->zoom;
-	factor_o = (gdouble)img->video_size[0] / cw * point->zoom;
+	ch = cairo_image_surface_get_height( surface );
 
-	offxr = point->offx / factor_o;
-	offyr = point->offy / factor_o;
+	factor_c_x = (gdouble)width / cw * point->zoom;
+	factor_c_y = (gdouble)height / ch * point->zoom;
+	factor_o_x = (gdouble)img->video_size[0] / cw * point->zoom;
+	factor_o_y = (gdouble)img->video_size[1] / ch * point->zoom;
+	
+	offxr = point->offx / factor_o_x;
+	offyr = point->offy / factor_o_y;
 
 	/* Make sure that matrix modifications are only visible from this function
 	 * and they don't interfere with text drawing. */
 	cairo_save( cr );
-	cairo_scale( cr, factor_c, factor_c );
+	cairo_scale( cr, factor_c_x, factor_c_y );
 	cairo_set_source_surface( cr, surface, offxr, offyr );
 	cairo_paint( cr );
 	cairo_restore( cr );
@@ -2174,8 +2181,6 @@ img_update_subtitles_widgets( img_window_struct *img )
 									 img_text_anim_set, img );
 	g_signal_handlers_block_by_func( img->sub_anim_duration,
 									 img_combo_box_anim_speed_changed, img );
-	g_signal_handlers_block_by_func( img->sub_placing,
-									 img_placing_changed, img );
 	g_signal_handlers_block_by_func( img->sub_posX, img_text_pos_changed, img );
 	g_signal_handlers_block_by_func( img->sub_posY, img_text_pos_changed, img );
 	g_signal_handlers_block_by_func( img->sub_angle,
@@ -2259,10 +2264,6 @@ img_update_subtitles_widgets( img_window_struct *img )
 	gtk_spin_button_set_value( GTK_SPIN_BUTTON( img->sub_anim_duration ),
 							  img->current_slide->anim_duration );
 
-	/* Update placing */
-	gtk_combo_box_set_active( GTK_COMBO_BOX( img->sub_placing ),
-							  img->current_slide->placing );
-
 	/* Update position */
 	gtk_range_set_value( GTK_RANGE(img->sub_posX), (gdouble) img->current_slide->posX);
 	gtk_range_set_value( GTK_RANGE(img->sub_posY), (gdouble) img->current_slide->posY);
@@ -2287,8 +2288,6 @@ img_update_subtitles_widgets( img_window_struct *img )
 									   img_text_anim_set, img );
 	g_signal_handlers_unblock_by_func( img->sub_anim_duration,
 									   img_combo_box_anim_speed_changed, img );
-	g_signal_handlers_unblock_by_func( img->sub_placing,
-									   img_placing_changed, img );
 	g_signal_handlers_unblock_by_func( img->sub_posX,
 									   img_text_pos_changed, img );
 	g_signal_handlers_unblock_by_func( img->sub_posY,
@@ -3216,7 +3215,6 @@ void img_align_text_horizontally_vertically(GtkMenuItem *item, img_window_struct
 								 img->current_slide->posX,
 								 img->current_slide->posY,
 								 img->current_slide->subtitle_angle,
-								 img->current_slide->placing,
 								 img->current_point.zoom,
 								 img->current_point.offx,
 								 img->current_point.offy,
@@ -3316,7 +3314,7 @@ img_pattern_clicked(GtkMenuItem *item,
 
 void img_subtitle_top_border_toggled (GtkToggleButton *button, img_window_struct *img)
 {
-	img_update_sub_properties( img, NULL, -1, -1, -1, NULL, NULL, NULL, NULL, NULL, 
+	img_update_sub_properties( img, NULL, -1, -1, NULL, NULL, NULL, NULL, NULL, 
 							gtk_toggle_button_get_active(button),
 							img->current_slide->bottom_border, -1);
 	
@@ -3325,7 +3323,7 @@ void img_subtitle_top_border_toggled (GtkToggleButton *button, img_window_struct
 
 void img_subtitle_bottom_border_toggled (GtkToggleButton *button, img_window_struct *img)
 {
-	img_update_sub_properties( img, NULL, -1, -1, -1, NULL, NULL, NULL, NULL, NULL, 
+	img_update_sub_properties( img, NULL, -1, -1, NULL, NULL, NULL, NULL, NULL, 
 								img->current_slide->top_border,
 								gtk_toggle_button_get_active(button), -1);
 	

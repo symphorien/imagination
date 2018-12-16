@@ -224,7 +224,10 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 		/* Get format settings */
 		img_get_format_options(img);
 
-		img->video_ratio = (gdouble)img->video_size[0] / img->video_size[1];
+		if (img->aspect_ratio_index == 0)
+			img->video_ratio = 4 / 3;
+		else
+			img->video_ratio = 16 / 9;
 
 		/* Set the max value of slide subtitles hrange scale
 		* according to the new video size */
