@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
     "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
-  <!ENTITY date "October 2018"> 
-  <!ENTITY version "3.1">
+  <!ENTITY date "December 2018"> 
+  <!ENTITY version "3.4">
   <!ENTITY application "Imagination"> 
 ]>
 <article id="index" lang="en">
 	<articleinfo>
-		<title>Imagination DVD Slide Show Creator</title>
+		<title>Imagination Slide Show Creator</title>
 		<pubdate>&date;</pubdate>
 		<copyright>
 			<year>2009-2018</year>
@@ -32,10 +32,6 @@
 				<firstname>Tadej</firstname>
 				<surname>Borovšak</surname>
 			</author>
-            <author>
-                <firstname>Robert</firstname>
-                <surname>Chéramy</surname>
-            </author>
 		</authorgroup>
 		<releaseinfo>
 			This manual describes version &version; of &application;.
@@ -45,7 +41,7 @@
 	<sect1 id="intro">
 		<title>Introduction to &application;</title>
 			<para>
-				Imagination is a lightweight DVD slide show creator developed in C with the GTK+2 toolkit and Cairo. Imagination is designed to be
+				Imagination is a lightweight slide show creator developed in C with the GTK+2 toolkit and Cairo. Imagination is designed to be
 				be fast and easy-to-use. Its user interface is clean and intuitive, and does not include any confusing or useless options by default.
 				It requires the ffmpeg encoder to produce the movie file and libsox to import the audio files. Yes you don't need any other third-party software!
 			</para>
@@ -87,11 +83,11 @@
 		</sect2>
 		<sect2>
 			<title>Working Area</title>
-			<para>Starting from 2.0 release video and audio parts were split in two separate tabs named "Video" and "Audio". The Video part contains the following settings:</para>
 			<itemizedlist>
 				<listitem><para>Slide Settings</para></listitem>
 				<listitem><para>Slide Motion</para></listitem>
 				<listitem><para>Slide Text</para></listitem>
+				<listitem><para>Slide Text Position</para></listitem>
 			</itemizedlist>
 			<figure id="video_tab">
 				<title>Video Tab</title>
@@ -132,9 +128,8 @@
 				</para>
 				<para>
 					If you commit a mistake or want to change some point, simply
-					select problematic point, re-adjust your slide and then
-					click the Update button. Now your selected point has it's
-					zoom level and position set to new values.
+					select problematic point and re-adjust your slide.
+					Imagination will automatically update the values for you.
 				</para>
 				<para>
 					The Remove button deletes a stop point. Simply select
@@ -155,9 +150,7 @@
 				<para>
 					Imagination can add some text to your slides. Just start
 					typing in proper field and text will show up in image
-					area. If you wish to have multi line text, click on + sign
-					on the right side of the text field that will expand it a
-					bit.
+					area.
 				</para>
 				<para>
 					You can modify text's font size, variant and family using
@@ -165,15 +158,13 @@
 					color selector buttons (font color and text outline color)
                     right of the font button (font color can be partially transparent too).
 				</para>
+			</sect3>
+			<sect3 id="slide_text_position">
+				<title>Slide Text Position</title>
 				<para>
-					Text can be positioned on the slide in nine locations that
-					can be selected with position selector button. Those
-					positions can be made relative to exported video or original
-					image. What does this mean? For images without Ken Burns
-					effect, both options produce the same result. But if you
-					apply zoom, text that is positioned relative to the original
-					image will be zoomed to, while text positioned relative to
-					exported video will stay of the same size.
+					Starting from 3.4 version text can be positioned
+					anywhere on the slide. The position dropdown menu
+					was removed. The slide subtitle can be rotated too.
 				</para>
 				<para>
 					Text entrance can also be animated. Simply select animation
@@ -312,7 +303,10 @@
 			<sect3 id="saveas">
 				<title>Save as</title>
 				<para>
-					This menu allows you save a slideshow with a different filename.
+					This menu allows you save a slideshow with a different filename. Starting from 3.4 you can now choose in the "Save As" dialog
+					if to save the project with filenames without their folder name. This will make the project portable to other media. Please
+					be sure to put all the files (music tracks, pictures and pattern images for the subtitle) in the same folder othwerwise when
+					you attempt to load the slideshow Imagination couldn't load the project files.
 				</para>
 			</sect3>
 			<sect3 id="close">
@@ -352,7 +346,11 @@
 			<sect3 id="preview_slideshow">
 				<title>Preview</title>
 				<para>
-					This menu starts the preview of the slideshow in the image area. If you want to start the preview by a specific slide just select it by left clicking on it. The preview quality if affected by the setting in the menu <menuchoice><guimenu>Slide</guimenu><guimenuitem>Preview quality</guimenuitem></menuchoice>.
+					This sub menu allows you to start the preview of the slideshow in the image area in 3 different ways. Starting from 3.4 Imagination
+					will play also the music even though it's not faded at the end like when exporting the video.
+					If you want to start the preview by a specific slide just select it by left clicking on it. If you added an audio
+					track the music will start at the minute specified by the sum of the total duration of all slides before the one you selected
+					to start the preview from. The other two preview ways are self-explanatory.
 				</para>
 			</sect3>
 			<sect3 id="export">
@@ -381,6 +379,7 @@
 				<listitem><para>Paste</para></listitem>
 				<listitem><para>Zoom</para></listitem>
 				<listitem><para>Add empty slide</para></listitem>
+				<listitem><para>Edit empty slide</para></listitem>
 				<listitem><para>Delete</para></listitem>
 				<listitem><para>Report</para></listitem>
 				<listitem><para>Rotate clockwise</para></listitem>
@@ -420,13 +419,14 @@
 				</figure>
 				<para>
 					This menu entry displays the above dialog where you can
-					choose the background color of the empty slide in a three
+					choose the background color of the empty slide in a four
 					different ways: 1) with a solid color, 2) with a linear
-					gradient, 3) with a radial gradient. This functionality is
-					most useful when you want to separate your images in
-					distinct groups by adding simple text slide in between them.
-					If a slide is selected the empty slide will be added next to
-					the selected slide otherwise it will be added after the last slide.
+					gradient, 3) with a radial gradient, 4) with a fading
+					gradient. This functionality is most useful when you want
+					to separate your images in distinct groups by adding simple
+					text slide in between them. If a slide is selected the empty
+					slide will be added next to the selected slide otherwise it
+					will be added after the last slide.
 				</para>
 				<para>
 					Slides created this way are in no way different from any
@@ -438,6 +438,18 @@
 					selection of start and end color. Second level is position
 					of the endpoints, which are represented by two white
 					squares that can be dragged around the preview area.
+				</para>
+			</sect3>
+			<sect3 id="Edit_empty_slide">
+				<title>Edit empty slide</title>
+				<figure id="emptyy_slide">
+					<title>Edit a new slide dialog</title>
+					<graphic fileref="images/empty_slide_dialog2.png"></graphic>
+				</figure>
+				<para>
+					This menu entry displays the above dialog where you can
+					edit the background color or the gradient you previously
+					chose when you added a new slide.
 				</para>
 			</sect3>
 			<sect3 id="delete">
@@ -488,6 +500,8 @@
 			<itemizedlist>
 				<listitem><para>Preview Mode</para></listitem>
 				<listitem><para>Overview Mode</para></listitem>
+				<listitem><para>Preview Frame Rate</para></listitem>
+				<listitem><para>Fullscreen</para></listitem>
 			</itemizedlist>
 			<sect3 id="preview_mode">
 				<title>Preview mode</title>
@@ -499,6 +513,18 @@
 				<title>Overview mode</title>
 				<para>
 					This entry allows you to switch to Overview mode; the image area along with the thumbnails area are hidden. This mode allows you to organize the slides in a matrix. The size of the thumbnails can be increased or decreased with the Zoom controls. Cut/Copy/Paste menu entries are supported. The slides can also be arranged by holding left mouse button and by moving them around.
+				</para>
+			</sect3>
+			<sect3 id="preview_frame_rate">
+				<title>Preview frame rate</title>
+				<para>
+					This entry allows you to choose the desidered frame rate when previewing the slideshow. I'm not sure if in 2018 with fast computer available this entry is still useful...
+				</para>
+			</sect3>
+			<sect3 id="fullscreen">
+				<title>Fullscreen</title>
+				<para>
+					Starting from version 3.4, Imagination allows preview to be rendered in fullscreen. Press F11 or ESC to exit fullscreen.
 				</para>
 			</sect3>
 		</sect2>

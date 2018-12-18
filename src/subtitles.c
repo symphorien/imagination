@@ -578,14 +578,15 @@ img_text_draw_layout( cairo_t     *cr,
     gint x,y,w,h;
 	gdouble cairo_factor;
 
+	pango_layout_get_pixel_size (layout, &w, &h );
 	pango_layout_set_alignment( layout, PANGO_ALIGN_CENTER );
 
 	/* Subtitle angle */
-	cairo_translate (cr, posx, posy);
+	cairo_translate (cr, posx + (w / 2), posy + (h / 2) );
 	cairo_rotate (cr, angle * G_PI / 180.0);
-	cairo_translate (cr, -posx, -posy);
+	cairo_translate (cr, -(posx + (w / 2)), -(posy + (h / 2)) );
 	pango_cairo_update_layout (cr, layout);
-
+	
 	/* Paint the background only if the user
 	 * chose an alpha value greater than 0 */
 	if (font_bg_color[3] > 0)
@@ -602,7 +603,6 @@ img_text_draw_layout( cairo_t     *cr,
 	
 	if (top_border || bottom_border)
 	{
-		pango_layout_get_pixel_size (layout, &w, &h );
 		cairo_set_line_width(cr, (gdouble) border_width);
 		cairo_set_source_rgba(cr, border_color[0],
 							  border_color[1],
@@ -672,6 +672,9 @@ img_text_draw_layout( cairo_t     *cr,
     /* Move to proper place and paint text */
 	cairo_move_to( cr, posx, posy );
 	pango_cairo_show_layout( cr, layout );
+	
+	if (pattern_filename)
+		cairo_pattern_destroy(font_pattern);
 }
 
 static void

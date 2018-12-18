@@ -7,6 +7,7 @@ images_DATA = \
 				side_panel_audio.png   \
 				new_dialog.png			\
 				empty_slide_dialog.png	\
+				empty_slide_dialog2.png	\
 				slide_report_dialog.png
 EXTRA_DIST = 							\
 	$(images_DATA)
