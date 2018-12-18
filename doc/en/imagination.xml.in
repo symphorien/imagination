@@ -347,10 +347,9 @@
 				<title>Preview</title>
 				<para>
 					This sub menu allows you to start the preview of the slideshow in the image area in 3 different ways. Starting from 3.4 Imagination
-					will play also the music even though it's not faded at the end like when exporting the video.
+					will play also the music even though it's not faded at the end when exporting the video.
 					If you want to start the preview by a specific slide just select it by left clicking on it. If you added an audio
-					track the music will start at the minute specified by the sum of the total duration of all slides before the one you selected
-					to start the preview from. The other two preview ways are self-explanatory.
+					track the music will start at the minute specified by the sum of the total duration of all slides before the one you selected. The other two preview ways are self-explanatory.
 				</para>
 			</sect3>
 			<sect3 id="export">
