@@ -72,7 +72,6 @@ img_save_slideshow( img_window_struct *img,
 
 	g_key_file_set_double_list( img_key_file, "slideshow settings",
 								"background color", img->background_color, 3 );
-	g_key_file_set_boolean(img_key_file,"slideshow settings", "distort images", img->distort_images);
 
 	g_key_file_set_integer(img_key_file, "slideshow settings", "number of slides", img->slides_nr);
 
@@ -386,9 +385,7 @@ img_load_slideshow( img_window_struct *img,
 	GdkPixbuf *pix = NULL;
     gboolean      load_ok, img_load_ok, top_border, bottom_border;
 	gchar *original_filename = NULL;
-	GtkIconTheme *icon_theme;
-	GtkIconInfo  *icon_info;
-	const gchar  *icon_filename;
+	
 	ImgAngle   angle = 0;
 	
 		/* Load last slide setting (bye bye transition) */
@@ -426,28 +423,14 @@ img_load_slideshow( img_window_struct *img,
 				angle = (ImgAngle)g_key_file_get_integer( img_key_file, conf,
 														  "angle", NULL );
 				load_ok = img_scale_image( original_filename, img->video_ratio,
-										   88, 0, img->distort_images,
+										   88, 0,
 										   img->background_color, &thumb, NULL );
                 img_load_ok = load_ok;
-                if (! load_ok)
-                {
-                    icon_theme = gtk_icon_theme_get_default();
-                    icon_info = gtk_icon_theme_lookup_icon(icon_theme,
-                                                           GTK_STOCK_MISSING_IMAGE,
-                                                           256,
-                                                           GTK_ICON_LOOKUP_FORCE_SVG);
-                    icon_filename = gtk_icon_info_get_filename(icon_info);
-
-
-                    img_message(img, TRUE, _("Slide %i: can't load image %s\n"), i, slide_filename);
-
-                    g_free (slide_filename);
-                    slide_filename = g_strdup(icon_filename);
-                    load_ok = img_scale_image( slide_filename, img->video_ratio,
-                                                88, 0, img->distort_images,
-                                                img->background_color, &thumb, NULL );
-
-                }
+                /*if (! load_ok)
+				{
+					img_message(img, TRUE, _("Slide %i: can't load image %s\n"), i, slide_filename);
+					g_free (slide_filename);
+                }*/
 			}
 			else
 			{
@@ -521,7 +504,7 @@ img_load_slideshow( img_window_struct *img,
 						img_rotate_slide( slide_info, angle, NULL );
 						g_object_unref( thumb );
 						img_scale_image( slide_info->r_filename, img->video_ratio,
-										 88, 0, img->distort_images,
+										 88, 0,
 										 img->background_color, &thumb, NULL );
 					}
 
@@ -590,9 +573,6 @@ img_load_slideshow( img_window_struct *img,
 		}
 	
 	img->slides_nr += previous_nr_of_slides;
-	img->distort_images = g_key_file_get_boolean( img_key_file,
-												  "slideshow settings",
-												  "distort images", NULL );
 	gtk_widget_hide(img->progress_bar);
 
 	gtk_icon_view_set_model( GTK_ICON_VIEW( img->thumbnail_iconview ),

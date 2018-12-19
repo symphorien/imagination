@@ -168,7 +168,7 @@ void img_add_slides_thumbnails(GtkMenuItem *item, img_window_struct *img)
 	while (slides)
 	{
 		if( img_scale_image( slides->data, img->video_ratio, 88, 0,
-							 img->distort_images, img->background_color,
+							 img->background_color,
 							 &thumb, NULL ) )
 		{
 			slide_info = img_create_new_slide();
@@ -681,7 +681,7 @@ img_rotate_selected_slides( img_window_struct *img,
 
 			/* Display the rotated image in thumbnails iconview */
 			img_scale_image( info_slide->r_filename, img->video_ratio, 88, 0,
-							 img->distort_images, img->background_color,
+							 img->background_color,
 							 &thumb, NULL );
 			gtk_list_store_set( img->thumbnail_model, &iter, 0, thumb, -1 );
 		}
@@ -699,7 +699,7 @@ img_rotate_selected_slides( img_window_struct *img,
 	{
 		cairo_surface_destroy( img->current_image );
 		img_scale_image( img->current_slide->r_filename, img->video_ratio,
-							 0, img->video_size[1], img->distort_images,
+							 0, img->video_size[1],
 							 img->background_color, NULL, &img->current_image );
 		
 		gtk_widget_queue_draw( img->image_area );
@@ -1017,7 +1017,7 @@ void img_start_stop_preview(GtkWidget *item, img_window_struct *img)
 								img->video_size[1], NULL, &img->image2 );
 		else
 			img_scale_image( entry->r_filename, img->video_ratio,
-								0, img->video_size[1], img->distort_images,
+								0, img->video_size[1],
 								img->background_color, NULL, &img->image2 );
 	
 		/* Load first stop point */
@@ -1048,7 +1048,7 @@ void img_start_stop_preview(GtkWidget *item, img_window_struct *img)
 			}
 			else
 				img_scale_image( entry->r_filename, img->video_ratio,
-									0, img->video_size[1], img->distort_images,
+									0, img->video_size[1],
 									img->background_color, NULL, &img->image1 );
 			
 			/* Load last stop point */
@@ -1254,7 +1254,7 @@ void img_on_drag_data_received (GtkWidget *widget,GdkDragContext *context,int x,
 	{
 		filename = g_filename_from_uri (pictures[len],NULL,NULL);
 		if( img_scale_image( filename, img->video_ratio, 88, 0,
-							 img->distort_images, img->background_color,
+							 img->background_color,
 							 &thumb, NULL ) )
 		{
 			slide_info = img_create_new_slide();
@@ -1373,7 +1373,6 @@ img_on_expose_event( GtkWidget         *widget,
 
 		cairo_destroy( cr );
 	}
-
 	return( TRUE );
 }
 
@@ -1670,7 +1669,6 @@ void img_close_slideshow(GtkWidget *widget, img_window_struct *img)
 	gtk_label_set_text(GTK_LABEL (img->total_time_data),"");
 
 	/* Reset slideshow properties */
-	img->distort_images = TRUE;
 	img->background_color[0] = 0;
 	img->background_color[1] = 0;
 	img->background_color[2] = 0;
@@ -3280,7 +3278,7 @@ img_pattern_clicked(GtkMenuItem *item,
 			g_free( ( img->current_slide )->pattern_filename);
 
 		(img->current_slide)->pattern_filename = g_strdup(filename);
-		pattern_pix = gdk_pixbuf_new_from_file_at_scale( filename, 32, 32, TRUE, &error);
+		pattern_pix = gdk_pixbuf_new_from_file_at_scale( filename, 60, 32, TRUE, &error);
 		g_free(filename);
 		if (! pattern_pix)
 		{

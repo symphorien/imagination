@@ -50,7 +50,6 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 	GtkWidget *frame3;
 	GtkWidget *label_frame3;
 	GtkWidget *alignment_frame3;
-	GtkWidget *distort_button;
 	GtkWidget *bg_button;
 	GtkWidget *bg_label;
 	GdkColor   color;
@@ -175,9 +174,6 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 	ex_vbox = gtk_vbox_new( FALSE, 5 );
 	gtk_container_add( GTK_CONTAINER( alignment_frame3 ), ex_vbox );
 
-	distort_button = gtk_check_button_new_with_label( _("Rescale images to fit desired aspect ratio") );
-	gtk_box_pack_start( GTK_BOX( ex_vbox ), distort_button, FALSE, FALSE, 0 );
-
 	ex_hbox = gtk_hbox_new( FALSE, 5 );
 	gtk_box_pack_start( GTK_BOX( ex_vbox ), ex_hbox, FALSE, FALSE, 0 );
 
@@ -195,7 +191,6 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 	gtk_widget_show_all(dialog_vbox1);
 
 	/* Set parameters */
-	gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( distort_button ), img->distort_images );
 	gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( img->bye_bye_transition_checkbox ), img->bye_bye_transition );
 
 	img_set_format_options(img);
@@ -207,15 +202,8 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 		if (! flag)
 			img_close_slideshow(NULL, img);
 
-		gboolean dist = img->distort_images;
 		GdkColor new;
-		gboolean c_dist,
-				 c_color;
-
-		/* Get distorsion settings */
-		img->distort_images = 
-			gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( distort_button ) );
-		c_dist = ( dist ? ! img->distort_images : img->distort_images );
+		gboolean c_color;
 
 		/* Get bye bye transition settings */
 		img->bye_bye_transition = 
@@ -241,7 +229,7 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 				  ( color.blue  != new.blue  );
 
 		/* Update display properly */
-		if( c_dist || c_color )
+		if( c_color )
 		{
 			/* Update thumbnails */
 			img_update_thumbs( img );
@@ -282,7 +270,7 @@ img_update_thumbs( img_window_struct *img )
 
 		gtk_tree_model_get( model, &iter, 1, &slide, -1 );
 		if( img_scale_image( slide->r_filename, img->video_ratio, 88, 0,
-							 img->distort_images, img->background_color,
+							img->background_color,
 							 &pix, NULL ) )
 		{
 			gtk_list_store_set( store, &iter, 0, pix, -1 );
@@ -299,7 +287,7 @@ img_update_current_slide( img_window_struct *img )
 
 	cairo_surface_destroy( img->current_image );
 	img_scale_image( img->current_slide->r_filename, img->video_ratio,
-					 0, img->video_size[1], img->distort_images,
+					 0, img->video_size[1],
 					 img->background_color, NULL, &img->current_image );
 	gtk_widget_queue_draw( img->image_area );
 }

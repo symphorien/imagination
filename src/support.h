@@ -114,7 +114,6 @@ img_scale_image( const gchar      *filename,
 				 gdouble           ratio,
 				 gint              width,
 				 gint              height,
-				 gboolean          distort,
 				 gdouble          *color,
 				 GdkPixbuf       **pixbuf,
 				 cairo_surface_t **surface );
