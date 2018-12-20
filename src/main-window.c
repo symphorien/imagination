@@ -158,11 +158,6 @@ img_window_struct *img_create_window (void)
 	GtkWidget *zoom_in_button, *zoom_out_button, *zoom_normal, *zoom_fit;
 	GtkWidget *export_menu;
 	GdkPixbuf *pixbuf;
-	GtkWidget *rotate_left_menu;
-	GtkWidget *rotate_right_menu;
-	GtkWidget *rotate_left_button;
-	GtkWidget *rotate_right_button;
-
 	GtkWidget *tmp_checks[PREVIEW_FPS_NO_PRESETS];
 
 	img_struct = g_new0(img_window_struct, 1);
@@ -404,28 +399,6 @@ img_window_struct *img_create_window (void)
 	tmp_image = gtk_image_new_from_stock (GTK_STOCK_INDEX,GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (img_struct->report_menu),tmp_image);
 	
-	pixbuf = gtk_icon_theme_load_icon(icon_theme,"object-rotate-left",18,0,NULL);
-	tmp_image = gtk_image_new_from_pixbuf(pixbuf);
-	g_object_unref(pixbuf);
-
-	rotate_left_menu = gtk_image_menu_item_new_with_mnemonic (_("Rotate co_unter-clockwise"));
-	gtk_container_add (GTK_CONTAINER (slide_menu),rotate_left_menu);
-	gtk_widget_add_accelerator (rotate_left_menu,"activate",img_struct->accel_group, GDK_u,GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
-	g_signal_connect( G_OBJECT( rotate_left_menu ), "activate",
-					  G_CALLBACK( img_rotate_slides_left), img_struct );
-	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (rotate_left_menu),tmp_image);
-
-	pixbuf = gtk_icon_theme_load_icon(icon_theme,"object-rotate-right",18,0,NULL);
-	tmp_image = gtk_image_new_from_pixbuf(pixbuf);
-	g_object_unref(pixbuf);
-
-	rotate_right_menu = gtk_image_menu_item_new_with_mnemonic (_("_Rotate clockwise"));
-	gtk_container_add (GTK_CONTAINER (slide_menu),rotate_right_menu);
-	gtk_widget_add_accelerator (rotate_right_menu,"activate",img_struct->accel_group, GDK_r,GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
-	g_signal_connect( G_OBJECT( rotate_right_menu ), "activate",
-					  G_CALLBACK ( img_rotate_slides_right ), img_struct );
-	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (rotate_right_menu),tmp_image);
-
 	img_struct->select_all_menu = gtk_image_menu_item_new_from_stock (GTK_STOCK_SELECT_ALL, img_struct->accel_group);
 	gtk_container_add (GTK_CONTAINER (slide_menu),img_struct->select_all_menu);
 	gtk_widget_add_accelerator (img_struct->select_all_menu,"activate",img_struct->accel_group,GDK_a,GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
@@ -558,28 +531,6 @@ img_window_struct *img_create_window (void)
 	gtk_container_add (GTK_CONTAINER (img_struct->toolbar),remove_button);
 	gtk_widget_set_tooltip_text(remove_button, _("Delete the selected slides"));
 	g_signal_connect (G_OBJECT (remove_button),"clicked",G_CALLBACK (img_delete_selected_slides),img_struct);
-
-	pixbuf = gtk_icon_theme_load_icon(icon_theme,"object-rotate-left",22,0,NULL);
-	tmp_image = gtk_image_new_from_pixbuf(pixbuf);
-	g_object_unref(pixbuf);
-
-	rotate_left_button = GTK_WIDGET (gtk_tool_button_new(tmp_image,""));
-	gtk_container_add (GTK_CONTAINER (img_struct->toolbar), rotate_left_button);
-	gtk_widget_set_tooltip_text( rotate_left_button,
-								 _("Rotate the slide 90 degrees to the left") );
-	g_signal_connect( G_OBJECT( rotate_left_button ), "clicked",
-					  G_CALLBACK (img_rotate_slides_left ), img_struct );
-	
-	pixbuf = gtk_icon_theme_load_icon(icon_theme,"object-rotate-right",22,0,NULL);
-	tmp_image = gtk_image_new_from_pixbuf(pixbuf);
-	g_object_unref(pixbuf);
-
-	rotate_right_button = GTK_WIDGET (gtk_tool_button_new(tmp_image,""));
-	gtk_container_add (GTK_CONTAINER (img_struct->toolbar),rotate_right_button);
-	gtk_widget_set_tooltip_text( rotate_right_button,
-								 _("Rotate the slide 90 degrees to the right") );
-	g_signal_connect( G_OBJECT( rotate_right_button ), "clicked",
-					  G_CALLBACK( img_rotate_slides_right ), img_struct );
 
 	zoom_in_button = GTK_WIDGET (gtk_tool_button_new_from_stock ("gtk-zoom-in"));
 	gtk_container_add (GTK_CONTAINER (img_struct->toolbar),zoom_in_button);
@@ -1534,7 +1485,6 @@ static void img_slide_paste(GtkMenuItem* item, img_window_struct *img)
                         /* Fill fields with fresh strings, since g_slice_copy cannot do
                         * that for us. */
                         pasted_slide->o_filename = g_strdup(info_slide->o_filename);
-                        pasted_slide->r_filename = g_strdup(info_slide->r_filename);
                         pasted_slide->original_filename = g_strdup(info_slide->original_filename);
                         pasted_slide->resolution = g_strdup(info_slide->resolution);
                         pasted_slide->type = g_strdup(info_slide->type);
@@ -1827,25 +1777,10 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 	/* This is not needed when in overview mode, since we're not displaying any
 	 * large image preview. */
 	if( img->mode == 0 )
-	{
-		if( ! info_slide->r_filename )
-		{
-			img_scale_gradient( info_slide->gradient,
-								info_slide->g_start_point,
-								info_slide->g_stop_point,
-								info_slide->g_start_color,
-								info_slide->g_stop_color,
-								img->video_size[0],
-								img->video_size[1], NULL,
-								&img->current_image );
-		}
-		else
-			/* Respect quality settings */
-			img_scale_image( info_slide->r_filename,
+		img_scale_image( info_slide->o_filename,
 								(gdouble)img->video_size[0] / img->video_size[1],
 								0, img->video_size[1],
 								img->background_color, NULL, &img->current_image );
-	}
 }
 
 void img_combo_box_transition_type_changed (GtkComboBox *combo, img_window_struct *img)

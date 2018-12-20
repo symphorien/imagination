@@ -95,10 +95,9 @@ img_save_slideshow( img_window_struct *img,
 		}
         if (filename)
 		{
-			/* Save original filename and rotation */
+			/* Save original filename */
 			g_key_file_set_string( img_key_file, conf,
 								   "filename", filename);
-			g_key_file_set_integer( img_key_file, conf, "angle", entry->angle );
 		}
 		else
 		{
@@ -386,9 +385,7 @@ img_load_slideshow( img_window_struct *img,
     gboolean      load_ok, img_load_ok, top_border, bottom_border;
 	gchar *original_filename = NULL;
 	
-	ImgAngle   angle = 0;
-	
-		/* Load last slide setting (bye bye transition) */
+	/* Load last slide setting (bye bye transition) */
 		img->bye_bye_transition = g_key_file_get_boolean( img_key_file, "slideshow settings",
 										 "blank slide", NULL);
 		
@@ -420,8 +417,6 @@ img_load_slideshow( img_window_struct *img,
 				else
 					original_filename = g_strdup (slide_filename);
 
-				angle = (ImgAngle)g_key_file_get_integer( img_key_file, conf,
-														  "angle", NULL );
 				load_ok = img_scale_image( original_filename, img->video_ratio,
 										   88, 0,
 										   img->background_color, &thumb, NULL );
@@ -434,7 +429,6 @@ img_load_slideshow( img_window_struct *img,
 			}
 			else
 			{
-				angle = 0;
 				/* We are loading an empty slide */
 				gradient = g_key_file_get_integer(img_key_file, conf, "gradient", NULL);
 				c_start = g_key_file_get_double_list(img_key_file, conf, "start_color", NULL, NULL);
@@ -497,16 +491,6 @@ img_load_slideshow( img_window_struct *img,
                     /* Handle load errors */
                     slide_info->load_ok = img_load_ok;
                     slide_info->original_filename = original_filename;
-
-					/* If image has been rotated, rotate it now too. */
-					if( angle )
-					{
-						img_rotate_slide( slide_info, angle, NULL );
-						g_object_unref( thumb );
-						img_scale_image( slide_info->r_filename, img->video_ratio,
-										 88, 0,
-										 img->background_color, &thumb, NULL );
-					}
 
 					gtk_list_store_append( img->thumbnail_model, &iter );
 					gtk_list_store_set( img->thumbnail_model, &iter,

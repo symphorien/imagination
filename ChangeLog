@@ -1,6 +1,7 @@
 Imagination changelog
 
-xx/xx/19 - 3.5		- Finally got rid of those annoying black borders around image.
+xx/xx/19 - 3.5		- Removed ability to rotate slides (who uses it?)
+			- Finally got rid of those annoying black borders around image.
 			- Fixed seg-fault when quitting.
 
 18/12/18 - 3.4		- Subtitle info are no more saved in the project file if the slide hasn't any text.

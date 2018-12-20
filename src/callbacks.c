@@ -65,8 +65,6 @@ static gboolean img_still_timeout(img_window_struct *);
 static void img_swap_toolbar_images( img_window_struct *, gboolean);
 static void img_clean_after_preview(img_window_struct *);
 static void img_about_dialog_activate_link(GtkAboutDialog * , const gchar *, gpointer );
-static GdkPixbuf *img_rotate_pixbuf( GdkPixbuf *, GtkProgressBar *, ImgAngle );
-static void img_rotate_selected_slides( img_window_struct *, gboolean );
 
 static void
 img_image_area_change_zoom( gdouble            step,
@@ -426,9 +424,6 @@ void img_free_allocated_memory(img_window_struct *img_struct)
 		g_signal_handlers_unblock_by_func((gpointer)img_struct->over_icon, (gpointer)img_iconview_selection_changed, img_struct);
 	}
 
-	/* Unlink the possible created rotated pictures and free the GSlist */
-	/* NOTE: This is now done by img_free_slide_struct function */
-
 	/* Delete the audio files in the liststore */
 	if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(img_struct->music_file_liststore), &iter))
 	{
@@ -630,206 +625,6 @@ void img_delete_selected_slides(GtkMenuItem *item,img_window_struct *img)
 	img_iconview_selection_changed(GTK_ICON_VIEW(img->active_icon),img);
 }
 
-void
-img_rotate_slides_left( GtkWidget         *widget,
-						img_window_struct *img )
-{
-	img_rotate_selected_slides( img, TRUE );
-}
-
-void
-img_rotate_slides_right( GtkWidget         *widget,
-						 img_window_struct *img )
-{
-	img_rotate_selected_slides( img, FALSE );
-}
-
-static void
-img_rotate_selected_slides( img_window_struct *img,
-							gboolean           clockwise )
-{
-	GtkTreeModel *model;
-	GtkTreeIter   iter;
-	GList        *selected,
-				 *bak;
-	GdkPixbuf    *thumb;
-	slide_struct *info_slide;
-
-	/* Obtain the selected slideshow filename */
-	model = GTK_TREE_MODEL( img->thumbnail_model );
-	selected = gtk_icon_view_get_selected_items(
-					GTK_ICON_VIEW( img->active_icon ) );
-
-	if( selected == NULL)
-		return;
-
-	gtk_widget_show(img->progress_bar);
-
-	bak = selected;
-	while (selected)
-	{
-		ImgAngle angle;
-
-		gtk_tree_model_get_iter( model, &iter, selected->data );
-		gtk_tree_model_get( model, &iter, 1, &info_slide, -1 );
-
-		/* Avoid seg-fault when dealing with text/gradient slides */
-		if (info_slide->o_filename != NULL)
-		{
-			angle = ( info_slide->angle + ( clockwise ? 1 : -1 ) ) % 4;
-			img_rotate_slide( info_slide, angle, GTK_PROGRESS_BAR( img->progress_bar ) );
-
-			/* Display the rotated image in thumbnails iconview */
-			img_scale_image( info_slide->r_filename, img->video_ratio, 88, 0,
-							 img->background_color,
-							 &thumb, NULL );
-			gtk_list_store_set( img->thumbnail_model, &iter, 0, thumb, -1 );
-		}
-		selected = selected->next;
-	}
-	gtk_widget_hide(img->progress_bar);
-	g_list_foreach (bak, (GFunc)gtk_tree_path_free, NULL);
-	g_list_free(bak);
-
-	/* If no slide is selected currently, simply return */
-	if( ! img->current_slide )
-		return;
-
-	if (info_slide->o_filename != NULL)
-	{
-		cairo_surface_destroy( img->current_image );
-		img_scale_image( img->current_slide->r_filename, img->video_ratio,
-							 0, img->video_size[1],
-							 img->background_color, NULL, &img->current_image );
-		
-		gtk_widget_queue_draw( img->image_area );
-	}
-}
-
-/* Rotate clockwise */
-static GdkPixbuf *img_rotate_pixbuf( GdkPixbuf      *original,
-									 GtkProgressBar *progress,
-									 ImgAngle        angle )
-{
-	GdkPixbuf     *new;
-	gint           w, h, r1, r2, channels, bps;
-	GdkColorspace  colorspace;
-	gboolean       alpha;
-	guchar        *pixels1, *pixels2;
-	gint           i, j;
-
-	/* Get data from source */
-	g_object_get( G_OBJECT( original ), "width", &w,
-										"height", &h,
-										"rowstride", &r1,
-										"n_channels", &channels,
-										"bits_per_sample", &bps,
-										"colorspace", &colorspace,
-										"has_alpha", &alpha,
-										"pixels", &pixels1,
-										NULL );
-
-	switch( angle )
-	{
-		case ANGLE_0:
-			g_object_ref( G_OBJECT( original ) );
-			new = original;
-			break;
-
-		case ANGLE_90:
-			/* Create new rotated image */
-			new = gdk_pixbuf_new( colorspace, alpha, bps, h, w );
-			g_object_get( G_OBJECT( new ), "rowstride", &r2,
-										   "pixels", &pixels2,
-										   NULL );
-			
-			/* Copy data, applying transormation along the way */
-			for( j = 0; j < h; j++ )
-			{
-				for( i = 0; i < w; i++ )
-				{
-					int source = i * channels + r1 * j;
-					int dest   = j * channels + r2 * ( w - i - 1 );
-					int n;
-					
-					for( n = 0; n < channels; n++ )
-						pixels2[dest + n] = pixels1[source + n];
-				}
-				
-				if( j % 100 )
-					continue;
-				
-				/* Update progress bar */
-				gtk_progress_bar_set_fraction( progress, (gdouble)( j + 1 ) / h );
-				while( gtk_events_pending() )
-					gtk_main_iteration();
-			}
-			break;
-
-		case ANGLE_180:
-			/* Create new rotated image */
-			new = gdk_pixbuf_new( colorspace, alpha, bps, w, h );
-			g_object_get( G_OBJECT( new ), "rowstride", &r2,
-										   "pixels", &pixels2,
-										   NULL );
-
-			/* Copy data, applying transormation along the way */
-			for( j = 0; j < h; j++ )
-			{
-				for( i = 0; i < w; i++ )
-				{
-					int source = i * channels + r1 * j;
-					int dest   = ( w - i - 1 ) * channels + r2 * ( h - j - 1 );
-					int n;
-
-					for( n = 0; n < channels; n++ )
-						pixels2[dest + n] = pixels1[source + n];
-				}
-
-				if( j % 100 )
-					continue;
-
-				/* Update progress bar */
-				gtk_progress_bar_set_fraction( progress, (gdouble)( j + 1 ) / h );
-				while( gtk_events_pending() )
-					gtk_main_iteration();
-			}
-			break;
-
-		case ANGLE_270:
-			/* Create new rotated image */
-			new = gdk_pixbuf_new( colorspace, alpha, bps, h, w );
-			g_object_get( G_OBJECT( new ), "rowstride", &r2,
-										   "pixels", &pixels2,
-										   NULL );
-
-			/* Copy data, applying transormation along the way */
-			for( j = 0; j < h; j++ )
-			{
-				for( i = 0; i < w; i++ )
-				{
-					int source = i * channels + r1 * j;
-					int dest   = ( h - j - 1 ) * channels + r2 * i;
-					int n;
-
-					for( n = 0; n < channels; n++ )
-						pixels2[dest + n] = pixels1[source + n];
-				}
-
-				if( j % 100 )
-					continue;
-
-				/* Update progress bar */
-				gtk_progress_bar_set_fraction( progress, (gdouble)( j + 1 ) / h );
-				while( gtk_events_pending() )
-					gtk_main_iteration();
-			}
-			break;
-	}
-
-	return( new );
-}
-
 void img_show_about_dialog (GtkMenuItem *item,img_window_struct *img_struct)
 {
 	static GtkWidget *about = NULL;
@@ -1010,15 +805,10 @@ void img_start_stop_preview(GtkWidget *item, img_window_struct *img)
 		/* Load the first image in the pixbuf */
 		gtk_tree_model_get( model, &iter, 1, &entry, -1);
 
-		if( ! entry->o_filename )
-			img_scale_gradient( entry->gradient, entry->g_start_point,
+		img_scale_gradient( entry->gradient, entry->g_start_point,
 								entry->g_stop_point, entry->g_start_color,
 								entry->g_stop_color, img->video_size[0],
 								img->video_size[1], NULL, &img->image2 );
-		else
-			img_scale_image( entry->r_filename, img->video_ratio,
-								0, img->video_size[1],
-								img->background_color, NULL, &img->image2 );
 	
 		/* Load first stop point */
 		img->point2 = (ImgStopPoint *)( entry->no_points ?
@@ -1039,17 +829,10 @@ void img_start_stop_preview(GtkWidget *item, img_window_struct *img)
 			if (img->music_preview)
 				img_preview_with_music(img, 255);
 
-			if( ! entry->o_filename )
-			{
-				img_scale_gradient( entry->gradient, entry->g_start_point,
+			img_scale_gradient( entry->gradient, entry->g_start_point,
 									entry->g_stop_point, entry->g_start_color,
 									entry->g_stop_color, img->video_size[0],
 									img->video_size[1], NULL, &img->image1 );
-			}
-			else
-				img_scale_image( entry->r_filename, img->video_ratio,
-									0, img->video_size[1],
-									img->background_color, NULL, &img->image1 );
 			
 			/* Load last stop point */
 			img->point1 = (ImgStopPoint *)( entry->no_points ?
@@ -3106,55 +2889,6 @@ img_set_window_default_settings( img_window_struct *img )
 	gtk_window_set_default_size( GTK_WINDOW( img->imagination_window ),
 								 800, 600 );
 	gtk_paned_set_position( GTK_PANED( img->paned ), 500 );
-}
-
-void
-img_rotate_slide( slide_struct   *slide,
-				  ImgAngle        angle,
-				  GtkProgressBar *progress )
-{
-	gchar *filename;
-
-	/* If this slide is gradient, do nothing */
-	if( ! slide->o_filename )
-		return;
-
-	/* If the angle is ANGLE_0, then simply copy original filename into rotated
-	 * filename. */
-	if( angle )
-	{
-		GdkPixbuf *image,
-				  *rotated;
-		gint       handle;
-		GError    *error = NULL;
-
-		image = gdk_pixbuf_new_from_file( slide->o_filename, NULL );
-		if( progress )
-			rotated = img_rotate_pixbuf( image, progress, angle );
-		else
-			rotated = gdk_pixbuf_rotate_simple( image, angle * 90 );
-		g_object_unref( image );
-		
-		handle = g_file_open_tmp( "img-XXXXXX.jpg", &filename, NULL );
-		close( handle );
-		if( ! gdk_pixbuf_save( rotated, filename, "jpeg", &error, NULL ) )
-		{
-			g_message( "%s.", error->message );
-			g_error_free( error );
-			g_free( filename );
-			filename = g_strdup( slide->r_filename );
-		}
-		g_object_unref( rotated );
-	}
-	else
-		filename = g_strdup( slide->o_filename );
-
-	/* Delete any temporary image that is present from previous rotation */
-	if( slide->angle )
-		unlink( slide->r_filename );
-	g_free( slide->r_filename );
-	slide->r_filename = filename;
-	slide->angle = angle;
 }
 
 void
