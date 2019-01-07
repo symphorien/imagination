@@ -49,6 +49,9 @@ int main (int argc, char *argv[])
 
 	img_window = img_create_window();
 
+	/* Create the GTK rich text tags */
+	img_set_text_buffer_tags(img_window);
+	
 	/* Load the transitions as plugins with GModule */
 	img_load_available_transitions(img_window);
 

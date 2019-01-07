@@ -148,4 +148,7 @@ img_message (img_window_struct *img,
 void
 img_check_for_encoder(img_window_struct *img);
 
+void str_replace(gchar *str, const gchar *search, const gchar *replace);
+
+void img_set_text_buffer_tags(img_window_struct *img);
 #endif

@@ -155,7 +155,8 @@ struct _slide_struct
 	gint   cur_point; /* Currently active stop point */
 
 	/* Subtitle variables */
-	gchar                *subtitle;        /* Subtitle text */
+	guint8				 *subtitle;        /* Subtitle text */
+	gsize				 subtitle_length; /* Subtitle length */
 	gchar			 	 *pattern_filename;/* Pattern image file */
 	TextAnimationFunc     anim;            /* Animation functions */
 	gint                  posX;       	   /* subtitle X position */
@@ -210,7 +211,8 @@ struct _img_window_struct
 	GtkWidget	*trans_duration;
 	GtkWidget	*total_time_data;
 	GtkWidget	*filename_data;
-	GtkTextBuffer *slide_text_buffer;
+	GtkTextBuffer 	*slide_text_buffer;
+	GtkTextTagTable	*tag_table;
 	GtkWidget	*scrolled_win;
 	GtkWidget   *text_pos_button;
 	GtkWidget 	*thumb_scrolledwindow;
@@ -252,6 +254,12 @@ struct _img_window_struct
     GtkWidget *sub_brdr_color;    /* Border font color selector button */
     GtkWidget *sub_bgcolor;       /* Background font color selector button */
     GtkWidget *sub_border_color;  /* Border on font background color selector button */
+    GtkWidget *bold_style;
+    GtkWidget *italic_style;
+    GtkWidget *underline_style;
+    GtkWidget *left_justify;
+    GtkWidget *fill_justify;
+    GtkWidget *right_justify;
     GtkWidget *border_top;  	  /* Border top widget */
     GtkWidget *border_bottom;  	  /* Border bottom widget */
     GtkWidget *sub_border_width;  /* Border width on font background button */
@@ -318,7 +326,6 @@ struct _img_window_struct
 									   is always 0). */
 
 	/* Variables common to export and preview functions */
-	slide_struct    *work_slide;
 	cairo_surface_t *current_image;  /* Image in preview area */
 	cairo_surface_t *exported_image; /* Image being exported */
 	cairo_surface_t *image1;         /* Original images */

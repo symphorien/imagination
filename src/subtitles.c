@@ -305,61 +305,59 @@ img_free_text_animation_list( gint           no_animations,
 
 void
 img_render_subtitle( img_window_struct 	  *img,
-					 cairo_t              *cr,
-					 gint                  width,
-					 gint                  height,
-					 gdouble               zoom,
-					 gint				   posx,
-					 gint				   posy,
-					 gint				   angle,
-					 gdouble               factor,
-					 gdouble               offx,
-					 gdouble               offy,
-					 gchar                *subtitle,
-					 gchar                *pattern_filename,
-					 PangoFontDescription *font_desc,
-					 gdouble              *font_color,
-                     gdouble              *font_brdr_color,
-                     gdouble              *font_bg_color,
-                     gdouble              *border_color,
-                     gboolean				top_border,
-                     gboolean				bottom_border,
-                     gint	              border_width,
-                     TextAnimationFunc     func,
-                     gboolean				centerX,
-                     gboolean				centerY,
-					 gdouble               progress )
+					 cairo_t			*cr,
+					 gdouble			zoom,
+					 gint				posx,
+					 gint				posy,
+					 gint				angle,
+					 gdouble			factor,
+					 gdouble			offx,
+					 gdouble			offy,
+                     gboolean			centerX,
+                     gboolean			centerY,
+					 gdouble			progress)
 {
 	gint		 lw,     /* Layout width */
 				 lh;     /* Layout height */
 
 	PangoLayout *layout;
-
+	gchar		*text, *string;
+	
 	/* Save cairo state */
 	cairo_save( cr );
-
 	cairo_scale( cr, zoom, zoom );
 
 	/* Create pango layout and measure it */
 	layout = pango_cairo_create_layout( cr );
-	pango_layout_set_font_description( layout, font_desc );
+	pango_layout_set_font_description( layout, img->current_slide->font_desc );
+
+	/* Convert the GTK Rich Text Buffer
+	 * tags to Pango language markup */
+	img->current_slide->subtitle[26] =  32;
+	img->current_slide->subtitle[27] =  32;
+	img->current_slide->subtitle[28] =  32;
+	img->current_slide->subtitle[29] =  32;
+
+	string = g_strdup(strstr((gchar*)img->current_slide->subtitle,"<text>"));
+	str_replace(string, "<text>", "");
+	str_replace(string, "</text>", "");
+	str_replace(string, "</text_view_markup>", "");
 	
-	/* Disable wrapping
-	pango_layout_set_wrap( layout, PANGO_WRAP_WORD );
-	*/
-	pango_layout_set_text( layout, subtitle, -1 );
+	str_replace(string, "<apply_tag name=\"underline\"", "<span underline=\"single\"");
+	str_replace(string, "<apply_tag name=\"bold\"", "<span font_weight=\"bold\"");
+	str_replace(string, "<apply_tag name=\"italic\"", "<span font_style=\"italic\"");
+	str_replace(string, "</apply_tag>", "</span>");
+	string[strlen(string) - 2] = '\0';
+
+	pango_parse_markup(string, strlen(string), 0, NULL, &text, NULL, NULL);
+	pango_layout_set_markup(layout, string, strlen(string));
+	pango_layout_set_text( layout, text, -1 );
+	g_free(string);
+
 	pango_layout_get_size( layout, &lw, &lh );
 	lw /= PANGO_SCALE;
 	lh /= PANGO_SCALE;
-	
-	/* Disable wrapping
-	if( lw > ( width * WRAP_WIDTH ) )
-	{
-		pango_layout_set_width( layout, width * WRAP_WIDTH * PANGO_SCALE );
-		pango_layout_get_size( layout, &lw, &lh );
-		lw /= PANGO_SCALE;
-	}
-	*/
+
 	if (centerX)
 	{
 		posx = (img->video_size[0] - lw) /2;
@@ -374,14 +372,14 @@ img_render_subtitle( img_window_struct 	  *img,
 	}
 
 	/* Do animation */
-	if( func )
-		(*func)( cr, layout, width, height, lw, lh, posx, posy, angle, pattern_filename, progress, font_color, font_brdr_color, font_bg_color, border_color,
-				top_border, bottom_border, border_width );
+	if( img->current_slide->anim )
+		(*img->current_slide->anim)( cr, layout, img->video_size[0], img->video_size[1], lw, lh, posx, posy, angle, img->current_slide->pattern_filename, progress, img->current_slide->font_color, img->current_slide->font_brdr_color, img->current_slide->font_bg_color, img->current_slide->border_color,
+				img->current_slide->top_border, img->current_slide->bottom_border, img->current_slide->border_width );
 	else
 	{
 		/* No animation renderer */
-        img_text_draw_layout(cr, layout, posx, posy, angle, pattern_filename, font_color, font_brdr_color, font_bg_color, border_color,
-        top_border, bottom_border, border_width);
+        img_text_draw_layout(cr, layout, posx, posy, angle, img->current_slide->pattern_filename, img->current_slide->font_color, img->current_slide->font_brdr_color, img->current_slide->font_bg_color, img->current_slide->border_color,
+        img->current_slide->top_border, img->current_slide->bottom_border, img->current_slide->border_width);
 	}
 
 	/* Destroy layout */
@@ -445,7 +443,7 @@ void
 img_set_slide_text_info( slide_struct      *slide,
 						 GtkListStore      *store,
 						 GtkTreeIter       *iter,
-						 const gchar       *subtitle,
+						 guint8		       *subtitle,
 						 gchar				*pattern_filename,
 						 gint	            anim_id,
 						 gint               anim_duration,
@@ -463,21 +461,9 @@ img_set_slide_text_info( slide_struct      *slide,
 						 img_window_struct *img )
 {
 	/* Set the slide text info parameters */
-	if( store && iter )
-	{
-		gboolean flag;
-
-		if( slide->subtitle )
-			g_free( slide->subtitle );
-		slide->subtitle = g_strdup( subtitle );
-		
 		if( slide->pattern_filename )
 			g_free( slide->pattern_filename );
 		slide->pattern_filename = g_strdup( pattern_filename );
-
-		flag = ( subtitle ? TRUE : FALSE );
-		gtk_list_store_set( store, iter, 3, flag, -1 );
-	}
 
 	if( ( anim_id > -1 ) && ( anim_id != slide->anim_id ) )
 	{
@@ -814,7 +800,7 @@ img_text_grow( cairo_t     *cr,
 			   gint		border_width)
 {
 	cairo_translate( cr, posx + lw * 0.5, posy + lh * 0.5 );
-	cairo_scale( cr, progress, progress );
+	cairo_scale( cr, exp(log(progress)), exp(log(progress)) );
 
     img_text_draw_layout(cr, layout,
                          - lw * 0.5,

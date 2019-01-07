@@ -92,7 +92,6 @@ img_text_anim_set( GtkComboBox       *combo,
 				   img_window_struct *img );
 
 void
-img_switch_mode( img_window_struct *img,
-				 gint               mode );
+img_switch_mode( img_window_struct *img, gint mode );
 
 #endif

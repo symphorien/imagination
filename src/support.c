@@ -1220,3 +1220,39 @@ void img_save_relative_filenames(GtkCheckButton *togglebutton, img_window_struct
 	else
 		img->relative_filenames = FALSE;
 }
+
+void str_replace(gchar *str, const gchar *search, const gchar *replace)
+{
+	for (gchar *cursor = str; (cursor = strstr(cursor, search)) != NULL;)
+	{
+		memmove(cursor + strlen(replace), cursor + strlen(search), strlen(cursor) - strlen(search) + 1);
+        for (gint i = 0; replace[i] != '\0'; i++)
+            cursor[i] = replace[i];
+        cursor += strlen(replace);
+	}
+}
+
+void img_set_text_buffer_tags(img_window_struct *img)
+{
+	GtkTextTag *tag;
+
+	img->tag_table = gtk_text_buffer_get_tag_table(img->slide_text_buffer);
+	tag = gtk_text_tag_new("bold");
+	g_object_set(tag, "weight", PANGO_WEIGHT_BOLD, NULL);
+	gtk_text_tag_table_add (img->tag_table, tag);
+	
+	tag = gtk_text_tag_new("italic");
+	g_object_set(tag, "style", PANGO_STYLE_ITALIC, NULL);
+	gtk_text_tag_table_add (img->tag_table, tag);
+	
+	tag = gtk_text_tag_new("underline");
+	g_object_set(tag, "underline", PANGO_UNDERLINE_SINGLE, NULL);
+	gtk_text_tag_table_add (img->tag_table, tag);
+	
+	tag = gtk_text_tag_new("foreground");
+	g_object_set(tag, "foreground", "#FFC100", NULL);
+	gtk_text_tag_table_add (img->tag_table, tag);
+}
+
+
+

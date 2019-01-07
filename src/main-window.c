@@ -865,6 +865,73 @@ img_window_struct *img_create_window (void)
 	vbox_slide_caption = gtk_vbox_new (FALSE, 2);
 	gtk_container_add (GTK_CONTAINER (frame4_alignment), vbox_slide_caption);
 
+	a_hbox = gtk_hbox_new(FALSE, 2);
+	gtk_box_pack_start (GTK_BOX (vbox_slide_caption), a_hbox, FALSE, FALSE, 0);
+
+	img_struct->sub_color = gtk_color_button_new();
+	gtk_color_button_set_use_alpha( GTK_COLOR_BUTTON( img_struct->sub_color ), TRUE );
+	g_signal_connect( G_OBJECT( img_struct->sub_color ), "color-set",
+					  G_CALLBACK( img_font_color_changed ), img_struct );
+	gtk_box_pack_start( GTK_BOX( a_hbox ), img_struct->sub_color, FALSE, FALSE, 0 );
+    gtk_widget_set_tooltip_text(img_struct->sub_color, _("Click to choose the font color"));
+
+	img_struct->sub_brdr_color = gtk_color_button_new();
+    gtk_color_button_set_use_alpha( GTK_COLOR_BUTTON( img_struct->sub_brdr_color ), TRUE );
+    g_signal_connect( G_OBJECT( img_struct->sub_brdr_color ), "color-set",
+                      G_CALLBACK( img_font_brdr_color_changed ), img_struct );
+    gtk_box_pack_start( GTK_BOX( a_hbox ), img_struct->sub_brdr_color, FALSE, FALSE, 0 );
+    gtk_widget_set_tooltip_text(img_struct->sub_brdr_color, _("Click to choose the font border color. If the opacity value is set to 0, Imagination will not render any border."));
+
+	img_struct->sub_bgcolor = gtk_color_button_new();
+	gtk_color_button_set_use_alpha( GTK_COLOR_BUTTON( img_struct->sub_bgcolor ), TRUE );
+	gtk_color_button_set_alpha(GTK_COLOR_BUTTON( img_struct->sub_bgcolor ), 0);
+    g_signal_connect( G_OBJECT( img_struct->sub_bgcolor ), "color-set",
+                      G_CALLBACK( img_font_bg_color_changed ), img_struct );
+    gtk_box_pack_start( GTK_BOX( a_hbox ), img_struct->sub_bgcolor, FALSE, FALSE, 0 );
+	gtk_widget_set_tooltip_text(img_struct->sub_bgcolor, _("Click to choose the font background color. If the opacity value is set to 0, Imagination will not render any background."));
+
+	img_struct->bold_style = gtk_button_new();
+	g_signal_connect( G_OBJECT( img_struct->bold_style ), "clicked",
+					  G_CALLBACK( img_subtitle_style_changed ), img_struct );
+	gtk_box_pack_start (GTK_BOX (a_hbox), img_struct->bold_style, FALSE, FALSE, 0);
+	image_buttons = gtk_image_new_from_stock (GTK_STOCK_BOLD, GTK_ICON_SIZE_BUTTON);
+	gtk_button_set_image(GTK_BUTTON(img_struct->bold_style), image_buttons);
+
+	img_struct->italic_style = gtk_button_new();
+	g_signal_connect( G_OBJECT( img_struct->italic_style ), "clicked",
+					  G_CALLBACK( img_subtitle_style_changed ), img_struct );
+	gtk_box_pack_start (GTK_BOX (a_hbox), img_struct->italic_style, FALSE, FALSE, 0);
+	image_buttons = gtk_image_new_from_stock (GTK_STOCK_ITALIC, GTK_ICON_SIZE_BUTTON);
+	gtk_button_set_image(GTK_BUTTON(img_struct->italic_style), image_buttons);
+
+	img_struct->underline_style = gtk_button_new();
+	g_signal_connect( G_OBJECT( img_struct->underline_style ), "clicked",
+					  G_CALLBACK( img_subtitle_style_changed ), img_struct );
+	gtk_box_pack_start (GTK_BOX (a_hbox), img_struct->underline_style, FALSE, FALSE, 0);
+	image_buttons = gtk_image_new_from_stock (GTK_STOCK_UNDERLINE, GTK_ICON_SIZE_BUTTON);
+	gtk_button_set_image(GTK_BUTTON(img_struct->underline_style), image_buttons);
+	
+	img_struct->left_justify = gtk_button_new();
+	//g_signal_connect( G_OBJECT( img_struct->left_justify ), "clicked",
+	//				  G_CALLBACK( img_delete_stop_point ), img_struct );
+	gtk_box_pack_start (GTK_BOX (a_hbox), img_struct->left_justify, FALSE, FALSE, 0);
+	image_buttons = gtk_image_new_from_stock (GTK_STOCK_JUSTIFY_LEFT, GTK_ICON_SIZE_BUTTON);
+	gtk_button_set_image(GTK_BUTTON(img_struct->left_justify), image_buttons);
+	
+	img_struct->fill_justify = gtk_button_new();
+	//g_signal_connect( G_OBJECT( img_struct->left_justify ), "clicked",
+	//				  G_CALLBACK( img_delete_stop_point ), img_struct );
+	gtk_box_pack_start (GTK_BOX (a_hbox), img_struct->fill_justify, FALSE, FALSE, 0);
+	image_buttons = gtk_image_new_from_stock (GTK_STOCK_JUSTIFY_FILL, GTK_ICON_SIZE_BUTTON);
+	gtk_button_set_image(GTK_BUTTON(img_struct->fill_justify), image_buttons);
+	
+	img_struct->right_justify = gtk_button_new();
+	//g_signal_connect( G_OBJECT( img_struct->left_justify ), "clicked",
+	//				  G_CALLBACK( img_delete_stop_point ), img_struct );
+	gtk_box_pack_start (GTK_BOX (a_hbox), img_struct->right_justify, FALSE, FALSE, 0);
+	image_buttons = gtk_image_new_from_stock (GTK_STOCK_JUSTIFY_RIGHT, GTK_ICON_SIZE_BUTTON);
+	gtk_button_set_image(GTK_BUTTON(img_struct->right_justify), image_buttons);
+
 	hbox_textview = gtk_hbox_new(FALSE, 2);
 	gtk_box_pack_start (GTK_BOX (vbox_slide_caption), hbox_textview, FALSE, FALSE, 0);
 	
@@ -893,48 +960,20 @@ img_window_struct *img_create_window (void)
 	gtk_box_pack_start (GTK_BOX (text_animation_hbox), img_struct->sub_font, TRUE, TRUE, 0);
 	gtk_widget_set_tooltip_text(img_struct->sub_font, _("Click to choose the font"));
 
-	img_struct->sub_color = gtk_color_button_new();
-	gtk_color_button_set_use_alpha( GTK_COLOR_BUTTON( img_struct->sub_color ), TRUE );
-	g_signal_connect( G_OBJECT( img_struct->sub_color ), "color-set",
-					  G_CALLBACK( img_font_color_changed ), img_struct );
-	gtk_box_pack_start( GTK_BOX( text_animation_hbox ), img_struct->sub_color, FALSE, FALSE, 0 );
-    gtk_widget_set_tooltip_text(img_struct->sub_color, _("Click to choose the font color"));
-
-    img_struct->sub_brdr_color = gtk_color_button_new();
-    gtk_color_button_set_use_alpha( GTK_COLOR_BUTTON( img_struct->sub_brdr_color ), TRUE );
-    g_signal_connect( G_OBJECT( img_struct->sub_brdr_color ), "color-set",
-                      G_CALLBACK( img_font_brdr_color_changed ), img_struct );
-    gtk_box_pack_start( GTK_BOX( text_animation_hbox ), img_struct->sub_brdr_color, FALSE, FALSE, 0 );
-    gtk_widget_set_tooltip_text(img_struct->sub_brdr_color, _("Click to choose the font border color. If the opacity value is set to 0, Imagination will not render any border."));
-
-	img_struct->sub_bgcolor = gtk_color_button_new();
-	gtk_color_button_set_use_alpha( GTK_COLOR_BUTTON( img_struct->sub_bgcolor ), TRUE );
-	gtk_color_button_set_alpha(GTK_COLOR_BUTTON( img_struct->sub_bgcolor ), 0);
-    g_signal_connect( G_OBJECT( img_struct->sub_bgcolor ), "color-set",
-                      G_CALLBACK( img_font_bg_color_changed ), img_struct );
-    gtk_box_pack_start( GTK_BOX( text_animation_hbox ), img_struct->sub_bgcolor, FALSE, FALSE, 0 );
-	gtk_widget_set_tooltip_text(img_struct->sub_bgcolor, _("Click to choose the font background color. If the opacity value is set to 0, Imagination will not render any background."));
-
-	gtk_widget_set_size_request(img_struct->sub_color, 35, -1);
-	gtk_widget_set_size_request(img_struct->sub_brdr_color, 35, -1);
-	gtk_widget_set_size_request(img_struct->sub_bgcolor, 35, -1);
-	
-	a_hbox = gtk_hbox_new(FALSE, 6);
-	gtk_box_pack_start (GTK_BOX (vbox_slide_caption), a_hbox, FALSE, FALSE, 0);
-	a_label = gtk_label_new(_("Text pattern:"));
-	gtk_misc_set_alignment(GTK_MISC(a_label), 0.0, 0.5);
-	gtk_box_pack_start (GTK_BOX (a_hbox), a_label, TRUE, TRUE, 0);
-
 	pixbuf = gtk_icon_theme_load_icon(icon_theme,"image", 20, 0, NULL);
 	tmp_image = gtk_image_new_from_pixbuf(pixbuf);
 	g_object_unref(pixbuf);
 
 	img_struct->pattern_image = GTK_WIDGET (gtk_tool_button_new (tmp_image,""));
-	gtk_box_pack_start (GTK_BOX (a_hbox), img_struct->pattern_image, FALSE, FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (text_animation_hbox), img_struct->pattern_image, FALSE, FALSE, 0);
 	gtk_widget_set_tooltip_text(img_struct->pattern_image, _("Click to choose the text pattern") );
 	g_signal_connect (	G_OBJECT (img_struct->pattern_image), "clicked", G_CALLBACK (img_pattern_clicked), img_struct);
 	gtk_widget_set_size_request(img_struct->pattern_image, 60, 32);
-
+   
+	gtk_widget_set_size_request(img_struct->sub_color, 35, -1);
+	gtk_widget_set_size_request(img_struct->sub_brdr_color, 35, -1);
+	gtk_widget_set_size_request(img_struct->sub_bgcolor, 35, -1);
+	
 	a_hbox = gtk_hbox_new(FALSE, 6);
 	gtk_box_pack_start (GTK_BOX (vbox_slide_caption), a_hbox, FALSE, FALSE, 0);
 	
@@ -1506,10 +1545,10 @@ static void img_slide_paste(GtkMenuItem* item, img_window_struct *img)
                             }
                         }
 
-                        /* Text should be duplicated if present. Font descripštion
+                        /* Text should be duplicated if present. Font description
                         * should also be copied!! */
                         if (info_slide->subtitle)
-                            pasted_slide->subtitle = g_strdup(info_slide->subtitle);
+							memcpy(pasted_slide->subtitle, info_slide->subtitle, info_slide->subtitle_length);
                         pasted_slide->font_desc =
                                 pango_font_description_copy( info_slide->font_desc );
 
@@ -1777,10 +1816,22 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 	/* This is not needed when in overview mode, since we're not displaying any
 	 * large image preview. */
 	if( img->mode == 0 )
-		img_scale_image( info_slide->o_filename,
+	{
+		if( ! info_slide->o_filename )
+			img_scale_gradient( info_slide->gradient,
+								info_slide->g_start_point,
+								info_slide->g_stop_point,
+								info_slide->g_start_color,
+								info_slide->g_stop_color,
+								img->video_size[0],
+								img->video_size[1], NULL,
+								&img->current_image );
+		else
+			img_scale_image( info_slide->o_filename,
 								(gdouble)img->video_size[0] / img->video_size[1],
 								0, img->video_size[1],
 								img->background_color, NULL, &img->current_image );
+	}
 }
 
 void img_combo_box_transition_type_changed (GtkComboBox *combo, img_window_struct *img)
@@ -2152,27 +2203,33 @@ img_create_subtitle_animation_combo( void )
 	return( combo );
 }
 
-static gboolean
-img_subtitle_update( img_window_struct *img )
+static gboolean img_subtitle_update( img_window_struct *img )
 {
 	gboolean     has_subtitle;
-	GtkTreeIter  iter;
+	GtkTreeIter	 iter;  
+	GtkTextIter	 start, end;
 	GList       *list;
+	GdkAtom		format;
 
-
-	/* Get text from buffer and store it inside slide */
 	if( img->current_slide->subtitle )
 	{
 		g_free( img->current_slide->subtitle );
 		img->current_slide->subtitle = NULL;
 	}
-
-	has_subtitle =
-			1 < gtk_text_buffer_get_char_count( img->slide_text_buffer );
+	has_subtitle = 1 < gtk_text_buffer_get_char_count( img->slide_text_buffer );
 	if( has_subtitle )
-		g_object_get( G_OBJECT( img->slide_text_buffer ), "text",
-					  &img->current_slide->subtitle, NULL );
-
+	{	
+		format = gtk_text_buffer_register_serialize_tagset(img->slide_text_buffer, NULL);
+		gtk_text_buffer_get_bounds(img->slide_text_buffer, &start,&end);
+		img->current_slide->subtitle = gtk_text_buffer_serialize(img->slide_text_buffer,
+																	img->slide_text_buffer,
+																	format,
+																	&start, 
+																	&end,
+																	&img->current_slide->subtitle_length
+																	); 
+		gtk_text_buffer_unregister_serialize_format (img->slide_text_buffer, format); 
+	}
 	list = gtk_icon_view_get_selected_items(
 				GTK_ICON_VIEW( img->active_icon ) );
 	gtk_tree_model_get_iter( GTK_TREE_MODEL( img->thumbnail_model ),
@@ -2467,6 +2524,9 @@ img_subtitle_update_sensitivity( img_window_struct *img,
 	gtk_widget_set_sensitive( img->sub_posX,     (gboolean)mode );
 	gtk_widget_set_sensitive( img->sub_posY,     (gboolean)mode );
 	gtk_widget_set_sensitive( img->sub_angle,    (gboolean)mode );
+	gtk_widget_set_sensitive( img->x_justify,    (gboolean)mode );
+	gtk_widget_set_sensitive( img->y_justify,    (gboolean)mode );
+	gtk_widget_set_sensitive( img->reset_angle,    (gboolean)mode );
 }
 
 void
@@ -2502,7 +2562,6 @@ img_update_sub_properties( img_window_struct *img,
 
 		gtk_tree_model_get_iter( model, &iter, (GtkTreePath *)tmp->data );
 		gtk_tree_model_get( model, &iter, 1, &slide, -1 );
-		
 		img_set_slide_text_info( slide, NULL, NULL, NULL, NULL,
 								 anim_id, anim_duration,	img->current_slide->posX,
 															img->current_slide->posY, 
@@ -2832,3 +2891,4 @@ img_toggle_frame_rate( GtkCheckMenuItem  *item,
 	tmp = g_object_get_data( G_OBJECT( item ), "index" );
 	img->preview_fps = GPOINTER_TO_INT( tmp );
 }
+

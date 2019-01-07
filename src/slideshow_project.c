@@ -144,7 +144,19 @@ img_save_slideshow( img_window_struct *img,
 		/* Subtitle */
 		if( entry->subtitle )
 		{
-			g_key_file_set_string (img_key_file, conf,"text",			entry->subtitle);
+			entry->subtitle[26] =  32;
+			entry->subtitle[27] =  32;
+			entry->subtitle[28] =  32;
+			entry->subtitle[29] =  32;
+
+			g_key_file_set_string (img_key_file, conf,"text", (gchar*)entry->subtitle);
+			g_key_file_set_integer(img_key_file,conf, "text length", entry->subtitle_length - 30);
+
+			entry->subtitle[26] = (entry->subtitle_length >> 24) & 0xFF;
+			entry->subtitle[27] = (entry->subtitle_length >> 16) & 0xFF;
+			entry->subtitle[28] = (entry->subtitle_length >> 8) & 0xFF;
+			entry->subtitle[29] = entry->subtitle_length & 0xFF;
+
 			if( entry->pattern_filename )
 			{
 				if (relative)
@@ -380,7 +392,7 @@ img_load_slideshow( img_window_struct *img,
 	gchar *subtitle = NULL, *pattern_name = NULL, *font_desc;
 	gdouble *my_points = NULL, *p_start, *p_stop, *c_start, *c_stop;
 	gsize length;
-	gint anim_id,anim_duration, posx, posy, gradient, subtitle_angle;
+	gint anim_id,anim_duration, posx, posy, gradient, subtitle_length, subtitle_angle;
 	GdkPixbuf *pix = NULL;
     gboolean      load_ok, img_load_ok, top_border, bottom_border;
 	gchar *original_filename = NULL;
@@ -458,6 +470,7 @@ img_load_slideshow( img_window_struct *img,
 
 				/* Load the slide text related data */
 				subtitle	  =	g_key_file_get_string (img_key_file, conf, "text",	NULL);
+				subtitle_length	  =	g_key_file_get_integer (img_key_file, conf, "text length",	NULL);
 				pattern_name  =	g_key_file_get_string (img_key_file, conf, "pattern filename",	NULL);
 				anim_id 	  = g_key_file_get_integer(img_key_file, conf, "anim id", 		NULL);
 				anim_duration = g_key_file_get_integer(img_key_file, conf, "anim duration",	NULL);
@@ -519,6 +532,7 @@ img_load_slideshow( img_window_struct *img,
 					/* Set subtitle */
 					if (subtitle)
 					{
+						gtk_list_store_set( img->thumbnail_model, &iter, 3, TRUE, -1 );
 						if ( pattern_name && g_path_is_absolute(pattern_name) == FALSE)
 						{
 							gchar *_pattern_filename;
@@ -526,8 +540,17 @@ img_load_slideshow( img_window_struct *img,
 							g_free(pattern_name);
 							pattern_name = _pattern_filename;
 						}
+
+						subtitle[26] = (subtitle_length >> 24);
+						subtitle[27] = (subtitle_length >> 16) & 0xFF;
+						subtitle[28] = (subtitle_length >> 8) & 0xFF;
+						subtitle[29] = subtitle_length & 0xFF;
+
+						slide_info->subtitle_length = subtitle_length + 30;
+						slide_info->subtitle = (guint8*)subtitle;
+
 						img_set_slide_text_info( slide_info, img->thumbnail_model,
-												 &iter, subtitle, pattern_name, anim_id,
+												 &iter, NULL, pattern_name, anim_id,
 												 anim_duration, posx, posy, subtitle_angle,
 												 font_desc, font_color, font_brdr_color, font_bg_color, border_color, 
 												 top_border, bottom_border, border_width, img );

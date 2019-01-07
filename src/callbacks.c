@@ -805,17 +805,25 @@ void img_start_stop_preview(GtkWidget *item, img_window_struct *img)
 		/* Load the first image in the pixbuf */
 		gtk_tree_model_get( model, &iter, 1, &entry, -1);
 
-		img_scale_gradient( entry->gradient, entry->g_start_point,
+		if (entry->original_filename == NULL)
+		{
+			img_scale_gradient( entry->gradient, entry->g_start_point,
 								entry->g_stop_point, entry->g_start_color,
 								entry->g_stop_color, img->video_size[0],
 								img->video_size[1], NULL, &img->image2 );
-	
+		}
+		else
+		{
+			img_scale_image( entry->original_filename, img->video_ratio,
+                                  0, img->video_size[0],
+                                  img->background_color, NULL, &img->image2);
+		}
 		/* Load first stop point */
 		img->point2 = (ImgStopPoint *)( entry->no_points ?
 										entry->points->data :
 										NULL );
 
-		img->work_slide = entry;
+		img->current_slide = entry;
 		img->cur_point = NULL;
 
 		/* If we started our preview from beginning, create empty pixbuf and
@@ -829,11 +837,19 @@ void img_start_stop_preview(GtkWidget *item, img_window_struct *img)
 			if (img->music_preview)
 				img_preview_with_music(img, 255);
 
-			img_scale_gradient( entry->gradient, entry->g_start_point,
+			if (entry->original_filename == NULL)
+			{
+				img_scale_gradient( entry->gradient, entry->g_start_point,
 									entry->g_stop_point, entry->g_start_color,
 									entry->g_stop_color, img->video_size[0],
-									img->video_size[1], NULL, &img->image1 );
-			
+									img->video_size[1], NULL, &img->image1);
+			}
+			else
+			{
+				img_scale_image( entry->original_filename, img->video_ratio,
+                                  0, img->video_size[1],
+                                  img->background_color, NULL, &img->image1);
+			}
 			/* Load last stop point */
 			img->point1 = (ImgStopPoint *)( entry->no_points ?
 											g_list_last( entry->points )->data :
@@ -1130,8 +1146,6 @@ img_on_expose_event( GtkWidget         *widget,
 		if( img->current_slide->subtitle )
 			img_render_subtitle( img,
 								 cr,
-								 img->video_size[0],
-								 img->video_size[1],
 								 img->image_area_zoom,
 								 img->current_slide->posX,
 								 img->current_slide->posY,
@@ -1139,17 +1153,6 @@ img_on_expose_event( GtkWidget         *widget,
 								 img->current_point.zoom,
 								 img->current_point.offx,
 								 img->current_point.offy,
-								 img->current_slide->subtitle,
-								 img->current_slide->pattern_filename,
-								 img->current_slide->font_desc,
-								 img->current_slide->font_color,
-                                 img->current_slide->font_brdr_color,
-                                 img->current_slide->font_bg_color,
-                                 img->current_slide->border_color,
-                                 img->current_slide->top_border,
-                                 img->current_slide->bottom_border,
-                                 img->current_slide->border_width,
-								 img->current_slide->anim,
 								 FALSE,
 								 FALSE,
 								 1.0 );
@@ -1211,10 +1214,10 @@ static gboolean img_transition_timeout(img_window_struct *img)
 	}
 
 	/* Render single frame */
-	if (img->work_slide->gradient == 3)
+	if (img->current_slide->gradient == 3)
 	{
 		img->gradient_slide = TRUE;
-		memcpy(img->g_stop_color, img->work_slide->g_stop_color,  3 * sizeof(gdouble));
+		memcpy(img->g_stop_color, img->current_slide->g_stop_color,  3 * sizeof(gdouble));
 	}
 	img_render_transition_frame( img );
 
@@ -1931,9 +1934,11 @@ img_update_subtitles_widgets( img_window_struct *img )
 	gchar       	*string;
 	GdkColor     	color;
 	gdouble     	*f_colors;
+	GtkTextIter		start;
 	GtkWidget		*tmp_image;
 	GdkPixbuf		*pattern_pix;
 	GtkIconTheme	*icon_theme;
+	GdkAtom			format;
 
 	/* Block all handlers */
 	g_signal_handlers_block_by_func( img->slide_text_buffer,
@@ -1962,11 +1967,21 @@ img_update_subtitles_widgets( img_window_struct *img )
 									   img_subtitle_top_border_toggled, img );
 	g_signal_handlers_block_by_func( img->border_bottom,
 									   img_subtitle_bottom_border_toggled, img );
-	/* Update text field */
-	string = ( img->current_slide->subtitle ?
-			   img->current_slide->subtitle :
-			   "" );
-	g_object_set( G_OBJECT( img->slide_text_buffer ), "text", string, NULL );
+	/* Update subtitle text area */
+	if (img->current_slide->subtitle)
+	{
+		format = gtk_text_buffer_register_deserialize_tagset(img->slide_text_buffer, NULL);
+		gtk_text_buffer_get_start_iter(img->slide_text_buffer, &start);
+
+		gtk_text_buffer_deserialize(img->slide_text_buffer,
+									img->slide_text_buffer,
+									format,
+									&start,
+									img->current_slide->subtitle,
+									img->current_slide->subtitle_length,
+									NULL);
+		gtk_text_buffer_unregister_deserialize_format(img->slide_text_buffer, format); 
+	}
 
 	/* Update text pattern */
 	if (img->current_slide->pattern_filename)
@@ -2933,8 +2948,6 @@ void img_align_text_horizontally_vertically(GtkMenuItem *item, img_window_struct
 
 	img_render_subtitle( img,
 								 cr,
-								 img->video_size[0],
-								 img->video_size[1],
 								 img->image_area_zoom,
 								 img->current_slide->posX,
 								 img->current_slide->posY,
@@ -2942,17 +2955,6 @@ void img_align_text_horizontally_vertically(GtkMenuItem *item, img_window_struct
 								 img->current_point.zoom,
 								 img->current_point.offx,
 								 img->current_point.offy,
-								 img->current_slide->subtitle,
-								 img->current_slide->pattern_filename,
-								 img->current_slide->font_desc,
-								 img->current_slide->font_color,
-                                 img->current_slide->font_brdr_color,
-                                 img->current_slide->font_bg_color,
-                                 img->current_slide->border_color,
-                                 img->current_slide->top_border,
-                                 img->current_slide->bottom_border,
-                                 img->current_slide->border_width,
-								 img->current_slide->anim,
 								 centerX,
 								 centerY,
 								 1.0 );
@@ -3082,4 +3084,46 @@ void img_spinbutton_value_changed (GtkSpinButton *spinbutton, img_window_struct 
 
 	/* Sync timings */
 	img_sync_timings( img->current_slide, img );
+}
+
+void img_subtitle_style_changed(GtkButton *button, img_window_struct *img)
+{
+	gboolean 	selection;
+	GtkTextIter start, end;
+	GtkTextTag 	*tag;
+	GdkAtom		format;
+	gchar *string;
+
+	selection = gtk_text_buffer_get_selection_bounds(img->slide_text_buffer, &start, &end);
+	if (selection == 0)
+		return;
+
+	/* Which button did the user press? */
+	if (GTK_WIDGET(button) == img->bold_style)
+		string = "bold";
+	else if (GTK_WIDGET(button) == img->italic_style)
+		string = "italic";
+	else if (GTK_WIDGET(button) == img->underline_style)
+		string = "underline";
+
+	tag = gtk_text_tag_table_lookup(img->tag_table, string);
+
+	/* Was the style already applied? */
+	if (gtk_text_iter_begins_tag( &start, tag))
+		gtk_text_buffer_remove_tag(img->slide_text_buffer, tag, &start, &end);
+	else
+		gtk_text_buffer_apply_tag(img->slide_text_buffer, tag, &start, &end);
+
+	format = gtk_text_buffer_register_serialize_tagset(img->slide_text_buffer, NULL);
+	gtk_text_buffer_get_bounds(img->slide_text_buffer, &start, &end);
+	img->current_slide->subtitle = gtk_text_buffer_serialize(img->slide_text_buffer,
+																img->slide_text_buffer,
+																format,
+																&start, 
+																&end,
+																&img->current_slide->subtitle_length
+																); 
+	gtk_text_buffer_unregister_serialize_format (img->slide_text_buffer, format); 
+
+	gtk_widget_queue_draw(img->image_area);
 }
