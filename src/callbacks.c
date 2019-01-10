@@ -2034,8 +2034,6 @@ img_update_subtitles_widgets( img_window_struct *img )
     color.green = (gint)( f_colors[1] * 0xffff );
     color.blue  = (gint)( f_colors[2] * 0xffff );
     gtk_color_button_set_color( GTK_COLOR_BUTTON( img->sub_border_color ), &color ); 
-    gtk_color_button_set_alpha( GTK_COLOR_BUTTON( img->sub_border_color ),
-                                (gint)(f_colors[3] * 0xffff ) );
 
 	/* Update toggle buttons top/bottom borders */
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(img->border_top), img->current_slide->top_border);
@@ -3091,7 +3089,6 @@ void img_subtitle_style_changed(GtkButton *button, img_window_struct *img)
 	gboolean 	selection;
 	GtkTextIter start, end;
 	GtkTextTag 	*tag;
-	GdkAtom		format;
 	gchar *string;
 
 	selection = gtk_text_buffer_get_selection_bounds(img->slide_text_buffer, &start, &end);
@@ -3105,7 +3102,14 @@ void img_subtitle_style_changed(GtkButton *button, img_window_struct *img)
 		string = "italic";
 	else if (GTK_WIDGET(button) == img->underline_style)
 		string = "underline";
+	else if (GTK_WIDGET(button) == img->clear_formatting)
+	{
+		gtk_text_buffer_remove_all_tags(img->slide_text_buffer, &start, &end);
+		img_store_rtf_buffer_content(img);
 
+		gtk_widget_queue_draw(img->image_area);
+		return;
+	}
 	tag = gtk_text_tag_table_lookup(img->tag_table, string);
 
 	/* Was the style already applied? */
@@ -3114,16 +3118,68 @@ void img_subtitle_style_changed(GtkButton *button, img_window_struct *img)
 	else
 		gtk_text_buffer_apply_tag(img->slide_text_buffer, tag, &start, &end);
 
-	format = gtk_text_buffer_register_serialize_tagset(img->slide_text_buffer, NULL);
-	gtk_text_buffer_get_bounds(img->slide_text_buffer, &start, &end);
-	img->current_slide->subtitle = gtk_text_buffer_serialize(img->slide_text_buffer,
-																img->slide_text_buffer,
-																format,
-																&start, 
-																&end,
-																&img->current_slide->subtitle_length
-																); 
-	gtk_text_buffer_unregister_serialize_format (img->slide_text_buffer, format); 
+	img_store_rtf_buffer_content(img);
 
 	gtk_widget_queue_draw(img->image_area);
+}
+
+void img_flip_horizontally(GtkMenuItem *item, img_window_struct *img)
+{
+	GtkTreeModel *model;
+	GtkTreeIter   iter;
+	GList        *selected,
+				 *bak;
+	GdkPixbuf    *thumb;
+	slide_struct *info_slide;
+
+	/* Obtain the selected slideshow filename */
+	model = GTK_TREE_MODEL( img->thumbnail_model );
+	selected = gtk_icon_view_get_selected_items(GTK_ICON_VIEW( img->active_icon ) );
+
+	if( selected == NULL)
+		return;
+
+	bak = selected;
+	while (selected)
+	{
+		gtk_tree_model_get_iter( model, &iter, selected->data );
+		gtk_tree_model_get( model, &iter, 1, &info_slide, -1 );
+
+		/* Avoid seg-fault when dealing with text/gradient slides */
+		if (info_slide->o_filename != NULL)
+		{
+			if(info_slide->flipped)
+			{	
+				info_slide->flipped = FALSE;
+				unlink(info_slide->f_filename);
+				g_free(info_slide->f_filename);
+				info_slide->f_filename = info_slide->o_filename;
+			}
+			else
+				img_flip_slide(info_slide);
+
+			/* Display the flipped image in thumbnails iconview */
+			img_scale_image( info_slide->f_filename, img->video_ratio, 88, 0,
+							 img->background_color,
+							 &thumb, NULL );
+			gtk_list_store_set( img->thumbnail_model, &iter, 0, thumb, -1 );
+		}
+		selected = selected->next;
+	}
+	g_list_foreach (bak, (GFunc)gtk_tree_path_free, NULL);
+	g_list_free(bak);
+
+	/* If no slide is selected currently, simply return */
+	if( ! img->current_slide )
+		return;
+
+	if (info_slide->o_filename != NULL)
+	{
+		cairo_surface_destroy( img->current_image );
+		img_scale_image( img->current_slide->f_filename, img->video_ratio,
+							 0, img->video_size[1],
+							 img->background_color, NULL, &img->current_image );
+		
+		gtk_widget_queue_draw( img->image_area );
+	}
 }

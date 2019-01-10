@@ -129,7 +129,9 @@ struct _slide_struct
 
 	/* Fields that are filled when we load slide from disk */
 	gchar    *o_filename; /* Filename of the image that slide represents */
+	gchar    *f_filename; /* Temp filename of the flipped image */
     gboolean  load_ok;    /* handle loading problems (file not found, format unknown...) */
+    gboolean  flipped;    /* flag for flipped images */
     gchar    *original_filename; /* Filename as loaded from the project file */
 
 
@@ -169,10 +171,10 @@ struct _slide_struct
 	gdouble               font_color[4];   /* Font color (RGBA format) */
     gdouble               font_brdr_color[4]; /* Font border color (RGBA format) */
     gdouble               font_bg_color[4]; /* Font background color (RGBA format) */
-    gdouble               border_color[4]; /* Border on background color (RGBA format) */
+    gdouble               border_color[3]; /* Border on background color (RGB format) */
     gboolean           	  top_border;
     gboolean           	  bottom_border;
-    gint               	  border_width;		/* Border on background color (RGBA format) */
+    gint               	  border_width;
 };
 
 typedef struct _img_window_struct img_window_struct;
@@ -257,6 +259,7 @@ struct _img_window_struct
     GtkWidget *bold_style;
     GtkWidget *italic_style;
     GtkWidget *underline_style;
+    GtkWidget *clear_formatting;
     GtkWidget *left_justify;
     GtkWidget *fill_justify;
     GtkWidget *right_justify;

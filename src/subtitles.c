@@ -321,8 +321,10 @@ img_render_subtitle( img_window_struct 	  *img,
 				 lh;     /* Layout height */
 
 	PangoLayout *layout;
-	gchar		*text, *string;
-	
+	gchar		*text, *string, *dummy;
+	GdkColor 	*color;
+	GtkTextTag	*tag;
+
 	/* Save cairo state */
 	cairo_save( cr );
 	cairo_scale( cr, zoom, zoom );
@@ -339,6 +341,12 @@ img_render_subtitle( img_window_struct 	  *img,
 	img->current_slide->subtitle[29] =  32;
 
 	string = g_strdup(strstr((gchar*)img->current_slide->subtitle,"<text>"));
+	
+	img->current_slide->subtitle[26] =  ((img->current_slide->subtitle_length - 30) >> 24) & 0xFF;
+	img->current_slide->subtitle[27] =  ((img->current_slide->subtitle_length - 30) >> 16) & 0xFF;
+	img->current_slide->subtitle[28] =  ((img->current_slide->subtitle_length - 30) >> 8 ) & 0xFF;
+	img->current_slide->subtitle[29] =  (img->current_slide->subtitle_length - 30) >> 0;
+
 	str_replace(string, "<text>", "");
 	str_replace(string, "</text>", "");
 	str_replace(string, "</text_view_markup>", "");
@@ -346,6 +354,24 @@ img_render_subtitle( img_window_struct 	  *img,
 	str_replace(string, "<apply_tag name=\"underline\"", "<span underline=\"single\"");
 	str_replace(string, "<apply_tag name=\"bold\"", "<span font_weight=\"bold\"");
 	str_replace(string, "<apply_tag name=\"italic\"", "<span font_style=\"italic\"");
+	if (strstr(string, "foreground"))
+	{
+		str_replace(string, "<apply_tag name=\"foreground\"", "<span foreground=\"rrrrggggbbbb\"");
+		tag = gtk_text_tag_table_lookup(img->tag_table, "foreground");
+		g_object_get(tag, "foreground-gdk", &color, NULL);
+		dummy = gdk_color_to_string(color);
+		str_replace(string, "rrrrggggbbbb", dummy);
+		g_free(dummy);
+	}
+	if (strstr(string, "background"))
+	{
+		str_replace(string, "<apply_tag name=\"background\"", "<span background=\"rrrrggggbbbb\"");
+		tag = gtk_text_tag_table_lookup(img->tag_table, "background");
+		g_object_get(tag, "background-gdk", &color, NULL);
+		dummy = gdk_color_to_string(color);
+		str_replace(string, "rrrrggggbbbb", dummy);
+		g_free(dummy);
+	}
 	str_replace(string, "</apply_tag>", "</span>");
 	string[strlen(string) - 2] = '\0';
 
@@ -412,7 +438,7 @@ img_text_ani_fade( cairo_t     *cr,
                    gboolean		bottom_border,
                    gint			border_width)
 {
-    gdouble  progress_font_color[4], progress_font_brdr_color[4], progress_font_bgcolor[4], progress_border_color[4];
+    gdouble  progress_font_color[4], progress_font_brdr_color[4], progress_font_bgcolor[4], progress_border_color[3];
 
 	/* Calculate colors */
     progress_font_color[0] = font_color[0];
@@ -433,7 +459,6 @@ img_text_ani_fade( cairo_t     *cr,
     progress_border_color[0] = border_color[0];
     progress_border_color[1] = border_color[1];
     progress_border_color[2] = border_color[2];
-    progress_border_color[3] = border_color[3] * pow(progress, 6);
 
     /* Paint text */
     img_text_draw_layout(cr, layout, posx, posy, angle, filename, progress_font_color, progress_font_brdr_color, progress_font_bgcolor, progress_border_color, top_border, bottom_border, border_width);
@@ -461,9 +486,9 @@ img_set_slide_text_info( slide_struct      *slide,
 						 img_window_struct *img )
 {
 	/* Set the slide text info parameters */
-		if( slide->pattern_filename )
-			g_free( slide->pattern_filename );
-		slide->pattern_filename = g_strdup( pattern_filename );
+	if( slide->pattern_filename )
+		g_free( slide->pattern_filename );
+	slide->pattern_filename = g_strdup( pattern_filename );
 
 	if( ( anim_id > -1 ) && ( anim_id != slide->anim_id ) )
 	{
@@ -535,7 +560,6 @@ img_set_slide_text_info( slide_struct      *slide,
         slide->border_color[0] = border_color[0];
         slide->border_color[1] = border_color[1];
         slide->border_color[2] = border_color[2];
-        slide->border_color[3] = border_color[3];
     }
     
     slide->top_border = top_border;
@@ -572,28 +596,13 @@ img_text_draw_layout( cairo_t     *cr,
 	cairo_rotate (cr, angle * G_PI / 180.0);
 	cairo_translate (cr, -(posx + (w / 2)), -(posy + (h / 2)) );
 	pango_cairo_update_layout (cr, layout);
-	
-	/* Paint the background only if the user
-	 * chose an alpha value greater than 0 */
-	if (font_bg_color[3] > 0)
-	{
-		pango_layout_get_pixel_size (layout, &w, &h );
-		cairo_set_source_rgba(cr, font_bg_color[0],
-							  font_bg_color[1],
-                              font_bg_color[2],
-                              font_bg_color[3] );
-                              
-        cairo_rectangle(cr, posx - 5, posy, w + 12, h + 5);
-		cairo_fill(cr);
-	}
-	
+
 	if (top_border || bottom_border)
 	{
 		cairo_set_line_width(cr, (gdouble) border_width);
-		cairo_set_source_rgba(cr, border_color[0],
+		cairo_set_source_rgb(cr, border_color[0],
 							  border_color[1],
-                              border_color[2],
-                              border_color[3] );
+                              border_color[2]);
         
         if (border_width % 2 == 0)
 			cairo_factor = 0;

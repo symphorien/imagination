@@ -117,6 +117,9 @@ img_save_slideshow( img_window_struct *img,
 		/* Duration */
 		g_key_file_set_double(img_key_file,conf, "duration",		entry->duration);
 
+		/* Flipped horizontally */
+		g_key_file_set_boolean(img_key_file,conf, "flipped",	entry->flipped);
+
 		/* Transition */
 		g_key_file_set_integer(img_key_file,conf, "transition_id",	entry->transition_id);
 		g_key_file_set_integer(img_key_file,conf, "speed", 			entry->speed);
@@ -179,7 +182,7 @@ img_save_slideshow( img_window_struct *img,
 			g_key_file_set_double_list(img_key_file, conf,"font color",entry->font_color,4);
 			g_key_file_set_double_list(img_key_file, conf,"font bgcolor",entry->font_brdr_color,4);
 			g_key_file_set_double_list(img_key_file, conf,"font bgcolor2",entry->font_bg_color,4);
-			g_key_file_set_double_list(img_key_file, conf,"border color",entry->border_color,4);
+			g_key_file_set_double_list(img_key_file, conf,"border color",entry->border_color,3);
 			g_key_file_set_boolean(img_key_file, conf,"top border",entry->top_border);
 			g_key_file_set_boolean(img_key_file, conf,"bottom border",entry->bottom_border);
 			g_key_file_set_integer(img_key_file, conf,"border width",entry->border_width);
@@ -394,7 +397,7 @@ img_load_slideshow( img_window_struct *img,
 	gsize length;
 	gint anim_id,anim_duration, posx, posy, gradient, subtitle_length, subtitle_angle;
 	GdkPixbuf *pix = NULL;
-    gboolean      load_ok, img_load_ok, top_border, bottom_border;
+    gboolean      load_ok, flipped, img_load_ok, top_border, bottom_border;
 	gchar *original_filename = NULL;
 	
 	/* Load last slide setting (bye bye transition) */
@@ -460,6 +463,7 @@ img_load_slideshow( img_window_struct *img,
 			if( load_ok )
 			{
 				duration	  = g_key_file_get_double(img_key_file, conf, "duration", NULL);
+				flipped		  = g_key_file_get_boolean(img_key_file, conf, "flipped", NULL);
 				transition_id = g_key_file_get_integer(img_key_file, conf, "transition_id", NULL);
 				speed 		  =	g_key_file_get_integer(img_key_file, conf, "speed",	NULL);
 
@@ -505,6 +509,16 @@ img_load_slideshow( img_window_struct *img,
                     slide_info->load_ok = img_load_ok;
                     slide_info->original_filename = original_filename;
 
+					
+					/* If image has been flipped, flip it now too. */
+					if( flipped )
+					{
+						slide_info->flipped = flipped;
+						img_flip_slide(slide_info);
+						img_scale_image( slide_info->f_filename, img->video_ratio,
+										 88, 0, img->background_color, &thumb, NULL );
+					}
+
 					gtk_list_store_append( img->thumbnail_model, &iter );
 					gtk_list_store_set( img->thumbnail_model, &iter,
 										0, thumb,
@@ -540,6 +554,8 @@ img_load_slideshow( img_window_struct *img,
 							g_free(pattern_name);
 							pattern_name = _pattern_filename;
 						}
+						/* Does the slide have a foreground color? */
+						img_check_for_rtf_colors(img, subtitle);
 
 						subtitle[26] = (subtitle_length >> 24);
 						subtitle[27] = (subtitle_length >> 16) & 0xFF;

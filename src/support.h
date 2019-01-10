@@ -151,4 +151,10 @@ img_check_for_encoder(img_window_struct *img);
 void str_replace(gchar *str, const gchar *search, const gchar *replace);
 
 void img_set_text_buffer_tags(img_window_struct *img);
+
+void img_store_rtf_buffer_content(img_window_struct *img);
+
+void img_check_for_rtf_colors(img_window_struct *img, gchar *subtitle);
+
+void img_flip_slide(slide_struct *info_slide);
 #endif

@@ -439,7 +439,6 @@ img_create_new_slide( void )
         slide->border_color[0] = 1; /* R */
         slide->border_color[1] = 1; /* G */
         slide->border_color[2] = 1; /* B */
-        slide->border_color[3] = 0; /* A */
 
 		slide->border_width = 1;
 
@@ -462,6 +461,8 @@ img_set_slide_file_info( slide_struct *slide,
 	format = gdk_pixbuf_get_file_info( filename, &width, &height );
 
 	slide->o_filename = g_strdup( filename );
+	slide->f_filename = g_strdup( filename );
+
 	slide->resolution = g_strdup_printf( "%d x %d", width, height );
 	slide->type = gdk_pixbuf_format_get_name( format );
 }
@@ -616,6 +617,9 @@ void
 img_free_slide_struct( slide_struct *entry )
 {
 	GList *tmp;
+
+	if (entry->flipped)
+		g_unlink( entry->f_filename );
 
 	g_free(entry->o_filename);
 	g_free(entry->resolution);
@@ -1250,9 +1254,87 @@ void img_set_text_buffer_tags(img_window_struct *img)
 	gtk_text_tag_table_add (img->tag_table, tag);
 	
 	tag = gtk_text_tag_new("foreground");
-	g_object_set(tag, "foreground", "#FFC100", NULL);
+	gtk_text_tag_table_add (img->tag_table, tag);
+	
+	tag = gtk_text_tag_new("background");
 	gtk_text_tag_table_add (img->tag_table, tag);
 }
 
+void img_store_rtf_buffer_content(img_window_struct *img)
+{
+	GdkAtom		format;
+	GtkTextIter start, end;
 
+	format = gtk_text_buffer_register_serialize_tagset(img->slide_text_buffer, NULL);
+	gtk_text_buffer_get_bounds(img->slide_text_buffer, &start, &end);
+	img->current_slide->subtitle = gtk_text_buffer_serialize(img->slide_text_buffer,
+																img->slide_text_buffer,
+																format,
+																&start, 
+																&end,
+																&img->current_slide->subtitle_length
+																); 
+	gtk_text_buffer_unregister_serialize_format (img->slide_text_buffer, format); 
+}
 
+void img_check_for_rtf_colors(img_window_struct *img, gchar *subtitle)
+{
+	GtkTextTag	*tag;
+	gchar		*dummy, *dummy2, *rgb;
+	gint		len;
+
+	/* foreground */
+	dummy = strstr(subtitle, "foreground-gdk");
+	if (dummy)
+	{
+		dummy = strstr(dummy, "value=");
+		dummy2 = strstr(dummy+7, "\"");
+		len = strlen(dummy+7) - strlen(dummy2);
+
+		rgb = g_new0(gchar, len + 2);
+		rgb[0] = '#';
+		strncpy(rgb+1, dummy+7, len);
+
+		str_replace(rgb, ":", "");
+
+		tag = gtk_text_tag_table_lookup(img->tag_table, "foreground");
+		g_object_set(tag, "foreground-gdk", rgb, NULL);
+		g_free(rgb);
+	}
+	/* background */
+	dummy = strstr(subtitle, "background-gdk");
+	if (dummy)
+	{
+		dummy = strstr(dummy, "value=");
+		dummy2 = strstr(dummy+7, "\"");
+		len = strlen(dummy+7) - strlen(dummy2);
+
+		rgb = g_new0(gchar, len + 2);
+		rgb[0] = '#';
+		strncpy(rgb+1, dummy+7, len);
+		str_replace(rgb, ":", "");
+		
+		tag = gtk_text_tag_table_lookup(img->tag_table, "background");
+		g_object_set(tag, "background-gdk", rgb, NULL);
+		g_free(rgb);
+	}
+}
+
+void img_flip_slide(slide_struct *info_slide)
+{
+	GdkPixbuf	*flipped_pixbuf, *thumb;
+	gint		handle;
+	gchar		*filename;
+	
+	info_slide->flipped = TRUE;
+	handle = g_file_open_tmp( "img-XXXXXX.jpg", &filename, NULL );
+	close( handle );
+	info_slide->f_filename = filename;
+
+	thumb = gdk_pixbuf_new_from_file( info_slide->o_filename, NULL );
+	flipped_pixbuf = gdk_pixbuf_flip(thumb, TRUE);
+	g_object_unref(thumb);
+				
+	gdk_pixbuf_save(flipped_pixbuf, info_slide->f_filename, "jpeg", NULL, NULL);
+	g_object_unref(flipped_pixbuf);
+}

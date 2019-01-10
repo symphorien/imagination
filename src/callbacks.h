@@ -145,5 +145,5 @@ void img_subtitle_top_border_toggled (GtkToggleButton *button, img_window_struct
 void img_subtitle_bottom_border_toggled (GtkToggleButton *button, img_window_struct *img);
 void img_spinbutton_value_changed (GtkSpinButton *spinbutton, img_window_struct *img);
 void img_subtitle_style_changed(GtkButton *button, img_window_struct *img);
-gboolean img_pango_markup_lookup(const gchar *name, const GtkTextIter *start, const GtkTextIter *end, img_window_struct *img);
+void img_flip_horizontally(GtkMenuItem *item, img_window_struct *img);
 #endif
