@@ -45,6 +45,15 @@
  * Subtitles related definitions
  * ************************************************************************* */
 
+typedef enum
+{
+	ANGLE_0 = 0,
+	ANGLE_90,
+	ANGLE_180,
+	ANGLE_270
+}
+ImgAngle;
+
 /*
  * TextAnimationFunc:
  * @cr: cairo context that should be used for drawing
@@ -129,7 +138,8 @@ struct _slide_struct
 
 	/* Fields that are filled when we load slide from disk */
 	gchar    *o_filename; /* Filename of the image that slide represents */
-	gchar    *f_filename; /* Temp filename of the flipped image */
+	gchar    *p_filename; /* Temp filename of the processed image (flipped, rotated, etc.) */
+	ImgAngle  angle;      /* Angle of rotated image */
     gboolean  load_ok;    /* handle loading problems (file not found, format unknown...) */
     gboolean  flipped;    /* flag for flipped images */
     gchar    *original_filename; /* Filename as loaded from the project file */

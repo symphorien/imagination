@@ -461,7 +461,8 @@ img_set_slide_file_info( slide_struct *slide,
 	format = gdk_pixbuf_get_file_info( filename, &width, &height );
 
 	slide->o_filename = g_strdup( filename );
-	slide->f_filename = g_strdup( filename );
+	slide->p_filename = g_strdup( filename );
+	slide->angle = 0;
 
 	slide->resolution = g_strdup_printf( "%d x %d", width, height );
 	slide->type = gdk_pixbuf_format_get_name( format );
@@ -618,8 +619,7 @@ img_free_slide_struct( slide_struct *entry )
 {
 	GList *tmp;
 
-	if (entry->flipped)
-		g_unlink( entry->f_filename );
+	img_slide_set_p_filename(entry, NULL);
 
 	g_free(entry->o_filename);
 	g_free(entry->resolution);
@@ -726,12 +726,16 @@ img_scale_image( const gchar      *filename,
 	gdouble    i_ratio;            /* Export and image aspect ratios */
 	gdouble    skew;               /* Transformation between ratio and
 											 i_ratio */
+	GError     *error = NULL;
 
 	/* Obtain information about image being loaded */
-	if (filename)
-		gdk_pixbuf_get_file_info( filename, &i_width, &i_height );
-	else
-		return FALSE;
+	if (!filename) {
+	    return FALSE;
+	}
+	if (!gdk_pixbuf_get_file_info( filename, &i_width, &i_height )) {
+	    g_message("Cannot load image info from %s", filename);
+	    return FALSE;
+	}
 
 	/* How distorted images would be if we scaled them */
 	i_ratio = (gdouble)i_width / i_height;
@@ -775,9 +779,12 @@ img_scale_image( const gchar      *filename,
 		lh = (gdouble)height * ( skew + 1 ) / 2;
 	}
 	loader = gdk_pixbuf_new_from_file_at_scale( filename, lw, lh,
-													FALSE, NULL );
-	if( ! loader )
+													FALSE, &error );
+	if( ! loader ) {
+		g_message( "While loading image data from %s: %s.", filename, error->message );
+		g_error_free( error );
 		return( FALSE );
+	}
 
 	i_width  = gdk_pixbuf_get_width( loader );
 	i_height = gdk_pixbuf_get_height( loader );
@@ -1325,16 +1332,38 @@ void img_flip_slide(slide_struct *info_slide)
 	GdkPixbuf	*flipped_pixbuf, *thumb;
 	gint		handle;
 	gchar		*filename;
+	GError     *error = NULL;
 	
 	info_slide->flipped = TRUE;
 	handle = g_file_open_tmp( "img-XXXXXX.jpg", &filename, NULL );
 	close( handle );
-	info_slide->f_filename = filename;
+	info_slide->p_filename = filename;
 
-	thumb = gdk_pixbuf_new_from_file( info_slide->o_filename, NULL );
+	thumb = gdk_pixbuf_new_from_file( info_slide->o_filename, &error );
+	if (!thumb) {
+		g_message( "%s.", error->message );
+		g_error_free( error );
+		g_free( filename );
+		info_slide->p_filename = g_strdup( info_slide->o_filename );
+		info_slide->flipped = FALSE;
+		return;
+	}
+
 	flipped_pixbuf = gdk_pixbuf_flip(thumb, TRUE);
 	g_object_unref(thumb);
 				
-	gdk_pixbuf_save(flipped_pixbuf, info_slide->f_filename, "jpeg", NULL, NULL);
+	gdk_pixbuf_save(flipped_pixbuf, info_slide->p_filename, "jpeg", NULL, NULL);
 	g_object_unref(flipped_pixbuf);
+}
+
+// Resets info_slide->p_filename to filename and removes the associated temp file if applicable
+void img_slide_set_p_filename(slide_struct *info_slide, gchar *filename)
+{
+    if (!info_slide->p_filename) return;
+    if ( g_strcmp0(info_slide->o_filename, info_slide->p_filename) ) {
+	g_assert(info_slide->flipped || info_slide->angle);
+	g_unlink( info_slide->p_filename );
+    }
+    g_free(info_slide->p_filename);
+    info_slide->p_filename = filename;
 }
