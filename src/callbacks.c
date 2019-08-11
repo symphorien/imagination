@@ -676,7 +676,7 @@ img_rotate_selected_slides( img_window_struct *img,
 		if (info_slide->o_filename != NULL)
 		{
 			angle = ( info_slide->angle + ( clockwise ? 1 : -1 ) ) % 4;
-			img_rotate_slide( info_slide, angle, GTK_PROGRESS_BAR( img->progress_bar ) );
+			img_rotate_flip_slide( info_slide, angle, info_slide->flipped, GTK_PROGRESS_BAR( img->progress_bar ) );
 
 			/* Display the rotated image in thumbnails iconview */
 			img_scale_image( info_slide->p_filename, img->video_ratio, 88, 0,
@@ -3102,9 +3102,17 @@ img_set_window_default_settings( img_window_struct *img )
 	gtk_paned_set_position( GTK_PANED( img->paned ), 500 );
 }
 
+static void img_reset_rotation_flip( slide_struct *slide) {
+    gchar *filename = g_strdup( slide->o_filename );
+    img_slide_set_p_filename(slide, filename);
+    slide->angle = 0;
+    slide->flipped = FALSE;
+}
+
 void
-img_rotate_slide( slide_struct   *slide,
+img_rotate_flip_slide( slide_struct   *slide,
 				  ImgAngle        angle,
+				  gboolean        flipped,
 				  GtkProgressBar *progress )
 {
 	gchar *filename;
@@ -3113,51 +3121,59 @@ img_rotate_slide( slide_struct   *slide,
 	if( ! slide->o_filename )
 		return;
 
-	/* If the angle is ANGLE_0, then simply copy original filename into rotated
-	 * filename. */
-	if( angle )
+	/* If the angle is ANGLE_0 and the image is not flipped, then simply
+	 * copy original filename into rotated filename. */
+	if( (!angle) && (!flipped) )
 	{
-		GdkPixbuf *image,
-				  *rotated;
-		gint       handle;
-		GError    *error = NULL;
-
-		image = gdk_pixbuf_new_from_file( slide->o_filename, &error );
-		if (!image) {
-			g_message( "%s.", error->message );
-			g_error_free( error );
-			g_free( filename );
-			filename = g_strdup( slide->o_filename );
-			img_slide_set_p_filename(slide, filename);
-			slide->angle = 0;
-			return;
-		}
-		if( progress )
-			rotated = img_rotate_pixbuf( image, progress, angle );
-		else
-			rotated = gdk_pixbuf_rotate_simple( image, angle * 90 );
-		g_object_unref( image );
-		
-		handle = g_file_open_tmp( "img-XXXXXX.jpg", &filename, NULL );
-		close( handle );
-		if( ! gdk_pixbuf_save( rotated, filename, "jpeg", &error, NULL ) )
-		{
-			g_message( "%s.", error->message );
-			g_error_free( error );
-			g_free( filename );
-			filename = g_strdup( slide->o_filename );
-			img_slide_set_p_filename(slide, filename);
-			slide->angle = 0;
-			return;
-		}
-		g_object_unref( rotated );
+	    img_reset_rotation_flip(slide);
+	    return;
 	}
-	else
-		filename = g_strdup( slide->o_filename );
+	GdkPixbuf *image, *processed;
+	gint       handle;
+	gboolean   ok;
+	GError    *error = NULL;
 
+	// load file
+	image = gdk_pixbuf_new_from_file( slide->o_filename, &error );
+	if (!image) {
+		g_message( "%s.", error->message );
+		g_error_free( error );
+		g_free( filename );
+		img_reset_rotation_flip(slide);
+		return;
+	}
+
+	// do the rotation, flipping
+	if (angle) {
+	    if( progress )
+		    processed = img_rotate_pixbuf( image, progress, angle );
+	    else
+		    processed = gdk_pixbuf_rotate_simple( image, angle * 90 );
+	    g_object_unref(image);
+	    image = processed;
+	}
+	if (flipped) {
+	    processed = gdk_pixbuf_flip(image, TRUE);
+	    g_object_unref(image);
+	}
+
+	// save result
+	handle = g_file_open_tmp( "img-XXXXXX.jpg", &filename, NULL );
+	close( handle );
+	ok = gdk_pixbuf_save( processed, filename, "jpeg", &error, NULL );
+	g_object_unref( processed );
+	if( !ok )
+	{
+		g_message( "%s.", error->message );
+		g_error_free( error );
+		g_free( filename );
+		img_reset_rotation_flip(slide);
+		return;
+	}
 	/* Delete any temporary image that is present from previous rotation */
 	img_slide_set_p_filename(slide, filename);
 	slide->angle = angle;
+	slide->flipped = flipped;
 }
 
 void
@@ -3404,13 +3420,7 @@ void img_flip_horizontally(GtkMenuItem * UNUSED(item), img_window_struct *img)
 		/* Avoid seg-fault when dealing with text/gradient slides */
 		if (info_slide->o_filename != NULL)
 		{
-			if(info_slide->flipped)
-			{	
-				info_slide->flipped = FALSE;
-				img_slide_set_p_filename(info_slide, g_strdup(info_slide->o_filename));
-			}
-			else
-				img_flip_slide(info_slide);
+			img_rotate_flip_slide(info_slide, info_slide->angle, !(info_slide->flipped), NULL);
 
 			/* Display the flipped image in thumbnails iconview */
 			img_scale_image( info_slide->p_filename, img->video_ratio, 88, 0,

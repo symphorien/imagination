@@ -156,7 +156,5 @@ void img_store_rtf_buffer_content(img_window_struct *img);
 
 void img_check_for_rtf_colors(img_window_struct *img, gchar *subtitle);
 
-void img_flip_slide(slide_struct *info_slide);
-
 void img_slide_set_p_filename(slide_struct *info_slide, gchar *filename);
 #endif
