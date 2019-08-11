@@ -623,7 +623,7 @@ img_free_slide_struct( slide_struct *entry )
 	g_free(entry->o_filename);
 	g_free(entry->resolution);
 	g_free(entry->type);
-
+	
 	if (entry->subtitle)
 		g_free(entry->subtitle);
 	if (entry->pattern_filename)
@@ -715,6 +715,7 @@ img_scale_image( const gchar      *filename,
 				 gdouble           ratio,
 				 gint              width,
 				 gint              height,
+				 gboolean          distort,
 				 gdouble          *color,
 				 GdkPixbuf       **pixbuf,
 				 cairo_surface_t **surface )
@@ -726,6 +727,15 @@ img_scale_image( const gchar      *filename,
 	gdouble    skew;               /* Transformation between ratio and
 											 i_ratio */
 	GError     *error = NULL;
+	gboolean   transform = FALSE;  /* Flag that controls scalling */
+
+	/* MAximal distortion values */
+	gdouble max_stretch = 0.1280;
+	gdouble max_crop    = 0.8500;
+
+	/* Borderline skew values */
+	gdouble max_skew = ( 1 + max_stretch ) / max_crop;
+	gdouble min_skew = ( 1 - max_stretch ) * max_crop;
 
 	/* Obtain information about image being loaded */
 	if (!filename) {
@@ -760,25 +770,92 @@ img_scale_image( const gchar      *filename,
 		/* Calculate width from height */
 		width = height * ratio;
 	}
+	else
+	{
+		/* Load image at maximum quality
+		 *
+		 * If the user doesn't want to have distorted images, we create slightly
+		 * bigger surface that will hold borders too.
+		 *
+		 * If images should be distorted, we first check if we're able to fit
+		 * image without distorting it too much. If images would be largely
+		 * distorted, we simply load them undistorted.
+		 *
+		 * If we came all the way to  here, then we're able to distort image.
+		 */
+		if( ( ! distort )       || /* Don't distort */
+			( skew > max_skew ) || /* Image is too wide */
+			( skew < min_skew )  ) /* Image is too tall */
+		{
+			/* User doesn't want images to be distorted or distortion would be
+			 * too intrusive. */
+			if( ratio < i_ratio )
+			{
+				/* Borders will be added on left and right */
+				width = i_width;
+				height = width / ratio;
+			}
+			else
+			{
+				/* Borders will be added on top and bottom */
+				height = i_height;
+				width = height * ratio;
+			}
+		}
+		else
+		{
+			/* User wants images to be distorted and we're able to do it
+			 * without ruining images. */
+			if( ratio < i_ratio )
+			{
+				/* Image will be distorted horizontally */
+				height = i_height;
+				width = height * ratio;
+			}
+			else
+			{
+				/* Image will be distorted vertically */
+				width = i_width;
+				height = width / ratio;
+			}
+		}
+	}
+
+	/* Will image be disotrted?
+	 *
+	 * Conditions:
+	 *  - user allows us to do it
+	 *  - skew is in sensible range
+	 *  - image is not smaller than exported wideo size
+	 */
+	transform = distort && skew < max_skew && skew > min_skew &&
+				( i_width >= width || i_height >= height );
 
 	/* Load image into pixbuf at proper size */
-	gint lw, lh;
-
-	/* Images will be loaded at slightly modified dimensions */
-	if( ratio < i_ratio )
+	if( transform )
 	{
-		/* Horizontal scaling */
-		lw = (gdouble)width / ( skew + 1 ) * 2;
-		lh = height;
+		gint lw, lh;
+
+		/* Images will be loaded at slightly modified dimensions */
+		if( ratio < i_ratio )
+		{
+			/* Horizontal scaling */
+			lw = (gdouble)width / ( skew + 1 ) * 2;
+			lh = height;
+		}
+		else
+		{
+			/* Vertical scaling */
+			lw = width;
+			lh = (gdouble)height * ( skew + 1 ) / 2;
+		}
+		loader = gdk_pixbuf_new_from_file_at_scale( filename, lw, lh, FALSE, &error );
 	}
 	else
 	{
-		/* Vertical scaling */
-		lw = width;
-		lh = (gdouble)height * ( skew + 1 ) / 2;
+		/* Simply load image into pixbuf at size */
+		loader = gdk_pixbuf_new_from_file_at_size( filename, width, height, &error );
 	}
-	loader = gdk_pixbuf_new_from_file_at_scale( filename, lw, lh,
-													FALSE, &error );
 	if( ! loader ) {
 		g_message( "While loading image data from %s: %s.", filename, error->message );
 		g_error_free( error );
@@ -830,6 +907,13 @@ img_scale_image( const gchar      *filename,
 											   width, height );
 
 		cr = cairo_create( tmp_surf );
+		
+		if( ! transform )
+		{
+			/* Fill with background color */
+			cairo_set_source_rgb( cr, color[0], color[1], color[2] );
+			cairo_paint( cr );
+		}
 		
 		/* Paint image */
 		gdk_cairo_set_source_pixbuf( cr, loader, offset_x, offset_y );

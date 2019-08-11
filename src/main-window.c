@@ -173,6 +173,7 @@ img_window_struct *img_create_window (void)
 	img_struct->background_color[1] = 0;
 	img_struct->background_color[2] = 0;
 	img_struct->slides_nr = 0;
+	img_struct->distort_images = TRUE;
 
 	img_struct->maxoffx = 0;
 	img_struct->maxoffy = 0;
@@ -1039,7 +1040,6 @@ img_window_struct *img_create_window (void)
 	gtk_box_pack_start (GTK_BOX (text_animation_hbox), img_struct->pattern_image, FALSE, FALSE, 0);
 	gtk_widget_set_tooltip_text(img_struct->pattern_image, _("Click to choose the text pattern") );
 	g_signal_connect (	G_OBJECT (img_struct->pattern_image), "clicked", G_CALLBACK (img_pattern_clicked), img_struct);
-	gtk_widget_set_size_request(img_struct->pattern_image, 60, 32);
    
 	gtk_widget_set_size_request(img_struct->sub_color, 35, -1);
 	gtk_widget_set_size_request(img_struct->sub_brdr_color, 35, -1);
@@ -1899,7 +1899,7 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 			/* Respect quality settings */
 			img_scale_image( info_slide->p_filename,
 								(gdouble)img->video_size[0] / img->video_size[1],
-								0, img->video_size[1],
+								0, img->video_size[1], img->distort_images,
 								img->background_color, NULL, &img->current_image );
 	}
 }

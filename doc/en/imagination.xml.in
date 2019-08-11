@@ -277,7 +277,7 @@
 					<graphic fileref="images/new_dialog.png"></graphic>
 				</figure>
 				<para>
-					This menu allows you to create a new slideshow. The slideshow dialog is displayed. You can choose the video format and size and the background color to be displayed when the picture is too small and the rescaling doesn't succed to cover the whole screen. You can choose if ending the slideshow with a blank slide with the same transition effect applied to the first one. You can also change these options later. The Rescale option was removed in 3.5 as Imagination will always fill the whole available screen.
+					This menu allows you to create a new slideshow. The slideshow dialog is displayed. You can choose the video format and size, if to scale the picture so that it covers the whole screen avoiding the black stripes and the background color to be displayed when the picture is too small and the rescaling doesn't succed to cover the whole screen. You can choose if ending the slideshow with a blank slide with the same transition effect applied to the first one. You can also change these options later.
 				</para>
 			</sect3>
 			<sect3 id="open">
