@@ -17,15 +17,16 @@
 */
 
 #include "img_sox.h"
+#include "imagination.h"
 
 /* Global data - libsox has no means to pass data
  * to effect handlers */
 static ImgThreadData *global;
 
 static int
-output_flow( sox_effect_t       *effp,
+output_flow( sox_effect_t       * UNUSED(effp),
 			 sox_sample_t const *ibuf,
-			 sox_sample_t       *obuf,
+			 sox_sample_t       * UNUSED(obuf),
 			 size_t             *isamp,
 			 size_t             *osamp )
 {

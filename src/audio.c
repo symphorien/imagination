@@ -36,7 +36,7 @@ gchar *img_get_audio_filetype(gchar *filename)
 	return NULL;
 }
 
-gchar *img_get_audio_length(img_window_struct *img, gchar *filename, gint *secs)
+gchar *img_get_audio_length(img_window_struct * UNUSED(img), gchar *filename, gint *secs)
 {
 	gint seconds = -1;
 	gchar *filetype = NULL;
@@ -56,7 +56,7 @@ gchar *img_get_audio_length(img_window_struct *img, gchar *filename, gint *secs)
 	return seconds == -1 ? NULL : img_convert_seconds_to_time(*secs);
 }
 
-void img_play_stop_selected_file(GtkButton *button, img_window_struct *img)
+void img_play_stop_selected_file(GtkButton * UNUSED(button), img_window_struct *img)
 {
 	GError *error = NULL;
 	gchar	*cmd_line, *path, *filename, *file, *message;
@@ -119,7 +119,7 @@ void img_play_stop_selected_file(GtkButton *button, img_window_struct *img)
 
 }
 
-static void img_play_audio_ended (GPid pid, gint status, img_window_struct *img)
+static void img_play_audio_ended (GPid UNUSED(pid), gint UNUSED(status), img_window_struct *img)
 {
 	g_spawn_close_pid( img->play_child_pid );
 	img_swap_audio_files_button (img, TRUE);
@@ -145,7 +145,7 @@ static void img_swap_audio_files_button(img_window_struct *img, gboolean flag)
 	}
 }
 
-void output_message(unsigned level, const char *filename, const char *fmt, va_list ap)
+void output_message(unsigned level, const char * UNUSED(filename), const char *fmt, va_list ap)
 {
 	gchar *string;
 
@@ -162,11 +162,12 @@ void output_message(unsigned level, const char *filename, const char *fmt, va_li
  * ************************************************************************* */
 void
 img_analyze_input_files( gchar   **inputs,
-						 gint      no_inputs,
+						 guint      no_inputs,
 						 gdouble  *rate,
-						 gint     *channels )
+						 guint     *channels )
 {
-	gint    i, j, tmp = 1;
+	guint    i, j;
+	gint tmp = 1;
 	GArray *array_ra = g_array_sized_new( FALSE, FALSE, sizeof( gdouble ), 10 );
 	GArray *array_rc = g_array_sized_new( FALSE, FALSE, sizeof( gint ), 10 );
 	GArray *array_ch = g_array_sized_new( FALSE, FALSE, sizeof( gdouble ), 2 );
@@ -195,7 +196,7 @@ img_analyze_input_files( gchar   **inputs,
 		/* Get channels and increment counter if this number is
 		 * already present */
 		for( j = 0; j < array_ch->len; j++ )
-			if( *( (gint *)( array_ch->data ) + j ) == in->signal.channels )
+			if( *( (guint *)( array_ch->data ) + j ) == in->signal.channels )
 				break;
 		if( j == array_ch->len )
 		{
@@ -229,7 +230,7 @@ img_analyze_input_files( gchar   **inputs,
 			j = i;
 		}
 	}
-	*channels = *( (gint *)( array_ch->data ) + j );
+	*channels = *( (guint *)( array_ch->data ) + j );
 
 	/* Free data storage */
 	g_array_free( array_ra, TRUE );
@@ -240,12 +241,12 @@ img_analyze_input_files( gchar   **inputs,
 
 gboolean
 img_eliminate_bad_files( gchar             **inputs,
-						 gint                no_inputs,
+						 guint                no_inputs,
 						 gdouble             rate,
-						 gint                channels,
+						 guint                channels,
 						 img_window_struct  *img )
 {
-	gint       i, j, reduced_out = no_inputs;
+	guint       i, j, reduced_out = no_inputs;
 	GString   *string;
 	gboolean   warn = FALSE, ret = TRUE;
 	GtkWidget *dialog;
@@ -331,7 +332,7 @@ img_update_inc_audio_display( img_window_struct *img )
 	GtkTreeIter   iter;
 	gchar        *inputs[100]; /* 100 audio files is current limit */
 	gint          i = 0;
-	gint          channels;
+	guint          channels;
 	gdouble       rate;
 	gint          warn = 0;
 	gint          total_time = 0;

@@ -57,11 +57,11 @@ gchar *img_convert_seconds_to_time(gint total_secs)
 }
 
 static void
-sens_cell_func( GtkCellLayout   *layout,
+sens_cell_func( GtkCellLayout   * UNUSED(layout),
 				GtkCellRenderer *cell,
 				GtkTreeModel    *model,
 				GtkTreeIter     *iter,
-				gpointer         data )
+				gpointer         UNUSED(data) )
 {
 	gboolean sensitive = ! gtk_tree_model_iter_has_child( model, iter );
 	g_object_set( cell, "sensitive", sensitive, NULL );
@@ -268,7 +268,6 @@ void img_load_available_transitions(img_window_struct *img)
 					if( ! pixbuf )
 					{
 						g_free( pixbuf );
-						g_free( anim );
 
 						tmp = g_build_filename( g_get_home_dir(),
 												".imagination",
@@ -315,7 +314,7 @@ static gboolean img_plugin_is_loaded(img_window_struct *img, GModule *module)
 	return (g_slist_find(img->plugin_list,module) != NULL);
 }
 
-void img_show_file_chooser(GtkWidget *entry, GtkEntryIconPosition icon_pos,int button,img_window_struct *img)
+void img_show_file_chooser(GtkWidget *entry, GtkEntryIconPosition UNUSED(icon_pos),int UNUSED(button),img_window_struct *img)
 {
 	GtkWidget *file_selector;
 	gchar *dest_dir;
@@ -583,7 +582,7 @@ img_set_slide_ken_burns_info( slide_struct *slide,
 							  gdouble      *points )
 {
 	ImgStopPoint *point;
-	gint          i,
+	gsize          i,
 				  full;
 
 	if( slide->no_points )
@@ -1185,7 +1184,7 @@ void img_preview_with_music(img_window_struct *img, gint offset)
 
 }
 
-void img_play_next_audio_during_preview (GPid pid, gint status, img_window_struct *img)
+void img_play_next_audio_during_preview (GPid UNUSED(pid), gint UNUSED(status), img_window_struct *img)
 {
 	GtkTreeModel *model;
 	gchar	*cmd_line, *path, *filename, *file;

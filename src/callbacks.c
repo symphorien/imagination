@@ -128,7 +128,7 @@ void img_set_window_title(img_window_struct *img, gchar *text)
 	}
 }
 
-void img_new_slideshow(GtkMenuItem *item,img_window_struct *img_struct)
+void img_new_slideshow(GtkMenuItem * UNUSED(item), img_window_struct *img_struct)
 {
     if (img_struct->project_is_modified)
         if (GTK_RESPONSE_OK != img_ask_user_confirmation(img_struct, _("You didn't save your slideshow yet. Are you sure you want to close it?")))
@@ -137,12 +137,12 @@ void img_new_slideshow(GtkMenuItem *item,img_window_struct *img_struct)
     img_new_slideshow_settings_dialog(img_struct, FALSE);
 }
 
-void img_project_properties(GtkMenuItem *item, img_window_struct *img_struct)
+void img_project_properties(GtkMenuItem * UNUSED(item), img_window_struct *img_struct)
 {
 	img_new_slideshow_settings_dialog(img_struct, TRUE);
 }
 
-void img_add_slides_thumbnails(GtkMenuItem *item, img_window_struct *img)
+void img_add_slides_thumbnails(GtkMenuItem * UNUSED(item), img_window_struct *img)
 {
 	GSList	*slides = NULL, *bak;
 	GdkPixbuf *thumb;
@@ -226,7 +226,7 @@ void img_increase_progressbar(img_window_struct *img, gint nr)
 		gtk_main_iteration();
 }
 
-void img_remove_audio_files (GtkWidget *widget, img_window_struct *img)
+void img_remove_audio_files (GtkWidget * UNUSED(widget), img_window_struct *img)
 {
 	GtkTreeSelection *sel;
 	GtkTreePath *path;
@@ -270,7 +270,7 @@ void img_remove_audio_files (GtkWidget *widget, img_window_struct *img)
 	g_list_free(rr_list);
 }
 
-void img_remove_foreach_func (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, GList **rowref_list)
+void img_remove_foreach_func (GtkTreeModel *model, GtkTreePath *path, GtkTreeIter * UNUSED(iter), GList **rowref_list)
 {
 	GtkTreeRowReference *rowref;
 
@@ -278,7 +278,7 @@ void img_remove_foreach_func (GtkTreeModel *model, GtkTreePath *path, GtkTreeIte
 	*rowref_list = g_list_append(*rowref_list, rowref);
 }
 
-void img_select_audio_files_to_add ( GtkMenuItem* button, img_window_struct *img)
+void img_select_audio_files_to_add ( GtkMenuItem* UNUSED(button), img_window_struct *img)
 {
 	GtkFileFilter *audio_filter, *all_files_filter;
 	GtkWidget *fs;
@@ -474,7 +474,7 @@ gint img_ask_user_confirmation(img_window_struct *img_struct, gchar *msg)
 	return response;
 }
 
-gboolean img_key_pressed(GtkWidget *widget, GdkEventKey *event, img_window_struct *img)
+gboolean img_key_pressed(GtkWidget * UNUSED(widget), GdkEventKey *event, img_window_struct *img)
 {
 	if ( img->window_is_fullscreen )
 	{
@@ -509,7 +509,7 @@ void img_exit_fullscreen(img_window_struct *img)
 	gdk_window_set_cursor(win, cursor);
 }
 
-gboolean img_quit_application(GtkWidget *widget, GdkEvent *event, img_window_struct *img_struct)
+gboolean img_quit_application(GtkWidget * UNUSED(widget), GdkEvent * UNUSED(event), img_window_struct *img_struct)
 {
 	gint response;
 
@@ -559,7 +559,6 @@ static void	img_update_preview_file_chooser(GtkFileChooser *file_chooser,img_win
 	gboolean has_preview = FALSE;
 	gint width,height;
 	GdkPixbuf *pixbuf;
-	GdkPixbufFormat *pixbuf_format;
 
 	filename = gtk_file_chooser_get_filename(file_chooser);
 	if (filename == NULL)
@@ -571,7 +570,7 @@ static void	img_update_preview_file_chooser(GtkFileChooser *file_chooser,img_win
 	has_preview = (pixbuf != NULL);
 	if (has_preview)
 	{
-		pixbuf_format = gdk_pixbuf_get_file_info(filename,&width,&height);
+		gdk_pixbuf_get_file_info(filename,&width,&height);
 		gtk_image_set_from_pixbuf (GTK_IMAGE(img_struct->preview_image), pixbuf);
 		g_object_unref (pixbuf);
 
@@ -583,7 +582,7 @@ static void	img_update_preview_file_chooser(GtkFileChooser *file_chooser,img_win
 	gtk_file_chooser_set_preview_widget_active (file_chooser, has_preview);
 }
 
-void img_delete_selected_slides(GtkMenuItem *item,img_window_struct *img)
+void img_delete_selected_slides(GtkMenuItem * UNUSED(item),img_window_struct *img)
 {
 	GList *selected, *bak;
 	GtkTreeIter iter;
@@ -631,14 +630,14 @@ void img_delete_selected_slides(GtkMenuItem *item,img_window_struct *img)
 }
 
 void
-img_rotate_slides_left( GtkWidget         *widget,
+img_rotate_slides_left( GtkWidget         * UNUSED(widget),
 						img_window_struct *img )
 {
 	img_rotate_selected_slides( img, TRUE );
 }
 
 void
-img_rotate_slides_right( GtkWidget         *widget,
+img_rotate_slides_right( GtkWidget         * UNUSED(widget),
 						 img_window_struct *img )
 {
 	img_rotate_selected_slides( img, FALSE );
@@ -830,7 +829,7 @@ static GdkPixbuf *img_rotate_pixbuf( GdkPixbuf      *original,
 	return( new );
 }
 
-void img_show_about_dialog (GtkMenuItem *item,img_window_struct *img_struct)
+void img_show_about_dialog (GtkMenuItem * UNUSED(item), img_window_struct *img_struct)
 {
 	static GtkWidget *about = NULL;
 	static gchar version[] = VERSION "-" REVISION;
@@ -874,13 +873,13 @@ void img_show_about_dialog (GtkMenuItem *item,img_window_struct *img_struct)
 	gtk_widget_hide (about);
 }
 
-static void img_about_dialog_activate_link(GtkAboutDialog * dialog, const gchar *link, gpointer data)
+static void img_about_dialog_activate_link(GtkAboutDialog * UNUSED(dialog), const gchar *link, gpointer UNUSED(data))
 {
 	/* Replace xdg-open with GTK+ equivalent */
 	gtk_show_uri( NULL, link, GDK_CURRENT_TIME, NULL );
 }
 
-void img_go_fullscreen(GtkMenuItem *item, img_window_struct *img)
+void img_go_fullscreen(GtkMenuItem * UNUSED(item), img_window_struct *img)
 {
 	/* Hide the cursor */
 	GdkCursor *cursor	= gdk_cursor_new(GDK_BLANK_CURSOR);
@@ -1116,7 +1115,7 @@ void img_start_stop_preview(GtkWidget *item, img_window_struct *img)
 	return;
 }
 
-void img_goto_first_slide(GtkWidget *button, img_window_struct *img)
+void img_goto_first_slide(GtkWidget * UNUSED(button), img_window_struct *img)
 {
 	GtkTreeIter iter;
 	GtkTreePath *path;
@@ -1138,9 +1137,8 @@ void img_goto_first_slide(GtkWidget *button, img_window_struct *img)
 	gtk_tree_path_free (path);
 }
 
-void img_goto_prev_slide(GtkWidget *button, img_window_struct *img)
+void img_goto_prev_slide(GtkWidget * UNUSED(button), img_window_struct *img)
 {
-	GtkTreeModel *model;
 	GtkTreePath *path;
 	GList *icons_selected = NULL;
 	gchar *slide = NULL;
@@ -1150,7 +1148,6 @@ void img_goto_prev_slide(GtkWidget *button, img_window_struct *img)
 	if( ! icons_selected )
 		return;
 
-	model = GTK_TREE_MODEL( img->thumbnail_model );
 	slide_nr = gtk_tree_path_get_indices(icons_selected->data)[0];
 
 	if (slide_nr == 0)
@@ -1171,9 +1168,8 @@ void img_goto_prev_slide(GtkWidget *button, img_window_struct *img)
 	g_list_free (icons_selected);
 }
 
-void img_goto_next_slide(GtkWidget *button, img_window_struct *img)
+void img_goto_next_slide(GtkWidget * UNUSED(button), img_window_struct *img)
 {
-	GtkTreeModel *model;
 	GtkTreePath *path;
 	GList *icons_selected = NULL;
 	gchar *slide = NULL;
@@ -1184,7 +1180,6 @@ void img_goto_next_slide(GtkWidget *button, img_window_struct *img)
 		return;
 
 	/* Now get previous iter :) */
-	model = GTK_TREE_MODEL( img->thumbnail_model );
 	slide_nr = gtk_tree_path_get_indices(icons_selected->data)[0];
 
 	if (slide_nr == (img->slides_nr-1) )
@@ -1206,7 +1201,7 @@ void img_goto_next_slide(GtkWidget *button, img_window_struct *img)
 }
 
 
-void img_goto_last_slide(GtkWidget *button, img_window_struct *img)
+void img_goto_last_slide(GtkWidget * UNUSED(button), img_window_struct *img)
 {
 	GtkTreeIter iter;
 	GtkTreePath *path;
@@ -1228,7 +1223,9 @@ void img_goto_last_slide(GtkWidget *button, img_window_struct *img)
 	gtk_tree_path_free (path);
 }
 
-void img_on_drag_data_received (GtkWidget *widget,GdkDragContext *context,int x,int y,GtkSelectionData *data,unsigned int info,unsigned int time, img_window_struct *img)
+void img_on_drag_data_received (GtkWidget * UNUSED(widget), GdkDragContext
+	*context ,int UNUSED(x), int UNUSED(y), GtkSelectionData *data, 
+	unsigned int UNUSED(info), unsigned int time, img_window_struct *img)
 {
 	gchar **pictures = NULL;
 	gchar *filename;
@@ -1309,7 +1306,7 @@ void img_on_drag_data_received (GtkWidget *widget,GdkDragContext *context,int x,
  */
 gboolean
 img_on_expose_event( GtkWidget         *widget,
-					 GdkEventExpose    *event,
+					 GdkEventExpose    * UNUSED(event),
 					 img_window_struct *img )
 {
 	cairo_t *cr;
@@ -1668,7 +1665,7 @@ void img_close_slideshow(GtkWidget *widget, img_window_struct *img)
     gtk_entry_set_text(GTK_ENTRY(img->slide_number_entry), "");
 }
 
-void img_move_audio_up( GtkButton *button, img_window_struct *img )
+void img_move_audio_up( GtkButton * UNUSED(button), img_window_struct *img )
 {
 	GtkTreeSelection *sel;
 	GtkTreeModel     *model;
@@ -1693,7 +1690,7 @@ void img_move_audio_up( GtkButton *button, img_window_struct *img )
 	gtk_tree_path_free( path );
 }
 
-void img_move_audio_down( GtkButton *button, img_window_struct *img )
+void img_move_audio_down( GtkButton * UNUSED(button), img_window_struct *img )
 {
 	GtkTreeSelection *sel;
 	GtkTreeModel     *model;
@@ -1776,7 +1773,7 @@ img_ken_burns_zoom_changed( GtkRange          *range,
  * Return value: TRUE, indicating that we handled this event.
  */
 gboolean
-img_image_area_button_press( GtkWidget         *widget,
+img_image_area_button_press( GtkWidget         * UNUSED(widget),
 							 GdkEventButton    *event,
 							 img_window_struct *img )
 {
@@ -1792,8 +1789,8 @@ img_image_area_button_press( GtkWidget         *widget,
 }
 
 gboolean
-img_image_area_button_release(	GtkWidget			*widget,
-								GdkEventButton		*event,
+img_image_area_button_release(	GtkWidget			* UNUSED(widget),
+								GdkEventButton		* UNUSED(event),
 								img_window_struct 	*img)
 {
 	img_update_stop_point(NULL, img);
@@ -1813,7 +1810,7 @@ img_image_area_button_release(	GtkWidget			*widget,
  * FALSE.
  */
 gboolean
-img_image_area_motion( GtkWidget         *widget,
+img_image_area_motion( GtkWidget         * UNUSED(widget),
 					   GdkEventMotion    *event,
 					   img_window_struct *img )
 {
@@ -1856,7 +1853,7 @@ void img_text_pos_changed( GtkRange *range, img_window_struct *img)
 
 /* Zoom callback functions */
 void
-img_zoom_in( GtkWidget         *item,
+img_zoom_in( GtkWidget         * UNUSED(item),
 			 img_window_struct *img )
 {
 	if( img->mode == 0 )
@@ -1866,7 +1863,7 @@ img_zoom_in( GtkWidget         *item,
 }
 
 void
-img_zoom_out( GtkWidget         *item,
+img_zoom_out( GtkWidget         * UNUSED(item),
 			  img_window_struct *img )
 {
 	if( img->mode == 0 )
@@ -1876,7 +1873,7 @@ img_zoom_out( GtkWidget         *item,
 }
 
 void
-img_zoom_reset( GtkWidget         *item,
+img_zoom_reset( GtkWidget         * UNUSED(item),
 				img_window_struct *img )
 {
 	if( img->mode == 0 )
@@ -1886,7 +1883,7 @@ img_zoom_reset( GtkWidget         *item,
 }
 
 void
-img_zoom_fit( GtkWidget         *item,
+img_zoom_fit( GtkWidget         * UNUSED(item),
               img_window_struct *img )
 {
     gdouble step, level1, level2;
@@ -1967,7 +1964,7 @@ img_overview_change_zoom( gdouble            step,
 }
 
 void
-img_add_stop_point( GtkButton         *button,
+img_add_stop_point( GtkButton         * UNUSED(button),
 					img_window_struct *img )
 {
 	ImgStopPoint *point;
@@ -1999,7 +1996,7 @@ img_add_stop_point( GtkButton         *button,
 }
 
 void
-img_update_stop_point( GtkSpinButton  *button,
+img_update_stop_point( GtkSpinButton  * UNUSED(button),
 					   img_window_struct *img )
 {
 	ImgStopPoint *point;
@@ -2025,7 +2022,7 @@ img_update_stop_point( GtkSpinButton  *button,
 }
 
 void
-img_delete_stop_point( GtkButton         *button,
+img_delete_stop_point( GtkButton         * UNUSED(button),
 					   img_window_struct *img )
 {
 	GList *node;
@@ -2288,7 +2285,7 @@ img_update_subtitles_widgets( img_window_struct *img )
 }
 
 void
-img_goto_prev_point( GtkButton         *button,
+img_goto_prev_point( GtkButton         * UNUSED(button),
 					 img_window_struct *img )
 {
 	if( img->current_slide && img->current_slide->no_points )
@@ -2302,7 +2299,7 @@ img_goto_prev_point( GtkButton         *button,
 }
 
 void
-img_goto_next_point( GtkButton         *button,
+img_goto_next_point( GtkButton         * UNUSED(button),
 					 img_window_struct *img )
 {
 	if( img->current_slide && img->current_slide->no_points )
@@ -2342,9 +2339,9 @@ img_calc_current_ken_point( ImgStopPoint *res,
 							gdouble       progress,
 							gint          mode )
 {
-	gdouble fracx, /* Factor for x offset */
-			fracy, /* Factor for y offset */
-			fracz; /* Factor for zoom */
+	gdouble fracx = 0; /* Factor for x offset */
+	gdouble fracy = 0; /* Factor for y offset */
+	gdouble fracz = 0; /* Factor for zoom */
 
 	switch( mode )
 	{
@@ -2396,7 +2393,7 @@ void img_clipboard_cut_copy_operation(img_window_struct *img, ImgClipboardMode m
 									NULL, img);	
 }
 
-void img_clipboard_get (GtkClipboard *clipboard, GtkSelectionData *selection_data, guint info, img_window_struct *img)
+void img_clipboard_get (GtkClipboard * UNUSED(clipboard), GtkSelectionData *selection_data, guint UNUSED(info), img_window_struct *img)
 {
 	if (selection_data->target != IMG_INFO_LIST)
 		return;
@@ -2404,7 +2401,7 @@ void img_clipboard_get (GtkClipboard *clipboard, GtkSelectionData *selection_dat
 	gtk_selection_data_set (selection_data, selection_data->target, 8, (guchar *) img->selected_paths, sizeof(GList) * g_list_length(img->selected_paths) );
 }
 
-void img_clipboard_clear (GtkClipboard *clipboard, img_window_struct *img)
+void img_clipboard_clear (GtkClipboard * UNUSED(clipboard), img_window_struct *img)
 {
 	img_message (img, FALSE, "I'm here\n");
 	//gtk_clipboard_clear(clipboard);
@@ -2778,7 +2775,7 @@ img_gradient_color_set( GtkColorButton *button,
 }
 
 static gboolean
-img_gradient_expose( GtkWidget      *widget,
+img_gradient_expose( GtkWidget      * UNUSED(widget),
 					 GdkEventExpose *expose,
 					 ImgEmptySlide  *slide )
 {
@@ -2884,7 +2881,7 @@ img_gradient_expose( GtkWidget      *widget,
 }
 
 static gboolean
-img_gradient_press( GtkWidget      *widget,
+img_gradient_press( GtkWidget      * UNUSED(widget),
 					GdkEventButton *button,
 					ImgEmptySlide  *slide )
 {
@@ -2932,8 +2929,8 @@ img_gradient_press( GtkWidget      *widget,
 }
 
 static gboolean
-img_gradient_release( GtkWidget      *widget,
-					  GdkEventButton *button,
+img_gradient_release( GtkWidget      * UNUSED(widget),
+					  GdkEventButton * UNUSED(button),
 					  ImgEmptySlide  *slide )
 {
 	slide->drag = 0;
@@ -2942,7 +2939,7 @@ img_gradient_release( GtkWidget      *widget,
 }
 
 static gboolean
-img_gradient_move( GtkWidget      *widget,
+img_gradient_move( GtkWidget      * UNUSED(widget),
 				   GdkEventMotion *motion,
 				   ImgEmptySlide  *slide )
 {
@@ -3164,13 +3161,13 @@ img_rotate_slide( slide_struct   *slide,
 }
 
 void
-img_notebook_switch_page (GtkNotebook       *notebook,
-                          GtkNotebookPage   *page,
+img_notebook_switch_page (GtkNotebook       * UNUSED(notebook),
+                          GtkNotebookPage   * UNUSED(page),
                           guint              page_num,
                           img_window_struct *img)
 {
     /* When message page is viewed, set it back to black */
-    if (page_num == img->message_page)
+    if (page_num == (unsigned)img->message_page)
     {
         PangoAttrList *   pango_list = pango_attr_list_new();
         PangoAttribute *  pango_attr = pango_attr_weight_new (PANGO_WEIGHT_NORMAL);
@@ -3220,7 +3217,7 @@ void img_align_text_horizontally_vertically(GtkMenuItem *item, img_window_struct
 }
 
 void
-img_pattern_clicked(GtkMenuItem *item,
+img_pattern_clicked(GtkMenuItem * UNUSED(item),
 					img_window_struct *img)
 {
 	GtkWidget		*fc;
@@ -3361,8 +3358,8 @@ void img_subtitle_style_changed(GtkButton *button, img_window_struct *img)
 		string = "italic";
 	else if (GTK_WIDGET(button) == img->underline_style)
 		string = "underline";
-	else if (GTK_WIDGET(button) == img->clear_formatting)
-	{
+	else {
+		g_assert(GTK_WIDGET(button) == img->clear_formatting);
 		gtk_text_buffer_remove_all_tags(img->slide_text_buffer, &start, &end);
 		img_store_rtf_buffer_content(img);
 
@@ -3382,7 +3379,7 @@ void img_subtitle_style_changed(GtkButton *button, img_window_struct *img)
 	gtk_widget_queue_draw(img->image_area);
 }
 
-void img_flip_horizontally(GtkMenuItem *item, img_window_struct *img)
+void img_flip_horizontally(GtkMenuItem * UNUSED(item), img_window_struct *img)
 {
 	GtkTreeModel *model;
 	GtkTreeIter   iter;

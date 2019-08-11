@@ -1484,17 +1484,17 @@ img_window_struct *img_create_window (void)
 	return img_struct;
 }
 
-static void img_slide_cut(GtkMenuItem* item, img_window_struct *img)
+static void img_slide_cut(GtkMenuItem* UNUSED(item), img_window_struct *img)
 {
 	img_clipboard_cut_copy_operation(img, IMG_CLIPBOARD_CUT);
 }
 
-static void img_slide_copy(GtkMenuItem* item, img_window_struct *img)
+static void img_slide_copy(GtkMenuItem* UNUSED(item), img_window_struct *img)
 {
 	img_clipboard_cut_copy_operation(img, IMG_CLIPBOARD_COPY);
 }
 
-static void img_slide_paste(GtkMenuItem* item, img_window_struct *img)
+static void img_slide_paste(GtkMenuItem* UNUSED(item), img_window_struct *img)
 {
 	GtkClipboard *clipboard;
 	GtkSelectionData *selection;
@@ -1666,7 +1666,7 @@ static void img_slide_paste(GtkMenuItem* item, img_window_struct *img)
 	gtk_selection_data_free (selection);
 }
 
-static void img_clear_audio_files(GtkButton *button, img_window_struct *img)
+static void img_clear_audio_files(GtkButton * UNUSED(button), img_window_struct *img)
 {
 	gtk_list_store_clear(GTK_LIST_STORE(img->music_file_liststore));
     img_play_stop_selected_file(NULL, img);
@@ -1675,7 +1675,7 @@ static void img_clear_audio_files(GtkButton *button, img_window_struct *img)
 	gtk_label_set_text(GTK_LABEL(img->music_time_data), "");
 }
 
-static gboolean img_sub_textview_focus_in(GtkWidget *widget, GdkEventFocus *event, img_window_struct *img)
+static gboolean img_sub_textview_focus_in(GtkWidget * UNUSED(widget), GdkEventFocus * UNUSED(event), img_window_struct *img)
 {
 	gtk_widget_remove_accelerator (img->select_all_menu, img->accel_group, GDK_a, GDK_CONTROL_MASK);
 	gtk_widget_remove_accelerator (img->remove_menu,     img->accel_group, GDK_Delete, 0);
@@ -1684,7 +1684,7 @@ static gboolean img_sub_textview_focus_in(GtkWidget *widget, GdkEventFocus *even
 }
 
 
-static gboolean img_sub_textview_focus_out(GtkWidget *widget, GdkEventFocus *event, img_window_struct *img)
+static gboolean img_sub_textview_focus_out(GtkWidget * UNUSED(widget), GdkEventFocus * UNUSED(event), img_window_struct *img)
 {
 	gtk_widget_add_accelerator (img->select_all_menu,"activate", img->accel_group, GDK_a, GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
 	gtk_widget_add_accelerator (img->remove_menu,    "activate", img->accel_group, GDK_Delete, 0, GTK_ACCEL_VISIBLE);
@@ -1692,7 +1692,10 @@ static gboolean img_sub_textview_focus_out(GtkWidget *widget, GdkEventFocus *eve
 	return FALSE;
 }
 
-static void img_on_drag_audio_data_received (GtkWidget *widget,GdkDragContext *context,int x,int y,GtkSelectionData *data,unsigned int info,unsigned int time, img_window_struct *img)
+static void img_on_drag_audio_data_received (GtkWidget *
+	UNUSED(widget),GdkDragContext *context,int UNUSED(x), int UNUSED(y),
+	GtkSelectionData *data,unsigned int  UNUSED(info), unsigned int time,
+	img_window_struct *img)
 {
 	gchar **audio = NULL;
 	gchar *filename,*ttime;
@@ -1723,7 +1726,7 @@ static void img_on_drag_audio_data_received (GtkWidget *widget,GdkDragContext *c
 	g_strfreev (audio);
 }
 
-static void img_activate_remove_button_music_liststore(GtkTreeModel *tree_model, GtkTreePath *path, GtkTreeIter *iter, img_window_struct *img)
+static void img_activate_remove_button_music_liststore(GtkTreeModel * UNUSED(tree_model), GtkTreePath * UNUSED(path), GtkTreeIter *iter, img_window_struct *img)
 {
 	if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(img->music_file_liststore), iter) == TRUE)
 	{
@@ -1732,7 +1735,7 @@ static void img_activate_remove_button_music_liststore(GtkTreeModel *tree_model,
 	}
 }
 
-static void img_quit_menu(GtkMenuItem *menuitem, img_window_struct *img)
+static void img_quit_menu(GtkMenuItem * UNUSED(menuitem), img_window_struct *img)
 {
 	if( ! img_quit_application( NULL, NULL, img ) )
 		gtk_main_quit();
@@ -1970,7 +1973,7 @@ void img_combo_box_transition_type_changed (GtkComboBox *combo, img_window_struc
 	g_list_free( bak );
 }
 
-static void img_random_button_clicked(GtkButton *button, img_window_struct *img)
+static void img_random_button_clicked(GtkButton * UNUSED(button), img_window_struct *img)
 {
 	GList        *selected,
 				 *bak;
@@ -2106,17 +2109,17 @@ static void img_combo_box_speed_changed (GtkComboBox *combo, img_window_struct *
 	g_list_free(bak);
 }
 
-static void img_select_all_thumbnails(GtkMenuItem *item, img_window_struct *img)
+static void img_select_all_thumbnails(GtkMenuItem * UNUSED(item), img_window_struct *img)
 {
 	gtk_icon_view_select_all(GTK_ICON_VIEW (img->active_icon));
 }
 
-static void img_unselect_all_thumbnails(GtkMenuItem *item, img_window_struct *img)
+static void img_unselect_all_thumbnails(GtkMenuItem * UNUSED(item), img_window_struct *img)
 {
 	gtk_icon_view_unselect_all(GTK_ICON_VIEW (img->active_icon));
 }
 
-static void img_goto_line_entry_activate(GtkWidget *entry, img_window_struct *img)
+static void img_goto_line_entry_activate(GtkWidget * UNUSED(entry), img_window_struct *img)
 {
 	gint slide;
 	GtkTreePath *path;
@@ -2133,7 +2136,7 @@ static void img_goto_line_entry_activate(GtkWidget *entry, img_window_struct *im
 	}
 }
 
-static gint img_sort_none_before_other(GtkTreeModel *model,GtkTreeIter *a,GtkTreeIter *b,gpointer data)
+static gint img_sort_none_before_other(GtkTreeModel *model,GtkTreeIter *a,GtkTreeIter *b,gpointer UNUSED(data))
 {
 	gchar *name1, *name2;
 	gint i;
@@ -2153,7 +2156,7 @@ static gint img_sort_none_before_other(GtkTreeModel *model,GtkTreeIter *a,GtkTre
 	return i;	
 }
 
-static void img_check_numeric_entry (GtkEditable *entry, gchar *text, gint lenght, gint *position, gpointer data)
+static void img_check_numeric_entry (GtkEditable *entry, gchar *text, gint UNUSED(length), gint * UNUSED(position), gpointer  UNUSED(data))
 {
 	if(*text < '0' || *text > '9')
 		g_signal_stop_emission_by_name( (gpointer)entry, "insert-text" );
@@ -2168,7 +2171,7 @@ static void img_check_numeric_entry (GtkEditable *entry, gchar *text, gint lengh
 static gboolean
 img_iconview_selection_button_press( GtkWidget         *widget,
 									 GdkEventButton    *button,
-									 img_window_struct *img )
+									 img_window_struct * UNUSED(img) )
 {
 	if( ( button->button == 1 ) &&
 		! ( button->state & ( GDK_SHIFT_MASK | GDK_CONTROL_MASK ) ) )
@@ -2180,7 +2183,7 @@ img_iconview_selection_button_press( GtkWidget         *widget,
 static gboolean
 img_scroll_thumb( GtkWidget         *widget,
 				  GdkEventScroll    *scroll,
-				  img_window_struct *img )
+				  img_window_struct * UNUSED(img) )
 {
 	GtkAdjustment *adj;
 	gdouble        page, step, upper, value;
@@ -2203,7 +2206,7 @@ img_scroll_thumb( GtkWidget         *widget,
 	return( TRUE );
 }
 
-static void img_show_uri(GtkMenuItem *menuitem, img_window_struct *img)
+static void img_show_uri(GtkMenuItem * UNUSED(menuitem), img_window_struct *img)
 {
 	gchar *file = NULL;
 	gchar *lang = NULL;
@@ -2224,7 +2227,7 @@ static void img_show_uri(GtkMenuItem *menuitem, img_window_struct *img)
 }
 
 void
-img_queue_subtitle_update( GtkTextBuffer     *buffer,
+img_queue_subtitle_update( GtkTextBuffer     * UNUSED(buffer),
 						   img_window_struct *img )
 {
 	/* This queue enables us to avoid sensless copying and redrawing when typing
@@ -2542,15 +2545,15 @@ img_ken_burns_update_sensitivity( img_window_struct *img,
 			gtk_widget_set_sensitive( img->ken_left,     TRUE );
 			gtk_widget_set_sensitive( img->ken_entry,    TRUE );
 			gtk_widget_set_sensitive( img->ken_right,    TRUE );
-
+			// fall through
 		case 1: /* Disable navigation only */
 			gtk_widget_set_sensitive( img->ken_remove,   TRUE );
-
+			// fall through
 		case 2: /* Only adding is enabled */
 			gtk_widget_set_sensitive( img->ken_add,      TRUE );
 			gtk_widget_set_sensitive( img->ken_zoom,     TRUE );
 			gtk_widget_set_sensitive( img->ken_duration, TRUE );
-
+			// fall through
 		case 3: /* Disable all */
 			break;
 	}
@@ -2617,7 +2620,7 @@ img_subtitle_update_sensitivity( img_window_struct *img,
 
 void
 img_update_sub_properties( img_window_struct *img,
-						   TextAnimationFunc  anim,
+						   TextAnimationFunc  UNUSED(anim),
 						   gint               anim_id,
 						   gdouble            anim_duration,
 						   const gchar       *desc,
@@ -2701,6 +2704,9 @@ img_switch_mode( img_window_struct *img,
 			img->active_icon = img->over_icon;
 			from = GTK_ICON_VIEW( img->thumbnail_iconview );
 			break;
+		default: /* Impossible */
+			g_assert(FALSE);
+			return;
 	}
 	gtk_widget_show( img->active_icon );
 	to = GTK_ICON_VIEW( img->active_icon );
@@ -2949,7 +2955,7 @@ static void img_select_slide_from_slide_report_dialog(GtkButton *button, img_win
 	gtk_tree_path_free (path);
 }
 
-static void img_show_slides_report_dialog(GtkMenuItem *item, img_window_struct *img)
+static void img_show_slides_report_dialog(GtkMenuItem * UNUSED(item), img_window_struct *img)
 {
 	img_report_slides_transitions(img);
 	gtk_widget_show_all(img->report_dialog);

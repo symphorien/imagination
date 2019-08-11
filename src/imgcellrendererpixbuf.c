@@ -17,6 +17,7 @@
 */
 
 #include "imgcellrendererpixbuf.h"
+#include "imagination.h"
 
 #define IMG_PARAM_DEFAULTS \
 	G_PARAM_STATIC_NICK | G_PARAM_STATIC_NAME | G_PARAM_STATIC_BLURB
@@ -256,10 +257,10 @@ static void
 img_cell_renderer_pixbuf_render( GtkCellRenderer      *cell,
 								 GdkDrawable          *window,
 								 GtkWidget            *widget,
-								 GdkRectangle         *background_a,
+								 GdkRectangle         * UNUSED(background_a),
 								 GdkRectangle         *cell_a,
 								 GdkRectangle         *expose_a,
-								 GtkCellRendererState  state )
+								 GtkCellRendererState  UNUSED(state) )
 {
 	ImgCellRendererPixbufPrivate *priv;
 
