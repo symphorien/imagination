@@ -478,6 +478,8 @@ void img_post_export(img_window_struct *img)
 	img_stop_export(img);
 	
 	gtk_widget_hide(img->export_pause_button);
+	gtk_progress_bar_set_fraction( GTK_PROGRESS_BAR( img->export_pbar1 ), 1);
+	gtk_progress_bar_set_fraction( GTK_PROGRESS_BAR( img->export_pbar2 ), 1);
 	gtk_button_set_label(GTK_BUTTON(img->export_cancel_button), _("Close"));
 	g_signal_connect_swapped (img->export_cancel_button, "clicked", G_CALLBACK (gtk_widget_destroy), img->export_dialog);
 	
