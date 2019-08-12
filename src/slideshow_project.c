@@ -523,7 +523,7 @@ img_load_slideshow( img_window_struct *img,
 				if( slide_info )
 				{
 					if( slide_filename )
-						img_set_slide_file_info( slide_info, original_filename );
+						img_set_slide_file_info( slide_info, slide_filename );
 					else
 						img_set_slide_gradient_info( slide_info, gradient,
 													 c_start, c_stop,
