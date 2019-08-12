@@ -31,6 +31,7 @@
 void img_set_window_title(img_window_struct *,gchar *);
 void img_new_slideshow(GtkMenuItem *,img_window_struct *);
 void img_project_properties(GtkMenuItem *, img_window_struct *);
+void img_add_slides(GSList *slides, img_window_struct *img);
 void img_add_slides_thumbnails(GtkMenuItem *,img_window_struct *);
 void img_remove_audio_files (GtkWidget *, img_window_struct *);
 void img_remove_foreach_func (GtkTreeModel *, GtkTreePath *, GtkTreeIter *, GList **);
