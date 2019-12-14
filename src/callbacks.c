@@ -196,11 +196,12 @@ static void detect_slide_orientation_from_pixbuf(GdkPixbuf *image, gboolean *fli
 	    *angle = ANGLE_180;
 	    break;
         case 4:
-	    /* cannot flip image vertically */
+	    *angle = ANGLE_180;
+	    *flipped = TRUE;
 	    break;
         case 5:
-	    *angle = ANGLE_270;
-	    *flipped = TRUE;
+	    *angle = ANGLE_90;
+	    /* cannot flip image vertically */
 	    break;
         case 6:
 	    *angle = ANGLE_270;

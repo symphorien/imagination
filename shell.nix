@@ -6,7 +6,7 @@ mkShell {
   checkInputs = [
     (python3.withPackages (ps: [ ps.dogtail ]))
   gnome3.gobject-introspection at-spi2-atk at-spi2-core
-  tesseract imagemagick
+  tesseract imagemagick exiftool
   ];
   doCheck = true;
   shellHook = ''

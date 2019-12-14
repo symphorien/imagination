@@ -2,10 +2,12 @@
 """ Provides a TestSuite class to easily run imagination tests. """
 
 import os
+import shutil
 import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import sleep, time
+from typing import Optional
 
 from dogtail.procedural import type
 from dogtail.tree import SearchError, root
@@ -97,6 +99,30 @@ class TestSuite:
             button.click()
         assert button.dead
 
+    def exif_rotate(self, filename: Path, rotation: int, flip: bool) -> Optional[Path]:
+        """ Returns the filename of the same file but with the exif tag refering to the
+        same rotation"""
+        new = self.temp / (str(nonce((filename, rotation, flip))) + ".jpg")
+        rotation = (rotation % 360 + 360) % 360
+        if rotation == 0:
+            tag = 2 if flip else 1
+        elif rotation == 90:
+            tag = 8
+            if flip:
+                return None
+        elif rotation == 180:
+            tag = 4 if flip else 3
+        elif rotation == 270:
+            tag = 6
+            if flip:
+                return None
+        else:
+            raise ValueError(f"Cannot rotate by a non multiple of 90 amount {rotation}")
+        shutil.copy(filename, new)
+        subprocess.run(["exiftool", f"-Orientation={tag}", "-n", str(new)])
+        new.resolve()
+        return new
+
     def text2img(self, text: str) -> Path:
         """ Creates an image with the text in question on it. """
         filename = self.temp / (str(nonce(text)) + ".jpg")
@@ -156,7 +182,15 @@ class TestSuite:
         out = self.temp / str(nonce(image))
         intermediate = self.temp / (str(nonce(image)) + ".jpg")
         subprocess.run(
-            ["convert", str(image), "-fuzz", "1%", "-trim", str(intermediate)]
+            [
+                "convert",
+                str(image),
+                "-auto-orient",
+                "-fuzz",
+                "1%",
+                "-trim",
+                str(intermediate),
+            ]
         )
         subprocess.run(["tesseract", "-psm", "7", str(intermediate), str(out)])
         with open(f"{out}.txt", "r") as f:
