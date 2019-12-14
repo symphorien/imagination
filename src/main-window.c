@@ -669,7 +669,7 @@ img_window_struct *img_create_window (void)
 	gtk_widget_show_all (img_struct->toolbar);
 
 	/* Create the image area and the other widgets */
-	img_struct->paned = gtk_hpaned_new();
+	img_struct->paned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
 	gtk_box_pack_start (GTK_BOX (vbox1), img_struct->paned, TRUE, TRUE, 0);
 
 	modes_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -901,7 +901,9 @@ img_window_struct *img_create_window (void)
 	gtk_misc_set_alignment(GTK_MISC(label),0.0, 0.5);
 	gtk_box_pack_start (GTK_BOX (hbox_zoom), label, FALSE, TRUE, 0);
 
-	img_struct->ken_zoom = gtk_hscale_new_with_range(1,30,0.10000000000000001);
+	img_struct->ken_zoom = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL,
+							1, 30,
+							0.10000000000000001);
 	gtk_scale_set_value_pos (GTK_SCALE(img_struct->ken_zoom), GTK_POS_LEFT);
 	gtk_box_pack_start (GTK_BOX (hbox_zoom), img_struct->ken_zoom, TRUE, TRUE, 0);
 	g_signal_connect( G_OBJECT( img_struct->ken_zoom ), "value-changed",
@@ -1120,7 +1122,8 @@ img_window_struct *img_create_window (void)
 	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 0, 0);
 
 	img_struct->sub_posX_adj = (GtkAdjustment *) gtk_adjustment_new( 1.0, 1, (gdouble)img_struct->video_size[0], 1.0, 1.0, 0.0 );
-	img_struct->sub_posX = gtk_hscale_new(img_struct->sub_posX_adj);
+	img_struct->sub_posX = gtk_scale_new(GTK_ORIENTATION_HORIZONTAL,
+					     img_struct->sub_posX_adj);
 	gtk_table_attach (GTK_TABLE (table), img_struct->sub_posX, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
 	gtk_scale_set_draw_value( GTK_SCALE(img_struct->sub_posX), FALSE);
 	g_signal_connect( G_OBJECT( img_struct->sub_posX ), "value-changed",
@@ -1139,7 +1142,8 @@ img_window_struct *img_create_window (void)
 	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
 
 	img_struct->sub_posY_adj = (GtkAdjustment *) gtk_adjustment_new( 1.0, 1, (gdouble)img_struct->video_size[1], 1.0, 1.0, 0.0 );
-	img_struct->sub_posY = gtk_hscale_new(img_struct->sub_posY_adj);
+	img_struct->sub_posY = gtk_scale_new(GTK_ORIENTATION_HORIZONTAL,
+					     img_struct->sub_posY_adj);
 	gtk_table_attach (GTK_TABLE (table), img_struct->sub_posY, 1, 2, 1, 2, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
 	gtk_scale_set_draw_value( GTK_SCALE(img_struct->sub_posY), FALSE);
 	g_signal_connect( G_OBJECT( img_struct->sub_posY ), "value-changed",
@@ -1157,7 +1161,8 @@ img_window_struct *img_create_window (void)
 	gtk_misc_set_alignment(GTK_MISC(label),0.0, 0.5);
 	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
 
-	img_struct->sub_angle = gtk_hscale_new_with_range(-90, 90, 1);
+	img_struct->sub_angle = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL,
+							 -90, 90, 1);
 	gtk_table_attach (GTK_TABLE (table), img_struct->sub_angle, 1, 2, 2, 3, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
 	gtk_scale_set_draw_value( GTK_SCALE(img_struct->sub_angle), FALSE);
 	g_signal_connect( G_OBJECT( img_struct->sub_angle ), "value-changed",
