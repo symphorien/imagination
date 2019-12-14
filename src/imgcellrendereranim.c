@@ -185,8 +185,7 @@ img_cell_renderer_anim_render( GtkCellRenderer      *cell,
 	ImgCellRendererAnimPrivate *priv;
 	GdkPixbufAnimationIter     *iter;
 	GdkPixbuf                  *pixbuf;
-	GdkRectangle                rect,
-								draw_rect;
+	GdkRectangle                rect, draw_rect;
 	gint xpad, ypad;
 
 	g_return_if_fail( IMG_IS_CELL_RENDERER_ANIM( cell ) );
@@ -205,12 +204,9 @@ img_cell_renderer_anim_render( GtkCellRenderer      *cell,
 	rect.width  -= 2 * xpad;
 	rect.height -= 2 * ypad;
 
-	/* FIXME
-	// Check for overlaping
-	if( ! gdk_rectangle_intersect( cell_a, &rect, &draw_rect ) ||
-		! gdk_rectangle_intersect( expose_a, &draw_rect, &draw_rect ) )
+	if( ! gdk_rectangle_intersect( cell_a, &rect, &draw_rect )) {
 		return;
-	*/
+	}
 
 	/* Draw the current frame of the GdkPixbufAnimation */
 	iter = g_object_get_data( G_OBJECT( priv->anim ), "iter" );
@@ -232,8 +228,6 @@ img_cell_renderer_anim_render( GtkCellRenderer      *cell,
 	gdk_cairo_set_source_pixbuf( cr, pixbuf, rect.x, rect.y );
 	gdk_cairo_rectangle( cr, &draw_rect );
 	cairo_fill( cr );
-
-	//cairo_destroy( cr );
 }
 
 static void

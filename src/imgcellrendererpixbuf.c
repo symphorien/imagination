@@ -274,13 +274,6 @@ img_cell_renderer_pixbuf_render( GtkCellRenderer      *cell,
 	rect.width  -= 2 * xpad;
 	rect.height -= 2 * ypad;
 
-	/* FIXME
-	// Check for overlaping
-	if( ! gdk_rectangle_intersect( cell_a, &rect, &draw_rect ) ||
-		! gdk_rectangle_intersect( expose_a, &draw_rect, &draw_rect ) )
-		return;
-	*/
-
 	/* Draw base image */
 	cairo_save( cr );
 	cairo_translate( cr, rect.x, rect.y );
