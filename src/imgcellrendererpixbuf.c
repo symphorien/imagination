@@ -71,17 +71,16 @@ img_cell_renderer_pixbuf_get_property( GObject    *object,
 
 static void
 img_cell_renderer_pixbuf_render( GtkCellRenderer      *cell,
-								 GdkDrawable          *window,
+								 cairo_t              *cr,
 								 GtkWidget            *widget,
-								 GdkRectangle         *background_a,
-								 GdkRectangle         *cell_a,
-								 GdkRectangle         *expose_a,
+								 const GdkRectangle         *background_a,
+								 const GdkRectangle         *cell_a,
 								 GtkCellRendererState  state );
 
 static void
 img_cell_renderer_pixbuf_get_size( GtkCellRenderer *cell,
 								   GtkWidget       *widget,
-								   GdkRectangle    *cell_area,
+								   const GdkRectangle    *cell_area,
 								   gint            *x_off,
 								   gint            *y_off,
 								   gint            *width,
@@ -94,9 +93,10 @@ img_cell_renderer_pixbuf_finalize( GObject *object );
 /* ****************************************************************************
  * Initialization
  * ************************************************************************* */
-G_DEFINE_TYPE( ImgCellRendererPixbuf,
+G_DEFINE_TYPE_WITH_CODE( ImgCellRendererPixbuf,
 			   img_cell_renderer_pixbuf,
-			   GTK_TYPE_CELL_RENDERER );
+			   GTK_TYPE_CELL_RENDERER,
+			   G_ADD_PRIVATE(ImgCellRendererPixbuf));
 
 static void
 img_cell_renderer_pixbuf_class_init( ImgCellRendererPixbufClass *klass )
@@ -148,9 +148,6 @@ img_cell_renderer_pixbuf_class_init( ImgCellRendererPixbufClass *klass )
 								0.1, 3.0, 1.0,
 								IMG_PARAM_READWRITE );
 	g_object_class_install_property( gobject_class, P_ZOOM, spec );
-
-	g_type_class_add_private( gobject_class,
-							  sizeof( ImgCellRendererPixbufPrivate ) );
 }
 
 static void
@@ -255,41 +252,34 @@ img_cell_renderer_pixbuf_get_property( GObject    *object,
 
 static void
 img_cell_renderer_pixbuf_render( GtkCellRenderer      *cell,
-								 GdkDrawable          *window,
+								 cairo_t            *cr,
 								 GtkWidget            *widget,
-								 GdkRectangle         * UNUSED(background_a),
-								 GdkRectangle         *cell_a,
-								 GdkRectangle         *expose_a,
+								 const GdkRectangle         * UNUSED(background_a),
+								 const GdkRectangle         *cell_a,
 								 GtkCellRendererState  UNUSED(state) )
 {
 	ImgCellRendererPixbufPrivate *priv;
 
-	/* Drawing context */
-	cairo_t *cr;
-
 	/* Rectangles */
-	GdkRectangle rect,
-				 draw_rect;
+	GdkRectangle rect;//, draw_rect;
 	gint xpad, ypad;
 
 	priv = IMG_CELL_RENDERER_PIXBUF_GET_PRIVATE( cell );
 
 	/* Get image size */
-	img_cell_renderer_pixbuf_get_size( cell, widget, cell_a, &rect.x,
-									   &rect.y, &rect.width, &rect.height );
+	img_cell_renderer_pixbuf_get_size( cell, widget, cell_a, &rect.x, &rect.y, &rect.width, &rect.height );
 	gtk_cell_renderer_get_padding(cell, &xpad, &ypad);
 	rect.x += cell_a->x + xpad;
 	rect.y += cell_a->y + ypad;
 	rect.width  -= 2 * xpad;
 	rect.height -= 2 * ypad;
 
-	/* Check for overlaping */
+	/* FIXME
+	// Check for overlaping
 	if( ! gdk_rectangle_intersect( cell_a, &rect, &draw_rect ) ||
 		! gdk_rectangle_intersect( expose_a, &draw_rect, &draw_rect ) )
 		return;
-
-	/* Draw indicators */
-	cr = gdk_cairo_create( window );
+	*/
 
 	/* Draw base image */
 	cairo_save( cr );
@@ -342,14 +332,12 @@ img_cell_renderer_pixbuf_render( GtkCellRenderer      *cell,
 		gdk_cairo_set_source_pixbuf( cr, priv->transition, - w, - h );
 		cairo_paint( cr );
 	}
-
-	cairo_destroy( cr );
 }
 
 static void
 img_cell_renderer_pixbuf_get_size( GtkCellRenderer *cell,
 								   GtkWidget       *widget,
-								   GdkRectangle    *cell_area,
+								   const GdkRectangle    *cell_area,
 								   gint            *x_off,
 								   gint            *y_off,
 								   gint            *width,

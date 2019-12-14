@@ -89,8 +89,8 @@ img_gradient_color_set( GtkColorButton *button,
 						ImgEmptySlide  *slide );
 
 static gboolean
-img_gradient_expose( GtkWidget      *widget,
-					 GdkEventExpose *expose,
+img_gradient_draw( GtkWidget      *widget,
+					 cairo_t *cr,
 					 ImgEmptySlide  *slide );
 
 static gboolean
@@ -591,7 +591,7 @@ gboolean img_key_pressed(GtkWidget * UNUSED(widget), GdkEventKey *event, img_win
 	{
 		if (event->keyval == GDK_KEY_F11 || event->keyval == GDK_KEY_Escape)
 			img_exit_fullscreen(img);
-		else if (event->keyval == GDK_space)
+		else if (event->keyval == GDK_KEY_space)
 		{
 			img->music_preview = TRUE;
 			img_start_stop_preview(NULL, img);
@@ -611,7 +611,7 @@ void img_exit_fullscreen(img_window_struct *img)
 	gtk_alignment_set(GTK_ALIGNMENT(img->viewport_align), 0.5, 0.5, 0, 0);
 
 	gtk_window_unfullscreen(GTK_WINDOW(img->imagination_window));
-	gtk_widget_add_accelerator (img->fullscreen, "activate", img->accel_group, GDK_F11, GDK_MODE_DISABLED, GTK_ACCEL_VISIBLE);
+	gtk_widget_add_accelerator (img->fullscreen, "activate", img->accel_group, GDK_KEY_F11, GDK_MODE_DISABLED, GTK_ACCEL_VISIBLE);
 	img->window_is_fullscreen = FALSE;
 
 	/* Restore the cursor */
@@ -991,7 +991,7 @@ void img_go_fullscreen(GtkMenuItem * UNUSED(item), img_window_struct *img)
 	GdkWindow *win 		= gtk_widget_get_window(img->imagination_window);
 	gdk_window_set_cursor(win, cursor);
 
-	gtk_widget_remove_accelerator (img->fullscreen, img->accel_group, GDK_F11, GDK_MODE_DISABLED);
+	gtk_widget_remove_accelerator (img->fullscreen, img->accel_group, GDK_KEY_F11, GDK_MODE_DISABLED);
 
 	gtk_widget_hide (img->thumb_scrolledwindow);
 	gtk_widget_hide (img->notebook);
@@ -1362,7 +1362,7 @@ void img_on_drag_data_received (GtkWidget * UNUSED(widget), GdkDragContext
 }
 
 /*
- * img_on_expose_event:
+ * img_on_draw_event:
  * @widget: preview GtkDrawingArea
  * @event: expose event info
  * @img: global img_window_struct structure
@@ -1381,11 +1381,10 @@ void img_on_drag_data_received (GtkWidget * UNUSED(widget), GdkDragContext
  * is selected).
  */
 gboolean
-img_on_expose_event( GtkWidget         *widget,
-					 GdkEventExpose    * UNUSED(event),
+img_on_draw_event( GtkWidget         * UNUSED(widget),
+					 cairo_t           *cr,
 					 img_window_struct *img )
 {
-	cairo_t *cr;
 	GtkAllocation allocation;
 	gtk_widget_get_allocation(img->image_area, &allocation);
 
@@ -1395,15 +1394,11 @@ img_on_expose_event( GtkWidget         *widget,
 	{
 		gdouble factor;
 
-		cr = gdk_cairo_create( gtk_widget_get_window(widget) );
-		
 		/* Do the drawing */
-		factor = allocation.width / img->video_size[0];
+		factor = (gdouble)allocation.width / img->video_size[0];
 		cairo_scale( cr, factor, factor );
 		cairo_set_source_surface( cr, img->exported_image, 0, 0 );
 		cairo_paint( cr );
-
-		cairo_destroy( cr );
 	}
 	else
 	{
@@ -1411,8 +1406,6 @@ img_on_expose_event( GtkWidget         *widget,
 			/* Use default handler */
 			return( FALSE );
 
-		cr = gdk_cairo_create( gtk_widget_get_window(widget) );
-		
 		/* Do the drawing */
 		img_draw_image_on_surface( cr, allocation.width,
 								   img->current_image, &img->current_point, img );
@@ -1431,8 +1424,6 @@ img_on_expose_event( GtkWidget         *widget,
 								 FALSE,
 								 FALSE,
 								 1.0 );
-
-		cairo_destroy( cr );
 	}
 
 	return( TRUE );
@@ -2640,8 +2631,8 @@ img_add_empty_slide( GtkMenuItem       *item,
 									GDK_BUTTON_RELEASE_MASK );
 	gtk_box_pack_start( GTK_BOX( hbox ), preview, TRUE, TRUE, 5 );
 
-	g_signal_connect( G_OBJECT( preview ), "expose-event",
-					  G_CALLBACK( img_gradient_expose ), &slide );
+	g_signal_connect( G_OBJECT( preview ), "draw",
+					  G_CALLBACK( img_gradient_draw ), &slide );
 	g_signal_connect( G_OBJECT( preview ), "button-press-event",
 					  G_CALLBACK( img_gradient_press ), &slide );
 	g_signal_connect( G_OBJECT( preview ), "button-release-event",
@@ -2860,17 +2851,12 @@ img_gradient_color_set( GtkColorButton *button,
 }
 
 static gboolean
-img_gradient_expose( GtkWidget      * UNUSED(widget),
-					 GdkEventExpose *expose,
+img_gradient_draw( GtkWidget      * UNUSED(widget),
+					 cairo_t *cr,
 					 ImgEmptySlide  *slide )
 {
-	cairo_t         *cr;
 	cairo_pattern_t *pattern;
-	gint             w, h;
 	gdouble          radius, diffx, diffy;
-
-	gdk_window_get_geometry( expose->window, NULL, NULL, &w, &h, NULL );
-	cr = gdk_cairo_create( expose->window );
 
 	switch( slide->gradient )
 	{
@@ -2960,7 +2946,6 @@ img_gradient_expose( GtkWidget      * UNUSED(widget),
 			slide->source = g_timeout_add( 2000 * 0.01, (GSourceFunc)img_fade_gradient_decrease_alpha, slide );
 		break;
 	}
-	cairo_destroy( cr );
 
 	return( TRUE );
 }
@@ -3033,7 +3018,7 @@ img_gradient_move( GtkWidget      * UNUSED(widget),
 	if( ! slide->drag )
 		return( FALSE );
 
-	gdk_window_get_geometry( motion->window, NULL, NULL, &w, &h, NULL);
+	gdk_window_get_geometry( motion->window, NULL, NULL, &w, &h);
 	switch( slide->gradient )
 	{
 		case 1:

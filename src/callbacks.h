@@ -67,7 +67,7 @@ void img_exit_fullscreen(img_window_struct *img);
 gboolean img_quit_application(GtkWidget *, GdkEvent *, img_window_struct *);
 void img_move_audio_up( GtkButton *, img_window_struct * );
 void img_move_audio_down( GtkButton *, img_window_struct * );
-gboolean img_on_expose_event(GtkWidget *,GdkEventExpose *,img_window_struct *);
+gboolean img_on_draw_event(GtkWidget *,cairo_t *,img_window_struct *);
 void img_ken_burns_zoom_changed( GtkRange *, img_window_struct * );
 gboolean img_image_area_button_press( GtkWidget *, GdkEventButton *, img_window_struct * );
 gboolean img_image_area_button_release( GtkWidget *, GdkEventButton *, img_window_struct * );

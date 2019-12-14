@@ -26,7 +26,7 @@ AC_DISABLE_STATIC
 AM_PROG_LIBTOOL
 LIBTOOL="$LIBTOOL --silent"
 
-pkg_modules="gtk+-2.0 >= 2.14.0 gthread-2.0"
+pkg_modules="gtk+-3.0"
 PKG_CHECK_MODULES(PACKAGE, [$pkg_modules])
 
 sox_modules="sox >= 14.2.0"
@@ -75,7 +75,7 @@ dnl Add the languages which your application supports here.
 ALL_LINGUAS="`sed -e '/^#/d' $srcdir/po/LINGUAS`"
 AM_GLIB_GNU_GETTEXT
 
-GTK_VERSION=`$PKG_CONFIG --modversion gtk+-2.0`
+GTK_VERSION=`$PKG_CONFIG --modversion gtk+-3.0`
 SOX_VERSION=`$PKG_CONFIG --modversion sox`
 
 AC_OUTPUT([

@@ -38,17 +38,16 @@ img_cell_renderer_anim_get_property( GObject    *object,
 
 static void
 img_cell_renderer_anim_render( GtkCellRenderer      *cell,
-							   GdkDrawable          *window,
+							   cairo_t              *cr,
 							   GtkWidget            *widget,
-							   GdkRectangle         *background_a,
-							   GdkRectangle         *cell_a,
-							   GdkRectangle         *expose_a,
+							   const GdkRectangle         *background_a,
+							   const GdkRectangle         *cell_a,
 							   GtkCellRendererState  state );
 
 static void
 img_cell_renderer_anim_get_size( GtkCellRenderer *cell,
 								 GtkWidget       *widget,
-								 GdkRectangle    *cell_area,
+								 const GdkRectangle    *cell_area,
 								 gint            *x_off,
 								 gint            *y_off,
 								 gint            *width,
@@ -61,9 +60,10 @@ img_cell_renderer_anim_finalize( GObject *object );
 /* ****************************************************************************
  * Initialization
  * ************************************************************************* */
-G_DEFINE_TYPE( ImgCellRendererAnim,
+G_DEFINE_TYPE_WITH_CODE( ImgCellRendererAnim,
 			   img_cell_renderer_anim,
-			   GTK_TYPE_CELL_RENDERER );
+			   GTK_TYPE_CELL_RENDERER,
+			   G_ADD_PRIVATE (ImgCellRendererAnim));
 
 static void
 img_cell_renderer_anim_class_init( ImgCellRendererAnimClass *klass )
@@ -85,9 +85,6 @@ img_cell_renderer_anim_class_init( ImgCellRendererAnimClass *klass )
 								GDK_TYPE_PIXBUF_ANIMATION,
 								IMG_PARAM_READWRITE );
 	g_object_class_install_property (gobject_class, P_ANIMATION, spec);
-
-	g_type_class_add_private( gobject_class,
-							  sizeof( ImgCellRendererAnimPrivate ) );
 }
 
 static void
@@ -95,7 +92,7 @@ img_cell_renderer_anim_init( ImgCellRendererAnim *cell )
 {
 	ImgCellRendererAnimPrivate *priv;
 
-	priv = IMG_CELL_RENDERER_ANIM_GET_PRIVATE( cell );
+	priv = img_cell_renderer_anim_get_instance_private( cell );
 	priv->anim = NULL;
 }
 
@@ -136,7 +133,7 @@ img_cell_renderer_anim_set_property( GObject      *object,
 	ImgCellRendererAnimPrivate *priv;
 
 	g_return_if_fail( IMG_IS_CELL_RENDERER_ANIM( object ) );
-	priv = IMG_CELL_RENDERER_ANIM_GET_PRIVATE( object );
+	priv = img_cell_renderer_anim_get_instance_private( IMG_CELL_RENDERER_ANIM (object) );
 
 	switch( prop_id )
 	{
@@ -163,7 +160,7 @@ img_cell_renderer_anim_get_property( GObject    *object,
 	ImgCellRendererAnimPrivate *priv;
 
 	g_return_if_fail( IMG_IS_CELL_RENDERER_ANIM( object ) );
-	priv = IMG_CELL_RENDERER_ANIM_GET_PRIVATE( object );
+	priv = img_cell_renderer_anim_get_instance_private( IMG_CELL_RENDERER_ANIM (object) );
 
 	switch( prop_id )
 	{
@@ -179,22 +176,25 @@ img_cell_renderer_anim_get_property( GObject    *object,
 
 static void
 img_cell_renderer_anim_render( GtkCellRenderer      *cell,
-							   GdkDrawable          *window,
+							   cairo_t            *cr,
 							   GtkWidget            *widget,
-							   GdkRectangle         * UNUSED(background_a),
-							   GdkRectangle         *cell_a,
-							   GdkRectangle         *expose_a,
+							   const GdkRectangle         * UNUSED(background_a),
+							   const GdkRectangle         *cell_a,
 							   GtkCellRendererState UNUSED(state) )
 {
 	ImgCellRendererAnimPrivate *priv;
 	GdkPixbufAnimationIter     *iter;
 	GdkPixbuf                  *pixbuf;
-	cairo_t                    *cr;
 	GdkRectangle                rect,
 								draw_rect;
 	gint xpad, ypad;
 
-	priv = IMG_CELL_RENDERER_ANIM_GET_PRIVATE ( cell );
+	g_return_if_fail( IMG_IS_CELL_RENDERER_ANIM( cell ) );
+	priv = img_cell_renderer_anim_get_instance_private ( IMG_CELL_RENDERER_ANIM(cell) );
+	
+	if (!priv->anim) {
+		return;
+	}
 
 	/* Get image size */
 	img_cell_renderer_anim_get_size( cell, widget, cell_a, &rect.x,
@@ -205,13 +205,12 @@ img_cell_renderer_anim_render( GtkCellRenderer      *cell,
 	rect.width  -= 2 * xpad;
 	rect.height -= 2 * ypad;
 
-	/* Check for overlaping */
+	/* FIXME
+	// Check for overlaping
 	if( ! gdk_rectangle_intersect( cell_a, &rect, &draw_rect ) ||
 		! gdk_rectangle_intersect( expose_a, &draw_rect, &draw_rect ) )
 		return;
-
-	/* Draw indicators */
-	cr = gdk_cairo_create( window );
+	*/
 
 	/* Draw the current frame of the GdkPixbufAnimation */
 	iter = g_object_get_data( G_OBJECT( priv->anim ), "iter" );
@@ -234,13 +233,13 @@ img_cell_renderer_anim_render( GtkCellRenderer      *cell,
 	gdk_cairo_rectangle( cr, &draw_rect );
 	cairo_fill( cr );
 
-	cairo_destroy( cr );
+	//cairo_destroy( cr );
 }
 
 static void
 img_cell_renderer_anim_get_size( GtkCellRenderer *cell,
 								 GtkWidget       *widget,
-								 GdkRectangle    *cell_area,
+								 const GdkRectangle    *cell_area,
 								 gint            *x_off,
 								 gint            *y_off,
 								 gint            *width,
@@ -253,7 +252,8 @@ img_cell_renderer_anim_get_size( GtkCellRenderer *cell,
 	gint     xpad, ypad, w = 0, h = 0;
 	gfloat     xalign, yalign;
 
-	priv = IMG_CELL_RENDERER_ANIM_GET_PRIVATE( cell );
+	g_return_if_fail(IMG_IS_CELL_RENDERER_ANIM(cell));
+	priv = img_cell_renderer_anim_get_instance_private( IMG_CELL_RENDERER_ANIM (cell) );
 
 	/* Get image size */
 	if( priv->anim )
@@ -311,7 +311,8 @@ img_cell_renderer_anim_finalize( GObject *object )
 {
 	ImgCellRendererAnimPrivate *priv;
 
-	priv = IMG_CELL_RENDERER_ANIM_GET_PRIVATE( object );
+	g_return_if_fail(IMG_IS_CELL_RENDERER_ANIM(object));
+	priv = img_cell_renderer_anim_get_instance_private( IMG_CELL_RENDERER_ANIM (object) );
 
 	if( priv->anim )
 		g_object_unref( priv->anim );
