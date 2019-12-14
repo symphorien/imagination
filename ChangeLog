@@ -2,7 +2,6 @@ Imagination changelog
 
 xx/xx/19 - 3.5		- Added ability to flip the slide horizontally.
 			- Subtitle can now have multiple styles.
-			- Removed ability to rotate slides (who uses it?)
 			- Finally got rid of those annoying black borders around image.
 			- Fixed seg-fault when quitting.
 

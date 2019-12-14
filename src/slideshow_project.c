@@ -95,9 +95,10 @@ img_save_slideshow( img_window_struct *img,
 		}
         if (filename)
 		{
-			/* Save original filename */
+			/* Save original filename and rotation */
 			g_key_file_set_string( img_key_file, conf,
 								   "filename", filename);
+			g_key_file_set_integer( img_key_file, conf, "angle", entry->angle );
 		}
 		else
 		{
@@ -246,7 +247,7 @@ img_load_slideshow( img_window_struct *img,
 	GKeyFile *img_key_file;
 	gchar *dummy, *slide_filename, *time;
 	GtkWidget *dialog;
-	gint number,i,transition_id, no_points, previous_nr_of_slides, border_width;
+	gint number,i, n_invalid, transition_id, no_points, previous_nr_of_slides, border_width;
 	guint speed;
 	GtkTreeModel *model;
 	void (*render);
@@ -400,7 +401,9 @@ img_load_slideshow( img_window_struct *img,
     gboolean      load_ok, flipped, img_load_ok, top_border, bottom_border;
 	gchar *original_filename = NULL;
 	
-	/* Load last slide setting (bye bye transition) */
+	ImgAngle   angle = 0;
+	
+		/* Load last slide setting (bye bye transition) */
 		img->bye_bye_transition = g_key_file_get_boolean( img_key_file, "slideshow settings",
 										 "blank slide", NULL);
 		
@@ -420,6 +423,7 @@ img_load_slideshow( img_window_struct *img,
 		img->slides_nr = number;
 
 		gtk_widget_show( img->progress_bar );
+		n_invalid = 0;
 		for( i = 1; i <= number; i++ )
 		{
 			conf = g_strdup_printf("slide %d", i);
@@ -432,6 +436,8 @@ img_load_slideshow( img_window_struct *img,
 				else
 					original_filename = g_strdup (slide_filename);
 
+				angle = (ImgAngle)g_key_file_get_integer( img_key_file, conf,
+														  "angle", NULL );
 				load_ok = img_scale_image( original_filename, img->video_ratio,
 										   88, 0,
 										   img->background_color, &thumb, NULL );
@@ -444,6 +450,7 @@ img_load_slideshow( img_window_struct *img,
 			}
 			else
 			{
+				angle = 0;
 				/* We are loading an empty slide */
 				gradient = g_key_file_get_integer(img_key_file, conf, "gradient", NULL);
 				c_start = g_key_file_get_double_list(img_key_file, conf, "start_color", NULL, NULL);
@@ -510,13 +517,21 @@ img_load_slideshow( img_window_struct *img,
                     slide_info->original_filename = original_filename;
 
 					
+		    // FIXME
 					/* If image has been flipped, flip it now too. */
 					if( flipped )
 					{
 						slide_info->flipped = flipped;
 						img_flip_slide(slide_info);
-						img_scale_image( slide_info->f_filename, img->video_ratio,
+						img_scale_image( slide_info->p_filename, img->video_ratio,
 										 88, 0, img->background_color, &thumb, NULL );
+					} else /* If image has been rotated, rotate it now too. */ if( angle )
+					{
+						img_rotate_slide( slide_info, angle, NULL );
+						g_object_unref( thumb );
+						img_scale_image( slide_info->p_filename, img->video_ratio,
+										 88, 0,
+										 img->background_color, &thumb, NULL );
 					}
 
 					gtk_list_store_append( img->thumbnail_model, &iter );
@@ -586,8 +601,8 @@ img_load_slideshow( img_window_struct *img,
 			}
 			else
             {
-				img->slides_nr--;
-                img_message(img, TRUE, _("Can't load image %s\n"), slide_filename);
+	      n_invalid++;
+	      img_message(img, TRUE, _("Can't load image %s\n"), slide_filename);
             }
 
 			img_increase_progressbar(img, i);
@@ -595,7 +610,7 @@ img_load_slideshow( img_window_struct *img,
 			g_free(conf);
 		}
 	
-	img->slides_nr += previous_nr_of_slides;
+	img->slides_nr += previous_nr_of_slides - n_invalid;
 	gtk_widget_hide(img->progress_bar);
 
 	gtk_icon_view_set_model( GTK_ICON_VIEW( img->thumbnail_iconview ),

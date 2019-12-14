@@ -392,7 +392,7 @@ img_start_export( img_window_struct *img )
 	}
 	else
 	{
-		img_scale_image( entry->o_filename, img->video_ratio,
+		img_scale_image( entry->p_filename, img->video_ratio,
 						 0, 0,
 						 img->background_color, NULL, &img->image2 );
 	}
@@ -655,8 +655,7 @@ img_prepare_pixbufs( img_window_struct *img)
 								img->video_size[0],
 								img->video_size[1], NULL, &img->image2 );
 		}
-		else
-			img_scale_image( img->current_slide->o_filename, img->video_ratio,
+		img_scale_image( img->current_slide->p_filename, img->video_ratio,
 							 0, img->video_size[1],
 							 img->background_color, NULL, &img->image2 );
 
@@ -1325,8 +1324,9 @@ void img_exporter (GtkWidget *button, img_window_struct *img )
     if (NULL != video_format_list[img->video_format_index].bitratelist)
         bitrate_cmd = g_strdup_printf("-b:v %s",
                     video_format_list[img->video_format_index].bitratelist[img->bitrate_index].value);
-    else
+    else {
         bitrate_cmd = g_strdup("");
+    }
 
 
 	cmd_line = g_strdup_printf("%s -f image2pipe -vcodec ppm "
