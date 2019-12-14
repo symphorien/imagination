@@ -56,9 +56,18 @@ static void
 img_export_pause_unpause( GtkToggleButton   *button,
 						  img_window_struct *img );
 
-static void
+static gboolean
 img_export_frame_to_ppm( cairo_surface_t *surface,
 						 gint             file_desc );
+
+#define img_fail_export(img, msg, ...) { \
+    gchar *string; \
+    string = g_strdup_printf( _("Failed while exporting slide %d :" msg), img->export_slide + 1, __VA_ARGS__); \
+    img_message(img, TRUE, string); \
+    gtk_label_set_label( GTK_LABEL( img->export_label ), string ); \
+    g_free( string ); \
+    img_stop_export(img); \
+}
 
 /*
  * img_create_export_dialog:
@@ -673,13 +682,9 @@ img_prepare_pixbufs( img_window_struct *img)
 							 img->background_color, NULL, &img->image2 );
 
 		if (!success) {
-		    gchar *string;
 
 		    img->image2 = NULL;
-		    string = g_strdup_printf( _("Failed to load %s for slide %d of export"), img->current_slide->p_filename, img->export_slide + 1);
-		    img_message(img, TRUE, string);
-		    gtk_label_set_label( GTK_LABEL( img->export_label ), string );
-		    g_free( string );
+		    img_fail_export(img, "while loading file %s", img->current_slide->p_filename);
 		    return (FALSE);
 		}
 		/* Get first stop point */
@@ -1078,8 +1083,12 @@ img_render_transition_frame( img_window_struct *img )
 	cairo_restore( cr );
 	
 	/* Export frame */
-	if (img->export_is_running)
-		img_export_frame_to_ppm( img->exported_image, img->file_desc );
+	if (img->export_is_running) {
+		gboolean ok = img_export_frame_to_ppm( img->exported_image, img->file_desc );
+		if (!ok) {
+		    img_fail_export(img, "Error while exporting frame to ppm: errno=%d", errno);
+		}
+	}
 
 	cairo_destroy( cr );
 }
@@ -1189,8 +1198,13 @@ img_render_still_frame( img_window_struct *img,
 	}
 
 	/* Export frame */
-	if (img->export_is_running)
-		img_export_frame_to_ppm( img->exported_image, img->file_desc );
+	if (img->export_is_running) {
+		gboolean ok = img_export_frame_to_ppm( img->exported_image, img->file_desc );
+		if (!ok) {
+		    img_fail_export(img, "Error while exporting frame to ppm: errno=%d", errno);
+		}
+	}
+
 
 	/* Destroy drawing context */
 	cairo_destroy( cr );
@@ -1214,7 +1228,7 @@ gboolean safe_write(gint file_desc, const gchar* buffer, gsize len) {
 }
 
 
-static void
+static gboolean
 img_export_frame_to_ppm( cairo_surface_t *surface,
 						 gint             file_desc )
 {
@@ -1243,7 +1257,7 @@ img_export_frame_to_ppm( cairo_surface_t *surface,
 	g_free( header );
 	if (!ok) {
 	    g_message("Could not write full ppm header: %s", strerror(errno));
-	    return;
+	    return FALSE;
 	}
 
 	/* PRINCIPLES BEHING EXPORT LOOP
@@ -1296,8 +1310,10 @@ img_export_frame_to_ppm( cairo_surface_t *surface,
 	ok = safe_write( file_desc, (gchar *)buffer, buf_size );
 	if (!ok) {
 	    g_message("Could not write full ppm image: %s", strerror(errno));
+	    return FALSE;
 	}
 	g_slice_free1( buf_size, buffer );
+	return TRUE;
 }
 
 /* ****************************************************************************
