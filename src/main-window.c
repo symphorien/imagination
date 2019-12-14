@@ -710,7 +710,7 @@ img_window_struct *img_create_window (void)
 	vbox_frames = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
 	scrollable_window = gtk_scrolled_window_new(NULL, NULL);
 	g_object_set (G_OBJECT (scrollable_window),"hscrollbar-policy",GTK_POLICY_AUTOMATIC,"vscrollbar-policy",GTK_POLICY_AUTOMATIC,NULL);
-	gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scrollable_window), vbox_frames);
+	gtk_container_add (GTK_CONTAINER (scrollable_window), vbox_frames);
 	
 	video_tab = gtk_label_new (_("Video"));
 	img_struct->notebook = gtk_notebook_new();
