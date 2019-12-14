@@ -261,6 +261,7 @@ void img_add_slides(GSList *slides, img_window_struct *img)
 	    if (!thumb) {
 		img_message(img, TRUE, _("Cannot open new slide %s: %s"), filename, error->message);
 		g_error_free (error);
+		error = NULL;
 		img->slides_nr--;
 		goto next_slide;
 	    }
@@ -277,9 +278,8 @@ void img_add_slides(GSList *slides, img_window_struct *img)
 			img->distort_images, img->background_color,
 			&thumb, NULL );
 	    if (!thumb) {
-		img_message(img, TRUE, _("Cannot open the thumbnail %s of the new slide %s: %s"),
-			slide_info->p_filename, slide_info->o_filename, error->message);
-		g_error_free (error);
+		img_message(img, TRUE, _("Cannot open the thumbnail %s of the new slide %s"),
+			slide_info->p_filename, slide_info->o_filename);
 		img->slides_nr--;
 		goto next_slide;
 	    }
