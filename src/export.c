@@ -97,7 +97,7 @@ img_create_export_dialog( img_window_struct  *img,
 {
 	GtkWidget    *dialog;
 	GtkWidget    *vbox, *vbox1, *hbox_slideshow_name;
-	GtkWidget    *vbox_frame1, *main_frame, *alignment_main_frame;
+	GtkWidget    *vbox_frame1, *main_frame;
 	GtkWidget    *label, *label1;
 	GtkWidget    *slideshow_title_entry;
 	GtkTreeModel *model;
@@ -152,12 +152,13 @@ img_create_export_dialog( img_window_struct  *img,
 	gtk_frame_set_label_widget (GTK_FRAME (main_frame), label1);
 	gtk_label_set_use_markup (GTK_LABEL (label1), TRUE);
 
-	alignment_main_frame = gtk_alignment_new (0.5, 0.5, 1, 1);
-	gtk_container_add (GTK_CONTAINER (main_frame), alignment_main_frame);
-	gtk_alignment_set_padding (GTK_ALIGNMENT (alignment_main_frame), 5, 15, 10, 10);
-
 	vbox_frame1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-	gtk_container_add( GTK_CONTAINER( alignment_main_frame ), vbox_frame1 );
+	gtk_container_add(GTK_CONTAINER(main_frame), vbox_frame1);
+	gtk_widget_set_halign(GTK_WIDGET(vbox_frame1), GTK_ALIGN_FILL);
+	gtk_widget_set_margin_top(GTK_WIDGET(vbox_frame1), 5);
+	gtk_widget_set_margin_bottom(GTK_WIDGET(vbox_frame1), 15);
+	gtk_widget_set_margin_start(GTK_WIDGET(vbox_frame1), 10);
+	gtk_widget_set_margin_end(GTK_WIDGET(vbox_frame1), 10);
 
 	hbox_slideshow_name = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_set_homogeneous(hbox_slideshow_name, TRUE);

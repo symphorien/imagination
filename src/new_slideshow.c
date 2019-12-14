@@ -43,13 +43,11 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 	GtkWidget *dialog_vbox1;
 	GtkWidget *vbox1;
 	GtkWidget *main_frame;
-	GtkWidget *alignment_main_frame;
 	GtkWidget *vbox_frame1;
 	GtkWidget *ex_vbox;
 	GtkWidget *ex_hbox;
 	GtkWidget *frame3;
 	GtkWidget *label_frame3;
-	GtkWidget *alignment_frame3;
 	GtkWidget *distort_button;
 	GtkWidget *bg_button;
 	GtkWidget *bg_label;
@@ -85,12 +83,13 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 	gtk_frame_set_label_widget (GTK_FRAME (main_frame), label);
 	gtk_label_set_use_markup (GTK_LABEL (label), TRUE);
 
-	alignment_main_frame = gtk_alignment_new (0.5, 0.5, 1, 1);
-	gtk_container_add (GTK_CONTAINER (main_frame), alignment_main_frame);
-	gtk_alignment_set_padding (GTK_ALIGNMENT (alignment_main_frame), 5, 15, 10, 10);
-
     vbox_frame1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    gtk_container_add( GTK_CONTAINER( alignment_main_frame ), vbox_frame1 );
+    gtk_container_add(GTK_CONTAINER(main_frame), vbox_frame1);
+    gtk_widget_set_halign(GTK_WIDGET(vbox_frame1), GTK_ALIGN_FILL);
+    gtk_widget_set_margin_top(GTK_WIDGET(vbox_frame1), 5);
+    gtk_widget_set_margin_bottom(GTK_WIDGET(vbox_frame1), 15);
+    gtk_widget_set_margin_start(GTK_WIDGET(vbox_frame1), 10);
+    gtk_widget_set_margin_end(GTK_WIDGET(vbox_frame1), 10);
 
     table = gtk_table_new(5, 2, FALSE);
     gtk_box_pack_start(GTK_BOX (vbox_frame1), table, TRUE, TRUE, 10);
@@ -167,16 +166,17 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 	gtk_box_pack_start (GTK_BOX (vbox_frame1), frame3, TRUE, TRUE, 0);
 	gtk_frame_set_shadow_type (GTK_FRAME (frame3), GTK_SHADOW_IN);
 
-	alignment_frame3 = gtk_alignment_new (0.5, 0.5, 1, 1);
-	gtk_container_add (GTK_CONTAINER (frame3), alignment_frame3);
-	gtk_alignment_set_padding (GTK_ALIGNMENT (alignment_frame3), 5, 5, 5, 5);
-
 	label_frame3 = gtk_label_new (_("<b>Advanced Settings</b>"));
 	gtk_frame_set_label_widget (GTK_FRAME (frame3), label_frame3);
 	gtk_label_set_use_markup (GTK_LABEL (label_frame3), TRUE);
 
 	ex_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	gtk_container_add( GTK_CONTAINER( alignment_frame3 ), ex_vbox );
+	gtk_container_add(GTK_CONTAINER(frame3), ex_vbox);
+	gtk_widget_set_halign(GTK_WIDGET(ex_vbox), GTK_ALIGN_FILL);
+	gtk_widget_set_margin_top(GTK_WIDGET(ex_vbox), 5);
+	gtk_widget_set_margin_bottom(GTK_WIDGET(ex_vbox), 5);
+	gtk_widget_set_margin_start(GTK_WIDGET(ex_vbox), 5);
+	gtk_widget_set_margin_end(GTK_WIDGET(ex_vbox), 5);
 
 	distort_button = gtk_check_button_new_with_label( _("Rescale images to fit desired aspect ratio") );
 	gtk_box_pack_start( GTK_BOX( ex_vbox ), distort_button, FALSE, FALSE, 0 );

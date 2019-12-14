@@ -123,7 +123,7 @@ img_window_struct *img_create_window (void)
 	GtkWidget *swindow, *scrollable_window;
 	GtkWidget *viewport;
 	GtkWidget *align;
-	GtkWidget *vbox_frames, *vbox_audio_frames, *frame1_alignment, *frame2_alignment, *frame3_alignment,*frame4_alignment;
+	GtkWidget *vbox_frames, *vbox_audio_frames;
 	GtkWidget *frame1, *frame2, *frame3, *frame4, *frame_label;
 	GtkWidget *transition_label;
 	GtkWidget *vbox_info_slide, *vbox_slide_motion, *vbox_slide_caption, *vbox_slide_position;
@@ -726,17 +726,18 @@ img_window_struct *img_create_window (void)
 	gtk_box_pack_start (GTK_BOX (vbox_frames), frame1, FALSE, FALSE, 0);
 	gtk_frame_set_shadow_type (GTK_FRAME (frame1), GTK_SHADOW_OUT);
 
-	frame1_alignment = gtk_alignment_new (0.5, 0.5, 1, 1);
-	gtk_container_add (GTK_CONTAINER (frame1), frame1_alignment);
-	gtk_alignment_set_padding (GTK_ALIGNMENT (frame1_alignment), 2, 2, 5, 5);
-
 	frame_label = gtk_label_new (_("<b>Slide Settings</b>"));
 	gtk_frame_set_label_widget (GTK_FRAME (frame1), frame_label);
 	gtk_label_set_use_markup (GTK_LABEL (frame_label), TRUE);
 	gtk_misc_set_padding (GTK_MISC (frame_label), 2, 2);
 
 	vbox_info_slide = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
-	gtk_container_add (GTK_CONTAINER (frame1_alignment), vbox_info_slide);
+	gtk_container_add(GTK_CONTAINER(frame1), vbox_info_slide);
+	gtk_widget_set_halign(GTK_WIDGET(vbox_info_slide), GTK_ALIGN_FILL);
+	gtk_widget_set_margin_top(GTK_WIDGET(vbox_info_slide), 2);
+	gtk_widget_set_margin_bottom(GTK_WIDGET(vbox_info_slide), 2);
+	gtk_widget_set_margin_start(GTK_WIDGET(vbox_info_slide), 5);
+	gtk_widget_set_margin_end(GTK_WIDGET(vbox_info_slide), 5);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox_info_slide), 2);
 
 	/* Transition types label */
@@ -821,17 +822,18 @@ img_window_struct *img_create_window (void)
 	gtk_box_pack_start (GTK_BOX (vbox_frames), frame2, FALSE, FALSE, 0);
 	gtk_frame_set_shadow_type (GTK_FRAME (frame2), GTK_SHADOW_OUT);
 
-	frame2_alignment = gtk_alignment_new (0.5, 0.5, 1, 1);
-	gtk_container_add (GTK_CONTAINER (frame2), frame2_alignment);
-	gtk_alignment_set_padding (GTK_ALIGNMENT (frame2_alignment), 2, 2, 5, 5);
-
 	frame_label = gtk_label_new (_("<b>Slide Motion</b>"));
 	gtk_frame_set_label_widget (GTK_FRAME (frame2), frame_label);
 	gtk_label_set_use_markup (GTK_LABEL (frame_label), TRUE);
 	gtk_misc_set_padding (GTK_MISC (frame_label), 2, 2);
 
 	vbox_slide_motion = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
-	gtk_container_add (GTK_CONTAINER (frame2_alignment), vbox_slide_motion);
+	gtk_container_add(GTK_CONTAINER(frame2), vbox_slide_motion);
+	gtk_widget_set_halign(GTK_WIDGET(vbox_slide_motion), GTK_ALIGN_FILL);
+	gtk_widget_set_margin_top(GTK_WIDGET(vbox_slide_motion), 2);
+	gtk_widget_set_margin_bottom(GTK_WIDGET(vbox_slide_motion), 2);
+	gtk_widget_set_margin_start(GTK_WIDGET(vbox_slide_motion), 5);
+	gtk_widget_set_margin_end(GTK_WIDGET(vbox_slide_motion), 5);
 
 	hbox_stop_points = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 	gtk_box_pack_start (GTK_BOX (vbox_slide_motion), hbox_stop_points, TRUE, FALSE, 0);
@@ -922,17 +924,18 @@ img_window_struct *img_create_window (void)
 	gtk_box_pack_start (GTK_BOX (vbox_frames), frame4, FALSE, FALSE, 0);
 	gtk_frame_set_shadow_type (GTK_FRAME (frame4), GTK_SHADOW_OUT);
 
-	frame4_alignment = gtk_alignment_new (0.5, 0.5, 1, 1);
-	gtk_container_add (GTK_CONTAINER (frame4), frame4_alignment);
-	gtk_alignment_set_padding (GTK_ALIGNMENT (frame4_alignment), 5, 5, 5, 5);
-
 	frame_label = gtk_label_new (_("<b>Slide Text</b>"));
 	gtk_frame_set_label_widget (GTK_FRAME (frame4), frame_label);
 	gtk_label_set_use_markup (GTK_LABEL (frame_label), TRUE);
 	gtk_misc_set_padding (GTK_MISC (frame_label), 2, 2);
 
 	vbox_slide_caption = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
-	gtk_container_add (GTK_CONTAINER (frame4_alignment), vbox_slide_caption);
+	gtk_container_add(GTK_CONTAINER(frame4), vbox_slide_caption);
+	gtk_widget_set_halign(GTK_WIDGET(vbox_slide_caption), GTK_ALIGN_FILL);
+	gtk_widget_set_margin_top(GTK_WIDGET(vbox_slide_caption), 5);
+	gtk_widget_set_margin_bottom(GTK_WIDGET(vbox_slide_caption), 5);
+	gtk_widget_set_margin_start(GTK_WIDGET(vbox_slide_caption), 5);
+	gtk_widget_set_margin_end(GTK_WIDGET(vbox_slide_caption), 5);
 
 	a_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 	gtk_box_pack_start (GTK_BOX (vbox_slide_caption), a_hbox, FALSE, FALSE, 0);
@@ -1110,12 +1113,13 @@ img_window_struct *img_create_window (void)
 	gtk_box_pack_start (GTK_BOX (vbox_frames), frame4, FALSE, FALSE, 0);
 	gtk_frame_set_shadow_type (GTK_FRAME (frame4), GTK_SHADOW_OUT);
 
-	frame4_alignment = gtk_alignment_new (0.5, 0.5, 1, 1);
-	gtk_container_add (GTK_CONTAINER (frame4), frame4_alignment);
-	gtk_alignment_set_padding (GTK_ALIGNMENT (frame4_alignment), 5, 5, 5, 5);
-
 	vbox_slide_position = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
-	gtk_container_add (GTK_CONTAINER (frame4_alignment), vbox_slide_position);
+	gtk_container_add (GTK_CONTAINER (frame4), vbox_slide_position);
+	gtk_widget_set_halign(GTK_WIDGET(vbox_slide_position), GTK_ALIGN_FILL);
+	gtk_widget_set_margin_top(GTK_WIDGET(vbox_slide_position), 5);
+	gtk_widget_set_margin_bottom(GTK_WIDGET(vbox_slide_position), 5);
+	gtk_widget_set_margin_start(GTK_WIDGET(vbox_slide_position), 5);
+	gtk_widget_set_margin_end(GTK_WIDGET(vbox_slide_position), 5);
 
 	frame_label = gtk_label_new (_("<b>Slide Text Position</b>"));
 	gtk_frame_set_label_widget (GTK_FRAME (frame4), frame_label);
@@ -1199,10 +1203,6 @@ img_window_struct *img_create_window (void)
 	gtk_box_pack_start (GTK_BOX (vbox_audio_frames), frame3, TRUE, TRUE, 0);
 	gtk_frame_set_shadow_type (GTK_FRAME (frame3), GTK_SHADOW_OUT);
 
-	frame3_alignment = gtk_alignment_new (0.5, 0.5, 1, 1);
-	gtk_container_add (GTK_CONTAINER (frame3), frame3_alignment);
-	gtk_alignment_set_padding (GTK_ALIGNMENT (frame3_alignment), 2, 2, 5, 5);
-
 	frame_label = gtk_label_new (_("<b>Background Music</b>"));
 	gtk_frame_set_label_widget (GTK_FRAME (frame3), frame_label);
 	gtk_label_set_use_markup (GTK_LABEL (frame_label), TRUE);
@@ -1210,7 +1210,12 @@ img_window_struct *img_create_window (void)
 
 	/* Add the liststore */
 	vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	gtk_container_add (GTK_CONTAINER (frame3_alignment), vbox2);
+	gtk_container_add(GTK_CONTAINER(frame3), vbox2);
+	gtk_widget_set_halign(GTK_WIDGET(vbox2), GTK_ALIGN_FILL);
+	gtk_widget_set_margin_top(GTK_WIDGET(vbox2), 2);
+	gtk_widget_set_margin_bottom(GTK_WIDGET(vbox2), 2);
+	gtk_widget_set_margin_start(GTK_WIDGET(vbox2), 5);
+	gtk_widget_set_margin_end(GTK_WIDGET(vbox2), 5);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox2), 0);
 	
 	scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
