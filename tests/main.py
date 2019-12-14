@@ -117,16 +117,22 @@ def ocr(image: Path) -> str:
     Assumes that there is only one line of text.
     """
     out = temp / str(hash(image))
-    intermediate = temp / (str(hash(image))+".jpg")
+    intermediate = temp / (str(hash(image)) + ".jpg")
     subprocess.run(["convert", str(image), "-fuzz", "1%", "-trim", str(intermediate)])
     subprocess.run(["tesseract", "-psm", "7", str(intermediate), str(out)])
     with open(f"{out}.txt", "r") as f:
-        return f.read().strip()
+        txt = f.read().strip()
+        print(f"ocr={txt}")
+        return txt
+
 
 def n_slides() -> int:
     """ Returns the current number of slides """
     label = imagination.child(description="Total number of slides")
-    return int(label.name)
+    n = int(label.name)
+    print("n_slides =", n)
+    return n
+
 
 def export() -> Path:
     """ Export the slideshow to a file whose path is returned """
@@ -143,6 +149,23 @@ def export() -> Path:
     return out
 
 
+def choose_slide(i: int):
+    """ Choose slide index """
+    entry = imagination.child(description="Current slide number")
+    entry.click()
+    entry.keyCombo("<Control>A")
+    type(str(i)+"\n")
+
+
+def set_transition_type(category: str, name: str):
+    """ Set the transition type of the current slide """
+    combo = imagination.child("Slide Settings").child(description="Transition type")
+    combo.click()
+    menu = combo.menu(category)
+    menu.click()
+    menu.menuItem(name).click()
+
+
 if __name__ == "__main__":
     with TemporaryDirectory() as d:
         temp = Path(d)
@@ -150,8 +173,10 @@ if __name__ == "__main__":
         os.environ["LC_ALL"] = "C"
 
         imagination = start()
-        add_slide(text2img("A"))
-        add_slide(text2img("B"))
+        add_slide(text2img("AB"))
+        add_slide(text2img("CD"))
+        choose_slide(2)
+        set_transition_type("Bar Wipe", "Left to Right")
         slideshow = temp / "result.img"
         save_as(slideshow)
         assert n_slides() == 2
@@ -161,8 +186,8 @@ if __name__ == "__main__":
         open_slideshow(slideshow)
         assert n_slides() == 2
         video = export()
-        first = ocr(frame_at(video, 0.5))
-        assert(first == "A")
-        second = ocr(frame_at(video, 1.5))
-        assert(second == "B")
+        assert ocr(frame_at(video, 0.5)) == "AB"
+        assert ocr(frame_at(video, 5.5)) == "CD"
+        # just in the middle of the transition
+        assert ocr(frame_at(video, 3)) == "CB"
         quit()

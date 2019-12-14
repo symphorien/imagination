@@ -632,6 +632,8 @@ img_window_struct *img_create_window (void)
 	gtk_container_add (GTK_CONTAINER (img_struct->toolbar), toolbutton_slide_goto);
  
 	img_struct->slide_number_entry = gtk_entry_new();
+	atk = gtk_widget_get_accessible(img_struct->slide_number_entry);
+	atk_object_set_description(atk, _("Current slide number"));
 	gtk_entry_set_max_length(GTK_ENTRY (img_struct->slide_number_entry), 4);
 	gtk_entry_set_width_chars(GTK_ENTRY (img_struct->slide_number_entry), 6);
 	gtk_container_add(GTK_CONTAINER(toolbutton_slide_goto),img_struct->slide_number_entry);
@@ -750,6 +752,8 @@ img_window_struct *img_create_window (void)
 
 	/* Transition type */
 	img_struct->transition_type = _gtk_combo_box_new_text( TRUE );
+	atk = gtk_widget_get_accessible(img_struct->transition_type);
+	atk_object_set_description(atk, _("Transition type"));
 	gtk_table_attach (GTK_TABLE (table), img_struct->transition_type, 0, 1, 0, 1,(GtkAttachOptions) (GTK_FILL),(GtkAttachOptions) (GTK_FILL), 0, 0);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(gtk_combo_box_get_model(GTK_COMBO_BOX(img_struct->transition_type))),
 										1, GTK_SORT_ASCENDING);
