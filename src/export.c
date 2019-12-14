@@ -393,7 +393,7 @@ img_start_export( img_window_struct *img )
 	else
 	{
 		img_scale_image( entry->p_filename, img->video_ratio,
-						 0, 0,
+						 0, 0, img->distort_images,
 						 img->background_color, NULL, &img->image2 );
 	}
 
@@ -656,7 +656,7 @@ img_prepare_pixbufs( img_window_struct *img)
 								img->video_size[1], NULL, &img->image2 );
 		}
 		img_scale_image( img->current_slide->p_filename, img->video_ratio,
-							 0, img->video_size[1],
+							 0, img->video_size[1], img->distort_images,
 							 img->background_color, NULL, &img->image2 );
 
 		/* Get first stop point */
