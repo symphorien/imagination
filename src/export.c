@@ -730,7 +730,10 @@ img_prepare_pixbufs( img_window_struct *img)
 	if (list)
 	{
 		gtk_icon_view_unselect_path (GTK_ICON_VIEW(img->thumbnail_iconview), (GtkTreePath*)list->data);
-		g_list_foreach (list, (GFunc)gtk_tree_path_free, NULL);
+		GList *node0;
+		for(node0 = list;node0 != NULL;node0 = node0->next) {
+			gtk_tree_path_free(node0->data);
+		}
 		g_list_free (list);
 	}
 

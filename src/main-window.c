@@ -1660,19 +1660,28 @@ static void img_slide_paste(GtkMenuItem* UNUSED(item), img_window_struct *img)
     }
 
     /* Free rowref_list */
-    g_list_foreach(rowref_list, (GFunc) gtk_tree_row_reference_free, NULL);
+    GList *node1;
+    for(node1 = rowref_list;node1 != NULL;node1 = node1->next) {
+	gtk_tree_row_reference_free(node1->data);
+    }
     g_list_free(rowref_list);
     gtk_tree_row_reference_free(position_rawref);
 
 	/* Free the GList containing the paths of the selected slides */
 	if (img->selected_paths)
 	{
-		g_list_foreach (img->selected_paths, (GFunc)gtk_tree_path_free, NULL);
+		GList *node2;
+		for(node2 = img->selected_paths;node2 != NULL;node2 = node2->next) {
+        gtk_tree_path_free(node2->data);
+		}
 		g_list_free (img->selected_paths);
 		img->selected_paths = NULL;
 	}
 	/* Free the GList containing the paths where to paste */
-	g_list_foreach (where_to_paste, (GFunc)gtk_tree_path_free, NULL);
+	GList *node3;
+	for(node3 = where_to_paste;node3 != NULL;node3 = node3->next) {
+		gtk_tree_path_free(node3->data);
+	}
 	g_list_free (where_to_paste);
 
 	/* Update display */
@@ -1809,7 +1818,10 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 	g_free(selected_slide_nr);
 
 	gtk_tree_model_get_iter(model,&iter,selected->data);
-	g_list_foreach (selected, (GFunc)gtk_tree_path_free, NULL);
+	GList *node4;
+	for(node4 = selected;node4 != NULL;node4 = node4->next) {
+		gtk_tree_path_free(node4->data);
+	}
 	g_list_free (selected);
 	gtk_tree_model_get(model,&iter,1,&info_slide,-1);
 	img->current_slide = info_slide;
@@ -1988,7 +2000,10 @@ void img_combo_box_transition_type_changed (GtkComboBox *combo, img_window_struc
 	img_taint_project(img);
 	img_report_slides_transitions( img );
 	img_set_total_slideshow_duration( img );
-	g_list_foreach( bak, (GFunc)gtk_tree_path_free, NULL );
+	GList *node5;
+	for(node5 = bak;node5 != NULL;node5 = node5->next) {
+		gtk_tree_path_free(node5->data);
+	}
 	g_list_free( bak );
 }
 
@@ -2025,7 +2040,10 @@ static void img_random_button_clicked(GtkButton * UNUSED(button), img_window_str
 		selected = selected->next;
 	}
 	img_taint_project(img);
-	g_list_foreach (bak, (GFunc)gtk_tree_path_free, NULL);
+	GList *node6;
+	for(node6 = bak;node6 != NULL;node6 = node6->next) {
+		gtk_tree_path_free(node6->data);
+	}
 	g_list_free(bak);
 
 	/* This fixes enable/disable issue */
@@ -2125,7 +2143,10 @@ static void img_combo_box_speed_changed (GtkComboBox *combo, img_window_struct *
 	}
 	img_set_total_slideshow_duration(img);
 
-	g_list_foreach (bak, (GFunc)gtk_tree_path_free, NULL);
+	GList *node7;
+	for(node7 = bak;node7 != NULL;node7 = node7->next) {
+		gtk_tree_path_free(node7->data);
+	}
 	g_list_free(bak);
 }
 
@@ -2315,7 +2336,10 @@ static gboolean img_subtitle_update( img_window_struct *img )
 				GTK_ICON_VIEW( img->active_icon ) );
 	gtk_tree_model_get_iter( GTK_TREE_MODEL( img->thumbnail_model ),
 							 &iter, list->data );
-	g_list_foreach( list, (GFunc)gtk_tree_path_free, NULL );
+	GList *node8;
+	for(node8 = list;node8 != NULL;node8 = node8->next) {
+		gtk_tree_path_free(node8->data);
+	}
 	g_list_free( list );
 	gtk_list_store_set( GTK_LIST_STORE( img->thumbnail_model ), &iter,
 						3, has_subtitle, -1 );
@@ -2688,7 +2712,10 @@ img_update_sub_properties( img_window_struct *img,
 								 desc, color, brdr_color, bg_color, border_color, top_border, bottom_border, border_width, img );
 	}
 
-	g_list_foreach( selected, (GFunc)gtk_tree_path_free, NULL );
+	GList *node9;
+	for(node9 = selected;node9 != NULL;node9 = node9->next) {
+		gtk_tree_path_free(node9->data);
+	}
 	g_list_free( selected );
 }
 

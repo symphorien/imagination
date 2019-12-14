@@ -377,7 +377,10 @@ void img_remove_audio_files (GtkWidget * UNUSED(widget), img_window_struct *img)
 		gtk_label_set_text(GTK_LABEL(img->music_time_data), time);
 		g_free(time);
 	}
-	g_list_foreach(rr_list, (GFunc) gtk_tree_row_reference_free, NULL);
+	GList *node10;
+	for(node10 = rr_list;node10 != NULL;node10 = node10->next) {
+		gtk_tree_row_reference_free(node10->data);
+	}
 	g_list_free(rr_list);
 }
 
@@ -730,7 +733,10 @@ void img_delete_selected_slides(GtkMenuItem * UNUSED(item),img_window_struct *im
 	g_signal_handlers_unblock_by_func( (gpointer)img->over_icon,
 									   (gpointer)img_iconview_selection_changed,
 									   img );
-	g_list_foreach (bak, (GFunc)gtk_tree_path_free, NULL);
+	GList *node11;
+	for(node11 = bak;node11 != NULL;node11 = node11->next) {
+		gtk_tree_path_free(node11->data);
+	}
 	g_list_free(bak);
 
 	img_set_statusbar_message(img,0);
@@ -800,7 +806,10 @@ img_rotate_selected_slides( img_window_struct *img,
 		selected = selected->next;
 	}
 	gtk_widget_hide(img->progress_bar);
-	g_list_foreach (bak, (GFunc)gtk_tree_path_free, NULL);
+	GList *node12;
+	for(node12 = bak;node12 != NULL;node12 = node12->next) {
+		gtk_tree_path_free(node12->data);
+	}
 	g_list_free(bak);
 
 	/* If no slide is selected currently, simply return */
@@ -1059,7 +1068,10 @@ void img_start_stop_preview(GtkWidget *item, img_window_struct *img)
 		if (list)
 		{
 			gtk_icon_view_unselect_path (GTK_ICON_VIEW(img->thumbnail_iconview), (GtkTreePath*)list->data);
-			g_list_foreach (list, (GFunc)gtk_tree_path_free, NULL);
+			GList *node13;
+			for(node13 = list;node13 != NULL;node13 = node13->next) {
+				gtk_tree_path_free(node13->data);
+			}
 			g_list_free (list);
 		}
 
@@ -1098,7 +1110,10 @@ void img_start_stop_preview(GtkWidget *item, img_window_struct *img)
 			/* Start preview from this slide */
 			if( path )
 				gtk_tree_model_get_iter( model, &iter, path );
-			g_list_foreach( list, (GFunc)gtk_tree_path_free, NULL );
+			GList *node14;
+			for(node14 = list;node14 != NULL;node14 = node14->next) {
+				gtk_tree_path_free(node14->data);
+			}
 			g_list_free( list );
 		}
 		else
@@ -1270,7 +1285,10 @@ void img_goto_prev_slide(GtkWidget * UNUSED(button), img_window_struct *img)
 	gtk_icon_view_scroll_to_path (GTK_ICON_VIEW (img->active_icon), path, FALSE, 0, 0);
 	gtk_tree_path_free (path);
 
-	g_list_foreach (icons_selected, (GFunc) gtk_tree_path_free, NULL);
+	GList *node15;
+	for(node15 = icons_selected;node15 != NULL;node15 = node15->next) {
+		gtk_tree_path_free(node15->data);
+	}
 	g_list_free (icons_selected);
 }
 
@@ -1302,7 +1320,10 @@ void img_goto_next_slide(GtkWidget * UNUSED(button), img_window_struct *img)
 	gtk_icon_view_scroll_to_path (GTK_ICON_VIEW (img->active_icon), path, FALSE, 0, 0);
 	gtk_tree_path_free (path);
 
-	g_list_foreach (icons_selected, (GFunc) gtk_tree_path_free, NULL);
+	GList *node16;
+	for(node16 = icons_selected;node16 != NULL;node16 = node16->next) {
+		gtk_tree_path_free(node16->data);
+	}
 	g_list_free (icons_selected);
 }
 
@@ -2469,7 +2490,10 @@ void img_clipboard_cut_copy_operation(img_window_struct *img, ImgClipboardMode m
 	/* Let's delete the GList if the user chooses Cut/Copy again instead of Paste */
 	if (img->selected_paths)
 	{
-		g_list_foreach (img->selected_paths, (GFunc)gtk_tree_path_free, NULL);
+		GList *node17;
+		for(node17 = img->selected_paths;node17 != NULL;node17 = node17->next) {
+			gtk_tree_path_free(node17->data);
+		}
 		g_list_free (img->selected_paths);
 	}
 	img->selected_paths = selected;
@@ -2770,7 +2794,10 @@ img_add_empty_slide( GtkMenuItem       *item,
 								NULL,
 								&img->current_image );
 				}
-				g_list_foreach (where_to_insert, (GFunc)gtk_tree_path_free, NULL);
+				GList *node18;
+				for(node18 = where_to_insert;node18 != NULL;node18 = node18->next) {
+					gtk_tree_path_free(node18->data);
+				}
 				g_list_free (where_to_insert);
 			}
 			else
@@ -3436,7 +3463,10 @@ void img_spinbutton_value_changed (GtkSpinButton *spinbutton, img_window_struct 
 		img_taint_project(img);
 	}
 
-	g_list_foreach (bak, (GFunc)gtk_tree_path_free, NULL);
+	GList *node19;
+	for(node19 = bak;node19 != NULL;node19 = node19->next) {
+		gtk_tree_path_free(node19->data);
+	}
 	g_list_free(bak);
 
 	/* Sync timings */
@@ -3527,7 +3557,10 @@ void img_flip_horizontally(GtkMenuItem * UNUSED(item), img_window_struct *img)
 		}
 		selected = selected->next;
 	}
-	g_list_foreach (bak, (GFunc)gtk_tree_path_free, NULL);
+	GList *node20;
+	for(node20 = bak;node20 != NULL;node20 = node20->next) {
+		gtk_tree_path_free(node20->data);
+	}
 	g_list_free(bak);
 
 	/* If no slide is selected currently, simply return */
