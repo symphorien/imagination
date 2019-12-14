@@ -1726,7 +1726,7 @@ void img_choose_slideshow_filename(GtkWidget *widget, img_window_struct *img)
 	      img->project_current_dir = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(fc));*/
 
 	}
-	else if (response == GTK_RESPONSE_CANCEL || GTK_RESPONSE_DELETE_EVENT)
+	else if (response == GTK_RESPONSE_CANCEL || response == GTK_RESPONSE_DELETE_EVENT)
 	{
 	    gtk_widget_destroy(fc);
 	    return;
