@@ -97,7 +97,8 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 
     /* Video Format */
     label = gtk_label_new (_("Video Format:"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
+    gtk_label_set_xalign(GTK_LABEL(label), 0);
+    gtk_label_set_yalign(GTK_LABEL(label), 0.5);
     gtk_table_attach(GTK_TABLE(table), label, 0, 1, 0, 1,
                               GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 2, 2);
 
@@ -116,7 +117,8 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 
 	/* Video Size */
     label = gtk_label_new (_("Video Size:"));
-    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
+    gtk_label_set_xalign(GTK_LABEL(label), 0);
+    gtk_label_set_yalign(GTK_LABEL(label), 0.5);
     gtk_table_attach(GTK_TABLE(table), label, 0, 1, 1, 2,
                               GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 2, 2);
 
@@ -128,7 +130,8 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 
     /* FPS */
     label = gtk_label_new( _("Frames per Second (FPS):") );
-    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
+    gtk_label_set_xalign(GTK_LABEL(label), 0);
+    gtk_label_set_yalign(GTK_LABEL(label), 0.5);
     gtk_table_attach(GTK_TABLE(table), label, 0, 1, 2, 3,
                               GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 2, 2);
 
@@ -138,7 +141,8 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 
     /* Aspect Ratio */
     label = gtk_label_new( _("Television Format:") );
-    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
+    gtk_label_set_xalign(GTK_LABEL(label), 0);
+    gtk_label_set_yalign(GTK_LABEL(label), 0.5);
     gtk_table_attach(GTK_TABLE(table), label, 0, 1, 3, 4,
                               GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 2, 2);
 
@@ -148,7 +152,8 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 
     /* Bitrate */
     label = gtk_label_new( _("Bitrate:") );
-    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
+    gtk_label_set_xalign(GTK_LABEL(label), 0);
+    gtk_label_set_yalign(GTK_LABEL(label), 0.5);
     gtk_table_attach(GTK_TABLE(table), label, 0, 1, 4, 5,
                               GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 2, 2);
 

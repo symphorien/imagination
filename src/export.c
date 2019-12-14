@@ -165,7 +165,8 @@ img_create_export_dialog( img_window_struct  *img,
 
 	label = gtk_label_new( _("Filename:") );
 	gtk_box_pack_start( GTK_BOX( hbox_slideshow_name ), label, FALSE, TRUE, 0 );
-	gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
+	gtk_label_set_xalign(GTK_LABEL(label), 0);
+	gtk_label_set_yalign(GTK_LABEL(label), 0.5);
 
     slideshow_title_entry = gtk_entry_new();
     gtk_entry_set_icon_from_icon_name(GTK_ENTRY(slideshow_title_entry), GTK_ENTRY_ICON_SECONDARY, GTK_STOCK_OPEN), 
@@ -326,7 +327,8 @@ img_start_export( img_window_struct *img )
 	gtk_container_add( GTK_CONTAINER( dialog ), vbox );
 
 	label = gtk_label_new( _("Preparing for export ...") );
-	gtk_misc_set_alignment( GTK_MISC( label ), 0, 0.5 );
+	gtk_label_set_xalign(GTK_LABEL(label), 0);
+	gtk_label_set_yalign(GTK_LABEL(label), 0.5);
 	atk = gtk_widget_get_accessible(label);
 	atk_object_set_description(atk, _("Status of export"));
 	img->export_label = label;
@@ -339,7 +341,8 @@ img_start_export( img_window_struct *img )
 	gtk_box_pack_start( GTK_BOX( vbox ), progress, FALSE, FALSE, 0 );
 
 	label = gtk_label_new( _("Overall progress:") );
-	gtk_misc_set_alignment( GTK_MISC( label ), 0, 0.5 );
+	gtk_label_set_xalign(GTK_LABEL(label), 0);
+	gtk_label_set_yalign(GTK_LABEL(label), 0.5);
 	gtk_box_pack_start( GTK_BOX( vbox ), label, FALSE, FALSE, 0 );
 
 	progress = gtk_progress_bar_new();
@@ -351,11 +354,13 @@ img_start_export( img_window_struct *img )
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
 	gtk_box_pack_start( GTK_BOX( vbox ), hbox, FALSE, FALSE, 0 );
 	label = gtk_label_new( _("Elapsed time:") );
-	gtk_misc_set_alignment( GTK_MISC( label ), 0, 0.5 );
+	gtk_label_set_xalign(GTK_LABEL(label), 0);
+	gtk_label_set_yalign(GTK_LABEL(label), 0.5);
 	gtk_box_pack_start( GTK_BOX( hbox ), label, FALSE, FALSE, 0 );
 
 	img->elapsed_time_label = gtk_label_new(NULL);
-	gtk_misc_set_alignment( GTK_MISC( img->elapsed_time_label ), 0, 0.5 );
+	gtk_label_set_xalign(GTK_LABEL(img->elapsed_time_label), 0);
+	gtk_label_set_yalign(GTK_LABEL(img->elapsed_time_label), 0.5);
 	gtk_box_pack_start( GTK_BOX( hbox ), img->elapsed_time_label, FALSE, FALSE, 0 );
 
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);

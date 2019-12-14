@@ -742,7 +742,8 @@ img_window_struct *img_create_window (void)
 	/* Transition types label */
 	transition_label = gtk_label_new (_("Transition Type:"));
 	gtk_box_pack_start (GTK_BOX (vbox_info_slide), transition_label, FALSE, FALSE, 0);
-	gtk_misc_set_alignment (GTK_MISC (transition_label), 0, -1);
+	gtk_label_set_xalign(GTK_LABEL(transition_label), 0);
+	gtk_label_set_yalign(GTK_LABEL(transition_label), -1);
 
 	/* Slide selected, slide resolution, slide type and slide total duration */
 	table = gtk_table_new (4, 2, FALSE);
@@ -771,7 +772,8 @@ img_window_struct *img_create_window (void)
 	/* Transition duration */
 	trans_duration_label = gtk_label_new (_("Transition Speed:"));
 	gtk_table_attach (GTK_TABLE (table), trans_duration_label, 0, 1, 1, 2,(GtkAttachOptions) (GTK_FILL),(GtkAttachOptions) (0), 0, 0);
-	gtk_misc_set_alignment (GTK_MISC (trans_duration_label), 0, 0.5);
+	gtk_label_set_xalign(GTK_LABEL(trans_duration_label), 0);
+	gtk_label_set_yalign(GTK_LABEL(trans_duration_label), 0.5);
 
 	img_struct->trans_duration = _gtk_combo_box_new_text(FALSE);
 	gtk_table_attach (GTK_TABLE (table), img_struct->trans_duration, 1, 2, 1, 2,(GtkAttachOptions) (GTK_FILL),(GtkAttachOptions) (GTK_FILL), 0, 0);
@@ -793,7 +795,8 @@ img_window_struct *img_create_window (void)
 	/* Slide duration */
 	duration_label = gtk_label_new (_("Slide Duration in sec:"));
 	gtk_table_attach (GTK_TABLE (table), duration_label, 0, 1, 2, 3,(GtkAttachOptions) (GTK_FILL),(GtkAttachOptions) (0), 0, 0);
-	gtk_misc_set_alignment (GTK_MISC (duration_label), 0, 0.5);
+	gtk_label_set_xalign(GTK_LABEL(duration_label), 0);
+	gtk_label_set_yalign(GTK_LABEL(duration_label), 0.5);
 
 	GtkAdjustment *adj = (GtkAdjustment *) gtk_adjustment_new (0.10, 0.01, 9999.0, 0.01, 1.0, 0.0);
 	img_struct->duration = gtk_spin_button_new (adj, 1.0, 2);
@@ -805,11 +808,13 @@ img_window_struct *img_create_window (void)
 	/* Slide Total Duration */
 	total_time = gtk_label_new (_("Slideshow Length:"));
 	gtk_table_attach (GTK_TABLE (table), total_time, 0, 1, 3, 4,(GtkAttachOptions) (GTK_FILL),(GtkAttachOptions) (0), 0, 0);
-	gtk_misc_set_alignment (GTK_MISC (total_time), 0, 0.5);
+	gtk_label_set_xalign(GTK_LABEL(total_time), 0);
+	gtk_label_set_yalign(GTK_LABEL(total_time), 0.5);
 
 	img_struct->total_time_data = gtk_label_new ("");
 	gtk_table_attach (GTK_TABLE (table), img_struct->total_time_data, 1, 2, 3, 4,(GtkAttachOptions) (GTK_FILL),(GtkAttachOptions) (0), 0, 0);
-	gtk_misc_set_alignment (GTK_MISC (img_struct->total_time_data), 0, 0.5);
+	gtk_label_set_xalign(GTK_LABEL(img_struct->total_time_data), 0);
+	gtk_label_set_yalign(GTK_LABEL(img_struct->total_time_data), 0.5);
 
 	/* Slide motion frame */
 	frame2 = gtk_frame_new (NULL);
@@ -832,7 +837,8 @@ img_window_struct *img_create_window (void)
 	gtk_box_pack_start (GTK_BOX (vbox_slide_motion), hbox_stop_points, TRUE, FALSE, 0);
 	stop_points_label = gtk_label_new(_("Stop Point:"));
 	gtk_box_pack_start (GTK_BOX (hbox_stop_points), stop_points_label, TRUE, TRUE, 0);
-	gtk_misc_set_alignment(GTK_MISC(stop_points_label),0.0, 0.5);
+	gtk_label_set_xalign(GTK_LABEL(stop_points_label), 0.0);
+	gtk_label_set_yalign(GTK_LABEL(stop_points_label), 0.5);
 
 	img_struct->ken_left = gtk_button_new();
 	g_signal_connect( G_OBJECT( img_struct->ken_left ), "clicked",
@@ -877,7 +883,8 @@ img_window_struct *img_create_window (void)
 	gtk_box_pack_start (GTK_BOX (vbox_slide_motion), hbox_time_offset, FALSE, FALSE, 0);
 	time_offset_label = gtk_label_new(_("Duration:"));
 	gtk_box_pack_start (GTK_BOX (hbox_time_offset), time_offset_label, TRUE, TRUE, 0);
-	gtk_misc_set_alignment(GTK_MISC(time_offset_label),0.0, 0.5);
+	gtk_label_set_xalign(GTK_LABEL(time_offset_label), 0.0);
+	gtk_label_set_yalign(GTK_LABEL(time_offset_label), 0.5);
 	img_struct->ken_duration = gtk_spin_button_new_with_range (1, 60, 1);
 	gtk_widget_set_size_request(img_struct->ken_duration, 50, -1);
 	gtk_entry_set_max_length(GTK_ENTRY(img_struct->ken_duration), 2);
@@ -898,7 +905,8 @@ img_window_struct *img_create_window (void)
 	gtk_box_pack_start (GTK_BOX (vbox_slide_motion), hbox_zoom, FALSE, FALSE, 0);
 
 	GtkWidget *label = gtk_label_new(_("Zoom: "));
-	gtk_misc_set_alignment(GTK_MISC(label),0.0, 0.5);
+	gtk_label_set_xalign(GTK_LABEL(label), 0.0);
+	gtk_label_set_yalign(GTK_LABEL(label), 0.5);
 	gtk_box_pack_start (GTK_BOX (hbox_zoom), label, FALSE, TRUE, 0);
 
 	img_struct->ken_zoom = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL,
@@ -1070,7 +1078,8 @@ img_window_struct *img_create_window (void)
 	a_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
 	gtk_box_pack_start (GTK_BOX (vbox_slide_caption), a_hbox, FALSE, FALSE, 0);
 	a_label = gtk_label_new(_("Animation:"));
-	gtk_misc_set_alignment(GTK_MISC(a_label), 0.0, 0.5);
+	gtk_label_set_xalign(GTK_LABEL(a_label), 0.0);
+	gtk_label_set_yalign(GTK_LABEL(a_label), 0.5);
 	gtk_box_pack_start (GTK_BOX (a_hbox), a_label, TRUE, TRUE, 0);
 	img_struct->sub_anim = img_create_subtitle_animation_combo();
 	gtk_combo_box_set_active(GTK_COMBO_BOX(img_struct->sub_anim), 0);
@@ -1082,7 +1091,8 @@ img_window_struct *img_create_window (void)
 	gtk_box_pack_start (GTK_BOX (vbox_slide_caption), a_hbox, FALSE, FALSE, 0);
 
 	a_label = gtk_label_new( _("Animation Speed:") );
-	gtk_misc_set_alignment( GTK_MISC( a_label ), 0, 0.5 );
+	gtk_label_set_xalign(GTK_LABEL(a_label), 0);
+	gtk_label_set_yalign(GTK_LABEL(a_label), 0.5);
 	gtk_box_pack_start( GTK_BOX( a_hbox ), a_label, TRUE, TRUE, 0 );
 
 	img_struct->sub_anim_duration = gtk_spin_button_new_with_range (1, 60, 1);
@@ -1118,7 +1128,8 @@ img_window_struct *img_create_window (void)
 	gtk_table_set_col_spacings (GTK_TABLE (table), 4);
 
 	label = gtk_label_new(_("Horizontal Position: "));
-	gtk_misc_set_alignment(GTK_MISC(label),0.0, 0.5);
+	gtk_label_set_xalign(GTK_LABEL(label), 0.0);
+	gtk_label_set_yalign(GTK_LABEL(label), 0.5);
 	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 0, 0);
 
 	img_struct->sub_posX_adj = (GtkAdjustment *) gtk_adjustment_new( 1.0, 1, (gdouble)img_struct->video_size[0], 1.0, 1.0, 0.0 );
@@ -1138,7 +1149,8 @@ img_window_struct *img_create_window (void)
 	gtk_widget_set_tooltip_text(img_struct->x_justify,_("Center the text horizontally"));
 
 	label = gtk_label_new(_("Vertical Position: "));
-	gtk_misc_set_alignment(GTK_MISC(label),0.0, 0.5);
+	gtk_label_set_xalign(GTK_LABEL(label), 0.0);
+	gtk_label_set_yalign(GTK_LABEL(label), 0.5);
 	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
 
 	img_struct->sub_posY_adj = (GtkAdjustment *) gtk_adjustment_new( 1.0, 1, (gdouble)img_struct->video_size[1], 1.0, 1.0, 0.0 );
@@ -1158,7 +1170,8 @@ img_window_struct *img_create_window (void)
 	gtk_widget_set_tooltip_text(img_struct->y_justify,_("Center the text vertically"));
 
 	label = gtk_label_new(_("Angle: "));
-	gtk_misc_set_alignment(GTK_MISC(label),0.0, 0.5);
+	gtk_label_set_xalign(GTK_LABEL(label), 0.0);
+	gtk_label_set_yalign(GTK_LABEL(label), 0.5);
 	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
 
 	img_struct->sub_angle = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL,
@@ -1238,11 +1251,13 @@ img_window_struct *img_create_window (void)
 
 	music_time = gtk_label_new(_("Music Duration:"));
 	gtk_box_pack_start(GTK_BOX(hbox_music_label), music_time, TRUE, TRUE, 0);
-	gtk_misc_set_alignment (GTK_MISC (music_time), 0, 0.5);
+	gtk_label_set_xalign(GTK_LABEL(music_time), 0);
+	gtk_label_set_yalign(GTK_LABEL(music_time), 0.5);
 
 	img_struct->music_time_data = gtk_label_new(NULL);
 	gtk_box_pack_start(GTK_BOX(hbox_music_label), img_struct->music_time_data, TRUE, TRUE, 0);
-	gtk_misc_set_alignment (GTK_MISC (img_struct->music_time_data), 1, 0.5);
+	gtk_label_set_xalign(GTK_LABEL(img_struct->music_time_data), 1);
+	gtk_label_set_yalign(GTK_LABEL(img_struct->music_time_data), 0.5);
 
 	/* Add the fadeout duration and spinner */
 	hbox_fadeout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
@@ -1250,7 +1265,8 @@ img_window_struct *img_create_window (void)
 
 	fadeout_duration = gtk_label_new(_("Final fade-out duration:"));
 	gtk_box_pack_start(GTK_BOX(hbox_fadeout), fadeout_duration, TRUE, TRUE, 0);
-	gtk_misc_set_alignment (GTK_MISC (fadeout_duration), 0, 0.5);
+	gtk_label_set_xalign(GTK_LABEL(fadeout_duration), 0);
+	gtk_label_set_yalign(GTK_LABEL(fadeout_duration), 0.5);
 
 	GtkAdjustment *adj2 = (GtkAdjustment *) gtk_adjustment_new (img_struct->audio_fadeout, 0, 100, 1, 5, 0.0);
 	img_struct->fadeout_duration = gtk_spin_button_new (adj2, 1.0, 0);
@@ -2910,7 +2926,8 @@ static void img_report_slides_transitions(img_window_struct *img)
 							 "not shown here.\n"
 							 "Click on the slide to have Imagination "
 							 "automatically select it." ) );
-	gtk_misc_set_alignment( GTK_MISC( label ), 0.0, 0.5 );
+	gtk_label_set_xalign(GTK_LABEL(label), 0.0);
+	gtk_label_set_yalign(GTK_LABEL(label), 0.5);
 	gtk_label_set_use_markup( GTK_LABEL( label ), TRUE );
 	gtk_box_pack_start( GTK_BOX( img->vbox_slide_report_rows ), label,
 						FALSE, FALSE, 0);
