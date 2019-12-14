@@ -1602,111 +1602,123 @@ static void img_clean_after_preview(img_window_struct *img)
 
 void img_choose_slideshow_filename(GtkWidget *widget, img_window_struct *img)
 {
-	GtkWidget *fc;
-	GtkFileChooserAction action = 0;
-	gint	 response;
-	gchar *filename = NULL;
+    GtkWidget *fc;
+    GtkFileChooserAction action = 0;
+    gint	 response;
+    gboolean	 append, open_replace, save;
+    gchar *filename = NULL;
     GtkFileFilter *project_filter, *all_files_filter;
 
-	/* Determine the mode of the chooser. */
-	if (widget == img->open_menu || widget == img->open_button || widget == img->import_project_menu)
-		action = GTK_FILE_CHOOSER_ACTION_OPEN;
-	else if (widget == img->save_as_menu || widget == img->save_menu || widget == img->save_button)
-		action = GTK_FILE_CHOOSER_ACTION_SAVE;
-    
+
+    /* Determine what to do */
+    append = widget == img->import_project_menu;
+    open_replace = widget == img->open_menu || widget == img->open_button;
+    save = widget == img->save_as_menu || widget == img->save_menu || widget == img->save_button;
+    /* Determine the mode of the chooser. */
+    if (open_replace || append) {
+	action = GTK_FILE_CHOOSER_ACTION_OPEN;
+    } else if (save) {
+	action = GTK_FILE_CHOOSER_ACTION_SAVE;
+    } else {
+	img_message(img, FALSE, "I do not know what to do with this slideshow filename.");
+	return;
+    }
+
     /* close old slideshow if we import */
-    if (widget == img->open_menu || widget == img->open_button)
+    if (open_replace)
     {
 	if (!img_can_discard_unsaved_project(img)) {
 	    return;
 	}
     }
 
-	/* If user wants to save empty slideshow, simply abort */
-	if( img->slides_nr == 0 && action == GTK_FILE_CHOOSER_ACTION_SAVE  )
-		return;
+    /* If user wants to save empty slideshow, do nothing */
+    if( img->slides_nr == 0 && save )
+	return;
 
-	if (img->project_filename == NULL || widget == img->save_as_menu || action == GTK_FILE_CHOOSER_ACTION_OPEN)
+    /* ask for a file name if the project has never been saved yet, if we save as or if we open a project */
+    if (img->project_filename == NULL || widget == img->save_as_menu || action == GTK_FILE_CHOOSER_ACTION_OPEN)
+    {
+	fc = gtk_file_chooser_dialog_new (action == GTK_FILE_CHOOSER_ACTION_OPEN ? _("Load an Imagination slideshow project") : 
+		_("Save an Imagination slideshow project"),
+		GTK_WINDOW (img->imagination_window),
+		action,
+		GTK_STOCK_CANCEL,
+		GTK_RESPONSE_CANCEL,
+		action == GTK_FILE_CHOOSER_ACTION_OPEN ?  GTK_STOCK_OPEN : GTK_STOCK_SAVE,
+		GTK_RESPONSE_ACCEPT,NULL);
+
+	/* Filter .img files */
+	project_filter = gtk_file_filter_new ();
+	gtk_file_filter_set_name(project_filter, _("Imagination projects (*.img)"));
+	gtk_file_filter_add_pattern(project_filter, "*.img");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(fc), project_filter);
+
+	/* All files filter */
+	all_files_filter = gtk_file_filter_new ();
+	gtk_file_filter_set_name(all_files_filter, _("All files"));
+	gtk_file_filter_add_pattern(all_files_filter, "*");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(fc), all_files_filter);
+
+	/* if we are saving, propose a default filename */
+	if (action == GTK_FILE_CHOOSER_ACTION_SAVE)
 	{
-		fc = gtk_file_chooser_dialog_new (action == GTK_FILE_CHOOSER_ACTION_OPEN ? _("Load an Imagination slideshow project") : 
-					_("Save an Imagination slideshow project"),
-					GTK_WINDOW (img->imagination_window),
-					action,
-					GTK_STOCK_CANCEL,
-					GTK_RESPONSE_CANCEL,
-					action == GTK_FILE_CHOOSER_ACTION_OPEN ?  GTK_STOCK_OPEN : GTK_STOCK_SAVE,
-					GTK_RESPONSE_ACCEPT,NULL);
+	    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER (fc), "unknown.img");
+	    /* Add the checkbok to save filenames only */
+	    GtkWidget *box = gtk_hbox_new (TRUE, 0);
+	    GtkWidget *relative_names = gtk_check_button_new_with_mnemonic(_("Don't include folder names in the filenames"));
+	    gtk_widget_set_tooltip_text(relative_names, _("If you check this button, be sure to include ALL the project files in the SAME folder before attempting to open it again."));
+	    gtk_box_pack_start (GTK_BOX (box), relative_names, FALSE, FALSE, 0);
+	    gtk_widget_show(relative_names);
+	    g_signal_connect (relative_names, "toggled", G_CALLBACK (img_save_relative_filenames), img);
+	    gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER(fc), box );
+	}
+	if (img->project_current_dir)
+	    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fc),img->project_current_dir);
 
-        /* Filter .img files */
-        project_filter = gtk_file_filter_new ();
-        gtk_file_filter_set_name(project_filter, _("Imagination projects (*.img)"));
-        gtk_file_filter_add_pattern(project_filter, "*.img");
-        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(fc), project_filter);
-
-        /* All files filter */
-        all_files_filter = gtk_file_filter_new ();
-        gtk_file_filter_set_name(all_files_filter, _("All files"));
-        gtk_file_filter_add_pattern(all_files_filter, "*");
-        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(fc), all_files_filter);
-
-        /* if we are saving, propose a default filename */
-        if (action == GTK_FILE_CHOOSER_ACTION_SAVE)
-        {
-			gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER (fc), "unknown.img");
-			/* Add the checkbok to save filenames only */
-			GtkWidget *box = gtk_hbox_new (TRUE, 0);
-			GtkWidget *relative_names = gtk_check_button_new_with_mnemonic(_("Don't include folder names in the filenames"));
-			gtk_widget_set_tooltip_text(relative_names, _("If you check this button, be sure to include ALL the project files in the SAME folder before attempting to open it again."));
-			gtk_box_pack_start (GTK_BOX (box), relative_names, FALSE, FALSE, 0);
-			gtk_widget_show(relative_names);
-			g_signal_connect (relative_names, "toggled", G_CALLBACK (img_save_relative_filenames), img);
-			gtk_file_chooser_set_extra_widget (GTK_FILE_CHOOSER(fc), box );
-		}
-		if (img->project_current_dir)
-            gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fc),img->project_current_dir);
-
-		gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER (fc),TRUE);
-		response = gtk_dialog_run (GTK_DIALOG (fc));
-		if (response == GTK_RESPONSE_ACCEPT)
-		{
-			filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fc));
-			if( ! filename )
-			{
-				gtk_widget_destroy(fc);
-				return;
-			}
-			/*if (img->project_current_dir)
-                g_free(img->project_current_dir);
-            img->project_current_dir = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(fc));*/
-
-		}
-		else if (response == GTK_RESPONSE_CANCEL || GTK_RESPONSE_DELETE_EVENT)
-		{
-			gtk_widget_destroy(fc);
-			return;
-		}
+	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER (fc),TRUE);
+	response = gtk_dialog_run (GTK_DIALOG (fc));
+	if (response == GTK_RESPONSE_ACCEPT)
+	{
+	    filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fc));
+	    if( ! filename )
+	    {
 		gtk_widget_destroy(fc);
+		return;
+	    }
+	    /*if (img->project_current_dir)
+	      g_free(img->project_current_dir);
+	      img->project_current_dir = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(fc));*/
+
 	}
-
-	if( ! filename )
-		filename = g_strdup( img->project_filename );
-
-	if (action == GTK_FILE_CHOOSER_ACTION_OPEN)
+	else if (response == GTK_RESPONSE_CANCEL || GTK_RESPONSE_DELETE_EVENT)
 	{
-		/* Close the current slideshow before opening a new one */
-		img_close_slideshow(widget, img);
-		img_load_slideshow( img, filename );
+	    gtk_widget_destroy(fc);
+	    return;
 	}
-	else
-		img_save_slideshow( img, filename, img->relative_filenames );
+	gtk_widget_destroy(fc);
+    }
 
-	g_free( filename );
+    if( ! filename )
+	filename = g_strdup( img->project_filename );
+
+    if (open_replace) {
+	img_load_slideshow(img, filename);
+    } else if (append) {
+	img_append_slides_from( img, filename );
+    } else if (save) {
+	img_save_slideshow( img, filename, img->relative_filenames );
+    }
+
+    img_refresh_window_title(img);
+
+    g_free( filename );
 }
 
 void img_close_slideshow(GtkWidget *widget, img_window_struct *img)
 {
     /* When called from close_menu, ask for confirmation */
-    if (widget == img->close_menu && !img_can_discard_unsaved_project(img))
+    if (widget && widget == img->close_menu && !img_can_discard_unsaved_project(img))
     {
 	return;
     }

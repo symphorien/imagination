@@ -237,8 +237,7 @@ img_save_slideshow( img_window_struct *img,
 }
 
 void
-img_load_slideshow( img_window_struct *img,
-					const gchar       *input )
+img_append_slides_from( img_window_struct *img, const gchar *input )
 {
 	GdkPixbuf *thumb;
 	slide_struct *slide_info;
@@ -251,7 +250,7 @@ img_load_slideshow( img_window_struct *img,
 	GtkTreeModel *model;
 	void (*render);
 	GHashTable *table;
-	gchar      *spath, *conf;
+	gchar      *spath, *conf, *project_current_dir;
 	gdouble    duration, *color, *font_color, *font_brdr_color, *font_bg_color, *border_color;
 	gboolean   first_slide = TRUE;
     gchar      *video_config_name, *aspect_ratio, *fps;
@@ -283,10 +282,7 @@ img_load_slideshow( img_window_struct *img,
 	}
 	g_free( dummy );
 
-	if (img->project_current_dir)
-		g_free(img->project_current_dir);
-
-	img->project_current_dir = g_path_get_dirname(input);
+	project_current_dir = g_path_get_dirname(input);
 
 	/* Create hash table for efficient searching */
 	table = g_hash_table_new_full( g_direct_hash, g_direct_equal,
@@ -433,7 +429,7 @@ img_load_slideshow( img_window_struct *img,
 			if( slide_filename )
 			{
 				if ( g_path_is_absolute(slide_filename) == FALSE)
-					original_filename = g_strconcat(img->project_current_dir, "/", slide_filename, NULL);
+					original_filename = g_strconcat(project_current_dir, "/", slide_filename, NULL);
 				else
 					original_filename = g_strdup (slide_filename);
 
@@ -573,7 +569,7 @@ img_load_slideshow( img_window_struct *img,
 						if ( pattern_name && g_path_is_absolute(pattern_name) == FALSE)
 						{
 							gchar *_pattern_filename;
-							_pattern_filename = g_strconcat(img->project_current_dir, "/", pattern_name, NULL);
+							_pattern_filename = g_strconcat(project_current_dir, "/", pattern_name, NULL);
 							g_free(pattern_name);
 							pattern_name = _pattern_filename;
 						}
@@ -644,7 +640,7 @@ img_load_slideshow( img_window_struct *img,
 		if ( g_path_is_absolute(slide_filename) == FALSE)
 		{
 			gchar *_slide_filename;
-			_slide_filename = g_strconcat(img->project_current_dir, "/", slide_filename, NULL);
+			_slide_filename = g_strconcat(project_current_dir, "/", slide_filename, NULL);
 			g_free(slide_filename);
 			slide_filename = _slide_filename;
 		}
@@ -659,6 +655,22 @@ img_load_slideshow( img_window_struct *img,
 	img_set_statusbar_message(img, 0);
 
 	g_hash_table_destroy( table );
+
+	/* Update incompatibilities display */
+	img_update_inc_audio_display( img );
+
+	time = img_convert_seconds_to_time(img->total_music_secs);
+	gtk_label_set_text(GTK_LABEL(img->music_time_data), time);
+	g_free(time);
+	g_free(project_current_dir);
+
+	img->project_is_modified = TRUE;
+}
+
+void
+img_load_slideshow( img_window_struct *img, const gchar *input ) {
+	img_close_slideshow(NULL, img);
+	img_append_slides_from(img, input);
 	
 	/* Select the first slide */
 	img_goto_first_slide(NULL, img);
@@ -669,14 +681,12 @@ img_load_slideshow( img_window_struct *img,
 	if( img->project_filename )
 		g_free( img->project_filename );
 	img->project_filename = g_strdup( input );
+
+	if (img->project_current_dir)
+		g_free(img->project_current_dir);
+	img->project_current_dir = g_path_get_dirname(input);
+
 	img_refresh_window_title(img);
-
-	/* Update incompatibilities display */
-	img_update_inc_audio_display( img );
-
-	time = img_convert_seconds_to_time(img->total_music_secs);
-	gtk_label_set_text(GTK_LABEL(img->music_time_data), time);
-	g_free(time);
 }
 
 static gboolean img_populate_hash_table( GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, GHashTable **table )

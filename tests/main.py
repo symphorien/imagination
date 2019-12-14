@@ -1,19 +1,23 @@
+#!/usr/bin/env python3
+
 import os
 import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from time import sleep
+from time import sleep, time
 
 from dogtail.procedural import type
 from dogtail.tree import SearchError, root
 from dogtail.utils import run
 
 
+def nonce(*args) -> int:
+    return abs(hash((time(), args)))
+
+
 def add_slide(filename: Path):
     """ Add a new slide """
-    imagination.child(roleName="tool bar").child(description="Import pictures").button(
-        ""
-    ).click()
+    menu("Slideshow", "Import pictures")
     open_file(filename)
 
 
@@ -40,7 +44,7 @@ def save_as(filename: Path):
     d.resolve()
     assert filename.suffix == ".img"
     path = str(d / filename.stem)
-    _save()
+    menu("Slideshow", "Save As")
     filechooser = imagination.child(roleName="file chooser")
     button = filechooser.childNamed("Save")
     type(str(path))
@@ -51,18 +55,22 @@ def open_file(filename: Path):
     """ When a file chooser is open, open the following path """
     filename.resolve()
     filechooser = imagination.child(roleName="file chooser")
+    panel = filechooser.child(roleName="split pane")
+    panel.keyCombo("<Control>L")
+    assert panel.visible
+    text = panel.child(roleName="text")
+    assert text.visible
+    text.click()
+    text.typeText(str(filename))
     button = filechooser.childNamed("Open")
-    button.keyCombo("<Control>L")
-    sleep(0.5)
-    assert not button.dead
-    type(str(filename))
     button.click()
     button.click()
+    assert button.dead
 
 
 def text2img(text: str) -> Path:
     """ Creates an image with the text in question on it. """
-    filename = temp / (str(hash(text)) + ".jpg")
+    filename = temp / (str(nonce(text)) + ".jpg")
     subprocess.run(["convert", "-size", "400x600", "label:" + text, str(filename)])
     filename.resolve()
     return filename
@@ -92,9 +100,9 @@ def open_slideshow(filename: Path):
     open_file(filename)
 
 
-def start():
+def start(slideshow=None):
     """ start imagination, returns its root dogtail object """
-    run("target/bin/imagination", timeout=4)
+    run(f"src/imagination {slideshow}" if slideshow else "src/imagination", timeout=4)
     return root.application("imagination")
 
 
@@ -103,7 +111,7 @@ def frame_at(video: Path, seconds: float) -> Path:
 
     seconds is the time of the frame. The output format is jpg.
     """
-    out = temp / (str(hash((video, seconds))) + ".jpg")
+    out = temp / (str(nonce(video, seconds)) + ".jpg")
     subprocess.run(
         ["ffmpeg", "-i", str(video), "-ss", str(seconds), "-vframes", "1", str(out)]
     )
@@ -116,8 +124,8 @@ def ocr(image: Path) -> str:
 
     Assumes that there is only one line of text.
     """
-    out = temp / str(hash(image))
-    intermediate = temp / (str(hash(image)) + ".jpg")
+    out = temp / str(nonce(image))
+    intermediate = temp / (str(nonce(image)) + ".jpg")
     subprocess.run(["convert", str(image), "-fuzz", "1%", "-trim", str(intermediate)])
     subprocess.run(["tesseract", "-psm", "7", str(intermediate), str(out)])
     with open(f"{out}.txt", "r") as f:
@@ -152,10 +160,7 @@ def export() -> Path:
 def choose_slide(i: int):
     """ Choose slide index """
     entry = imagination.child(description="Current slide number")
-    entry.click()
-    entry.keyCombo("<Control>A")
-    type(str(i)+"\n")
-
+    entry.typeText(str(i) + "\n")
 
 def set_transition_type(category: str, name: str):
     """ Set the transition type of the current slide """
@@ -166,6 +171,34 @@ def set_transition_type(category: str, name: str):
     menu.menuItem(name).click()
 
 
+def assert_should_save():
+    """ Checks that a warning dialog fires when trying to quit without saving """
+    main = imagination.child(roleName="frame")
+    #      never saved                         or saved once but unsaved changes
+    assert main.name.startswith("Imagination") or main.name.startswith("*")
+    menu("Slideshow", "Quit")
+    assert not imagination.dead
+    alert = imagination.child(roleName="alert")
+    alert.button("Cancel").click()
+
+
+def rotate(angle: int):
+    assert angle % 90 == 0
+    angle = (angle % 360 + 360) % 360
+    angle = angle // 90
+    if angle == 3:
+        menu("Slide", "Rotate clockwise")
+    else:
+        for i in range(angle):
+            menu("Slide", "Rotate counter-clockwise")
+
+
+def flip():
+    imagination.child(description="Flip horizontally the selected slides").child(
+        roleName="push button"
+    ).click()
+
+
 if __name__ == "__main__":
     with TemporaryDirectory() as d:
         temp = Path(d)
@@ -174,6 +207,7 @@ if __name__ == "__main__":
 
         imagination = start()
         add_slide(text2img("AB"))
+        assert_should_save()
         add_slide(text2img("CD"))
         choose_slide(2)
         set_transition_type("Bar Wipe", "Left to Right")
@@ -190,4 +224,61 @@ if __name__ == "__main__":
         assert ocr(frame_at(video, 5.5)) == "CD"
         # just in the middle of the transition
         assert ocr(frame_at(video, 3)) == "CB"
+        quit()
+
+        imagination = start(slideshow)
+        assert n_slides() == 2
+        # check no need to save
+        quit()
+
+        imagination = start()
+        add_slide(text2img("N"))
+        assert n_slides() == 1
+        assert_should_save()
+        slideshow2 = temp / "result2.img"
+        save_as(slideshow2)
+        menu("Slideshow", "Import slideshow")
+        open_file(slideshow)
+        assert_should_save()
+        assert n_slides() == 3
+        menu("Slideshow", "Save")
+        quit()
+
+        imagination = start(slideshow2)
+        assert n_slides() == 3
+        video = export()
+        assert ocr(frame_at(video, 0.5)) == "N"
+        assert ocr(frame_at(video, 1.5)) == "AB"
+        assert ocr(frame_at(video, 6.5)) == "CD"
+        # just in the middle of the transition
+        assert ocr(frame_at(video, 4)) == "CB"
+        choose_slide(1)
+        rotate(-90)
+        assert_should_save()
+        slideshow3 = temp / "result3.img"
+        save_as(slideshow3)
+        add_slide(text2img("d"))
+        flip()
+        menu("Slideshow", "Save")
+        assert n_slides() == 4
+        open_slideshow(slideshow2)
+        # check that save as does not affect the old slideshow
+        assert n_slides() == 3
+        video = export()
+        assert ocr(frame_at(video, 0.5)) == "N"
+        assert ocr(frame_at(video, 1.5)) == "AB"
+        assert ocr(frame_at(video, 6.5)) == "CD"
+        # just in the middle of the transition
+        assert ocr(frame_at(video, 4)) == "CB"
+        quit()
+
+        imagination = start(slideshow3)
+        assert n_slides() == 4
+        video = export()
+        assert ocr(frame_at(video, 0.5)) == "Z"
+        assert ocr(frame_at(video, 1.5)) == "AB"
+        assert ocr(frame_at(video, 6.5)) == "CD"
+        # just in the middle of the transition
+        assert ocr(frame_at(video, 4)) == "CB"
+        assert ocr(frame_at(video, 7.5)) == "b"
         quit()
