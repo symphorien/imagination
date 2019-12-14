@@ -1700,7 +1700,7 @@ void img_choose_slideshow_filename(GtkWidget *widget, img_window_struct *img)
 	    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER (fc), "unknown.img");
 	    /* Add the checkbok to save filenames only */
 	    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	    gtk_box_set_homogeneous(box, TRUE);
+	    gtk_box_set_homogeneous(GTK_BOX(box), TRUE);
 	    GtkWidget *relative_names = gtk_check_button_new_with_mnemonic(_("Don't include folder names in the filenames"));
 	    gtk_widget_set_tooltip_text(relative_names, _("If you check this button, be sure to include ALL the project files in the SAME folder before attempting to open it again."));
 	    gtk_box_pack_start (GTK_BOX (box), relative_names, FALSE, FALSE, 0);
@@ -3389,7 +3389,7 @@ img_pattern_clicked(GtkMenuItem * UNUSED(item),
 
 	/* Set the delete pattern button */
 	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_set_homogeneous(box, TRUE);
+	gtk_box_set_homogeneous(GTK_BOX(box), TRUE);
 	GtkWidget *delete_pattern = gtk_button_new_with_mnemonic(_("Delete current pattern"));
 	gtk_box_pack_start (GTK_BOX (box), delete_pattern, FALSE, FALSE, 0);
 	gtk_widget_show(delete_pattern);

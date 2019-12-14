@@ -161,7 +161,7 @@ img_create_export_dialog( img_window_struct  *img,
 	gtk_widget_set_margin_end(GTK_WIDGET(vbox_frame1), 10);
 
 	hbox_slideshow_name = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_set_homogeneous(hbox_slideshow_name, TRUE);
+	gtk_box_set_homogeneous(GTK_BOX(hbox_slideshow_name), TRUE);
 	gtk_box_pack_start (GTK_BOX (vbox_frame1), hbox_slideshow_name, TRUE, TRUE, 0);
 
 	label = gtk_label_new( _("Filename:") );
@@ -365,7 +365,7 @@ img_start_export( img_window_struct *img )
 	gtk_box_pack_start( GTK_BOX( hbox ), img->elapsed_time_label, FALSE, FALSE, 0 );
 
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_box_set_homogeneous(hbox, TRUE);
+	gtk_box_set_homogeneous(GTK_BOX(hbox), TRUE);
 	gtk_box_pack_start( GTK_BOX( vbox ), hbox, FALSE, FALSE, 0 );
 
 	image = gtk_image_new_from_stock( GTK_STOCK_CANCEL, GTK_ICON_SIZE_BUTTON );
