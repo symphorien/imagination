@@ -73,7 +73,7 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 	gtk_window_set_default_size(GTK_WINDOW(dialog1),520,-1);
 
 	dialog_vbox1 = gtk_dialog_get_content_area( GTK_DIALOG( dialog1 ) );
-	vbox1 = gtk_vbox_new (FALSE, 5);
+	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox1), 5);
 	gtk_box_pack_start (GTK_BOX (dialog_vbox1), vbox1, TRUE, TRUE, 0);
 
@@ -89,7 +89,7 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 	gtk_container_add (GTK_CONTAINER (main_frame), alignment_main_frame);
 	gtk_alignment_set_padding (GTK_ALIGNMENT (alignment_main_frame), 5, 15, 10, 10);
 
-    vbox_frame1 = gtk_vbox_new( FALSE, 10 );
+    vbox_frame1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_container_add( GTK_CONTAINER( alignment_main_frame ), vbox_frame1 );
 
     table = gtk_table_new(5, 2, FALSE);
@@ -170,13 +170,13 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 	gtk_frame_set_label_widget (GTK_FRAME (frame3), label_frame3);
 	gtk_label_set_use_markup (GTK_LABEL (label_frame3), TRUE);
 
-	ex_vbox = gtk_vbox_new( FALSE, 5 );
+	ex_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	gtk_container_add( GTK_CONTAINER( alignment_frame3 ), ex_vbox );
 
 	distort_button = gtk_check_button_new_with_label( _("Rescale images to fit desired aspect ratio") );
 	gtk_box_pack_start( GTK_BOX( ex_vbox ), distort_button, FALSE, FALSE, 0 );
 
-	ex_hbox = gtk_hbox_new( FALSE, 5 );
+	ex_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 	gtk_box_pack_start( GTK_BOX( ex_vbox ), ex_hbox, FALSE, FALSE, 0 );
 
 	img->bye_bye_transition_checkbox = gtk_check_button_new_with_label( _("End slideshow with blank slide") );

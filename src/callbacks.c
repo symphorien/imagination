@@ -644,7 +644,7 @@ static void img_file_chooser_add_preview(img_window_struct *img_struct)
 {
 	GtkWidget *vbox;
 
-	vbox = gtk_vbox_new (FALSE, 5);
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	gtk_container_set_border_width (GTK_CONTAINER(vbox), 10);
 
 	img_struct->preview_image = gtk_image_new ();
@@ -2606,7 +2606,7 @@ img_add_empty_slide( GtkMenuItem       *item,
 	gtk_box_pack_start( GTK_BOX( vbox ), frame, TRUE, TRUE, 5 );
 	gtk_container_set_border_width( GTK_CONTAINER( frame ), 5 );
 
-	hbox = gtk_hbox_new( FALSE, 6 );
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
 	gtk_container_add( GTK_CONTAINER( frame ), hbox );
 
 	table = gtk_table_new( 6, 2, TRUE );

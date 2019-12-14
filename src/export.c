@@ -140,7 +140,7 @@ img_create_export_dialog( img_window_struct  *img,
 	vbox = GTK_DIALOG( dialog )->vbox;
 #endif
 
-	vbox1 = gtk_vbox_new (FALSE, 5);
+	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox1), 5);
 	gtk_box_pack_start (GTK_BOX (vbox), vbox1, TRUE, TRUE, 0);
 
@@ -156,7 +156,7 @@ img_create_export_dialog( img_window_struct  *img,
 	gtk_container_add (GTK_CONTAINER (main_frame), alignment_main_frame);
 	gtk_alignment_set_padding (GTK_ALIGNMENT (alignment_main_frame), 5, 15, 10, 10);
 
-	vbox_frame1 = gtk_vbox_new( FALSE, 10 );
+	vbox_frame1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
 	gtk_container_add( GTK_CONTAINER( alignment_main_frame ), vbox_frame1 );
 
 	hbox_slideshow_name = gtk_hbox_new (TRUE, 0);
@@ -321,7 +321,7 @@ img_start_export( img_window_struct *img )
 	gtk_window_set_transient_for( GTK_WINDOW( dialog ),
 								  GTK_WINDOW( img->imagination_window ) );
 
-	vbox = gtk_vbox_new( FALSE, 6 );
+	vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
 	gtk_container_add( GTK_CONTAINER( dialog ), vbox );
 
 	label = gtk_label_new( _("Preparing for export ...") );
@@ -347,7 +347,7 @@ img_start_export( img_window_struct *img )
 	gtk_box_pack_start( GTK_BOX( vbox ), progress, FALSE, FALSE, 0 );
 	g_free( string );
 	
-	hbox = gtk_hbox_new( FALSE, 6 );
+	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
 	gtk_box_pack_start( GTK_BOX( vbox ), hbox, FALSE, FALSE, 0 );
 	label = gtk_label_new( _("Elapsed time:") );
 	gtk_misc_set_alignment( GTK_MISC( label ), 0, 0.5 );
