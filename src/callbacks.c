@@ -142,12 +142,64 @@ void img_project_properties(GtkMenuItem * UNUSED(item), img_window_struct *img_s
 	img_new_slideshow_settings_dialog(img_struct, TRUE);
 }
 
+static void detect_slide_orientation_from_pixbuf(GdkPixbuf *image, gboolean *flipped, ImgAngle *angle) {
+        int transform = 0;
+	const gchar *orientation_string;
+
+	orientation_string = gdk_pixbuf_get_option(image, "orientation");
+
+	if (orientation_string) {
+		/* If an orientation option was found, convert the 
+		   orientation string into an integer. */
+		transform = (int) g_ascii_strtoll (orientation_string, NULL, 10);
+	}
+
+	*flipped = FALSE;
+	*angle = ANGLE_0;
+
+	/* The meaning of orientation values 1-8 and the required transforms
+	   are defined by the TIFF and EXIF (for JPEGs) standards. */
+        switch (transform) {
+	case 1:
+	    break;
+        case 2:
+	    *flipped = TRUE;
+	    break;
+        case 3:
+	    *angle = ANGLE_180;
+	    break;
+        case 4:
+	    /* cannot flip image vertically */
+	    break;
+        case 5:
+	    *angle = ANGLE_270;
+	    *flipped = TRUE;
+	    break;
+        case 6:
+	    *angle = ANGLE_270;
+	    break;
+        case 7:
+	    *angle = ANGLE_270;
+	    /* cannot flip image vertically */
+	    break;
+        case 8:
+	    *angle = ANGLE_90;
+	    break;
+	default:
+	    /* if no orientation tag was present */
+	    break;
+        }
+}
+
+
 void img_add_slides_thumbnails(GtkMenuItem * UNUSED(item), img_window_struct *img)
 {
 	GSList	*slides = NULL, *bak;
 	GdkPixbuf *thumb;
 	GtkTreeIter iter;
 	slide_struct *slide_info;
+	GError *error = NULL;
+	gchar *filename;
 	gint slides_cnt = 0, actual_slides = 0;
 
 	slides = img_import_slides_file_chooser(img);
@@ -167,27 +219,45 @@ void img_add_slides_thumbnails(GtkMenuItem * UNUSED(item), img_window_struct *im
 	bak = slides;
 	while (slides)
 	{
-		if( img_scale_image( slides->data, img->video_ratio, 88, 0,
-							 img->distort_images, img->background_color,
-							 &thumb, NULL ) )
-		{
-			slide_info = img_create_new_slide();
-			if (slide_info)
-			{
-				img_set_slide_file_info( slide_info, slides->data );
-				gtk_list_store_append (img->thumbnail_model,&iter);
-				gtk_list_store_set (img->thumbnail_model, &iter, 0, thumb,
-																 1, slide_info,
-																 2, NULL,
-																 3, FALSE,
-																 -1);
-				g_object_unref (thumb);
-				slides_cnt++;
-			}
-			g_free(slides->data);
-		}
-		img_increase_progressbar(img, slides_cnt);
-		slides = slides->next;
+	    slide_info = img_create_new_slide();
+	    g_assert(slide_info);
+	    filename = slides->data;
+	    // to get the orientation tag, load a tiny version of the image
+	    thumb = gdk_pixbuf_new_from_file_at_size(filename, 1, 1, &error);
+	    if (!thumb) {
+		g_message("Cannot open %s: %s", filename, error->message);
+		g_error_free (error);
+		goto next_slide;
+	    }
+	    /* the file exists and can be read, create the slide_info */
+	    img_set_slide_file_info( slide_info, slides->data );
+	    /* actually read the orientation tag */
+	    detect_slide_orientation_from_pixbuf(thumb, &(slide_info->flipped),
+		    &(slide_info->angle));
+	    g_object_unref(thumb);
+	    /* create the associated p_filename taking orientation into account */
+	    img_rotate_flip_slide(slide_info, slide_info->angle, slide_info->flipped, NULL);
+	    /* create the thumbnail */
+	    img_scale_image( slide_info->p_filename, img->video_ratio, 88, 0,
+			img->distort_images, img->background_color,
+			&thumb, NULL );
+	    if (!thumb) {
+		g_message("Cannot open %s while thumbnailing %s: %s", slide_info->o_filename, slide_info->p_filename, error->message);
+		g_error_free (error);
+		goto next_slide;
+	    }
+	    gtk_list_store_append (img->thumbnail_model,&iter);
+	    gtk_list_store_set (img->thumbnail_model, &iter, 0, thumb,
+		    1, slide_info,
+		    2, NULL,
+		    3, FALSE,
+		    -1);
+	    g_object_unref (thumb);
+	next_slide:
+	    slides_cnt++;
+	    g_free(slides->data);
+	    img_increase_progressbar(img, slides_cnt);
+	    slides = slides->next;
 	}
 	gtk_widget_hide(img->progress_bar);
 	g_slist_free(bak);
@@ -558,7 +628,8 @@ static void	img_update_preview_file_chooser(GtkFileChooser *file_chooser,img_win
 	gchar *filename,*size;
 	gboolean has_preview = FALSE;
 	gint width,height;
-	GdkPixbuf *pixbuf;
+	GdkPixbuf *pixbuf = NULL;
+	GdkPixbuf *pixbuf2;
 
 	filename = gtk_file_chooser_get_filename(file_chooser);
 	if (filename == NULL)
@@ -566,7 +637,11 @@ static void	img_update_preview_file_chooser(GtkFileChooser *file_chooser,img_win
 		gtk_file_chooser_set_preview_widget_active (file_chooser, has_preview);
 		return;
 	}
-	pixbuf = gdk_pixbuf_new_from_file_at_scale(filename, 93, 70, TRUE, NULL);
+	pixbuf2 = gdk_pixbuf_new_from_file_at_scale(filename, 93, 70, TRUE, NULL);
+	if (pixbuf2) {
+	    pixbuf = gdk_pixbuf_apply_embedded_orientation(pixbuf2);
+	    g_object_unref (pixbuf2);
+	}
 	has_preview = (pixbuf != NULL);
 	if (has_preview)
 	{
