@@ -192,20 +192,26 @@ static void detect_slide_orientation_from_pixbuf(GdkPixbuf *image, gboolean *fli
 }
 
 
-void img_add_slides_thumbnails(GtkMenuItem * UNUSED(item), img_window_struct *img)
+void img_add_slides_thumbnails(GtkMenuItem * UNUSED(item), img_window_struct *img) {
+	GSList *slides = img_import_slides_file_chooser(img);
+
+	if (slides == NULL)
+		return;
+
+	img_add_slides(slides, img);
+}
+
+// slides is a list of filenames of slides to add. The list and its content
+// is freed by the function.
+void img_add_slides(GSList *slides, img_window_struct *img)
 {
-	GSList	*slides = NULL, *bak;
+	GSList *bak;
 	GdkPixbuf *thumb;
 	GtkTreeIter iter;
 	slide_struct *slide_info;
 	GError *error = NULL;
 	gchar *filename;
 	gint slides_cnt = 0, actual_slides = 0;
-
-	slides = img_import_slides_file_chooser(img);
-
-	if (slides == NULL)
-		return;
 
 	actual_slides = img->slides_nr;
 	img->slides_nr += g_slist_length(slides);
@@ -225,8 +231,9 @@ void img_add_slides_thumbnails(GtkMenuItem * UNUSED(item), img_window_struct *im
 	    // to get the orientation tag, load a tiny version of the image
 	    thumb = gdk_pixbuf_new_from_file_at_size(filename, 1, 1, &error);
 	    if (!thumb) {
-		g_message("Cannot open %s: %s", filename, error->message);
+		img_message(img, TRUE, _("Cannot open new slide %s: %s"), filename, error->message);
 		g_error_free (error);
+		img->slides_nr--;
 		goto next_slide;
 	    }
 	    /* the file exists and can be read, create the slide_info */
@@ -242,8 +249,10 @@ void img_add_slides_thumbnails(GtkMenuItem * UNUSED(item), img_window_struct *im
 			img->distort_images, img->background_color,
 			&thumb, NULL );
 	    if (!thumb) {
-		g_message("Cannot open %s while thumbnailing %s: %s", slide_info->o_filename, slide_info->p_filename, error->message);
+		img_message(img, TRUE, _("Cannot open the thumbnail %s of the new slide %s: %s"),
+			slide_info->p_filename, slide_info->o_filename, error->message);
 		g_error_free (error);
+		img->slides_nr--;
 		goto next_slide;
 	    }
 	    gtk_list_store_append (img->thumbnail_model,&iter);
@@ -253,8 +262,8 @@ void img_add_slides_thumbnails(GtkMenuItem * UNUSED(item), img_window_struct *im
 		    3, FALSE,
 		    -1);
 	    g_object_unref (thumb);
-	next_slide:
 	    slides_cnt++;
+	next_slide:
 	    g_free(slides->data);
 	    img_increase_progressbar(img, slides_cnt);
 	    slides = slides->next;
@@ -283,9 +292,12 @@ void img_add_slides_thumbnails(GtkMenuItem * UNUSED(item), img_window_struct *im
 void img_increase_progressbar(img_window_struct *img, gint nr)
 {
 	gchar *message;
-	gdouble percent;
+	gdouble percent = 0;
 
-	percent = (gdouble)nr / img->slides_nr;
+	// if all slides fail to be imported, slides_nr can be 0
+	if (img->slides_nr) {
+	    percent = (gdouble)nr / img->slides_nr;
+	}
 	gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (img->progress_bar), percent);
 	message = g_strdup_printf( _("Please wait, importing image %d out of %d"),
 							   nr, img->slides_nr );
@@ -1304,11 +1316,9 @@ void img_on_drag_data_received (GtkWidget * UNUSED(widget), GdkDragContext
 {
 	gchar **pictures = NULL;
 	gchar *filename;
+	GSList *slides = NULL;
 	GtkWidget *dialog;
-	GdkPixbuf *thumb;
-	GtkTreeIter iter;
-	gint len = 0, slides_cnt = 0, actual_slides;
-	slide_struct *slide_info;
+	int len = 0;
 
 	pictures = gtk_selection_data_get_uris(data);
 	if (pictures == NULL)
@@ -1320,44 +1330,17 @@ void img_on_drag_data_received (GtkWidget * UNUSED(widget), GdkDragContext
 		gtk_drag_finish(context,FALSE,FALSE,time);
 		return;
 	}
-	actual_slides = img->slides_nr;
 	gtk_drag_finish (context,TRUE,FALSE,time);
 	while(pictures[len])
 	{
 		filename = g_filename_from_uri (pictures[len],NULL,NULL);
-		if( img_scale_image( filename, img->video_ratio, 88, 0,
-							 img->distort_images, img->background_color,
-							 &thumb, NULL ) )
-		{
-			slide_info = img_create_new_slide();
-			if (slide_info)
-			{
-				img_set_slide_file_info( slide_info, filename );
-				gtk_list_store_append (img->thumbnail_model,&iter);
-				gtk_list_store_set (img->thumbnail_model, &iter, 0, thumb, 1, slide_info, -1);
-				g_object_unref (thumb);
-				slides_cnt++;
-			}
-		}
-		g_free(filename);
+		slides = g_slist_prepend(slides, filename);
 		len++;
 	}
-	if (slides_cnt > 0)
-	{
-		img->slides_nr += slides_cnt;
-		img->project_is_modified = TRUE;
-		img_set_total_slideshow_duration(img);
-		img_set_statusbar_message(img, 0);
-	}
+
+	img_add_slides(slides, img);
+
 	g_strfreev (pictures);
-
-	/* Select the first slide */
-	if (actual_slides == 0)
-		img_goto_first_slide(NULL, img);
-
-	/* Select the first loaded slide if a previous set of slides was loaded */
-	else
-		img_select_nth_slide(img, actual_slides);	
 }
 
 /*
