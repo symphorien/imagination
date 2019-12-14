@@ -1172,16 +1172,35 @@ img_render_still_frame( img_window_struct *img,
 	cairo_destroy( cr );
 }
 
+/* Writes len bytes of buffer into file_desc in several tries if
+ * necessary. Also retries if EAGAIN is encountered.
+ * Resets errno, returns false when an error happened and is set in
+ * errno.
+ * */
+gboolean safe_write(gint file_desc, const gchar* buffer, gsize len) {
+    gsize n = 0;
+    errno = 0;
+    while (n < len && (errno == EAGAIN || !errno)) {
+	n += write(file_desc, buffer+n, len-n);
+    }
+    if (errno) {
+	return FALSE;
+    }
+    return TRUE;
+}
+
+
 static void
 img_export_frame_to_ppm( cairo_surface_t *surface,
 						 gint             file_desc )
 {
-	gint            width, height, stride, row, col, n;
+	gint            width, height, stride, row, col;
 	guchar         *data, *pix;
 	gchar          *header;
 
 	guchar         *buffer, *tmp;
 	gint            buf_size;
+	gboolean	ok;
 
 	/* Image info and pixel data */
 	width  = cairo_image_surface_get_width( surface );
@@ -1195,10 +1214,11 @@ img_export_frame_to_ppm( cairo_surface_t *surface,
 	 *   - 255 is number of colors
 	 * */
 	header = g_strdup_printf( "P6\n%d %d\n255\n", width, height );
-	n = write( file_desc, header, sizeof( gchar ) * strlen( header ) );
+
+	ok = safe_write( file_desc, header, sizeof( gchar ) * strlen( header ) );
 	g_free( header );
-	if ( (unsigned)n != sizeof(gchar) * strlen(header) ) {
-	    g_message("Could not write full ppm header");
+	if (!ok) {
+	    g_message("Could not write full ppm header: %s", strerror(errno));
 	    return;
 	}
 
@@ -1249,9 +1269,9 @@ img_export_frame_to_ppm( cairo_surface_t *surface,
 			tmp  += 3;
 		}
 	}
-	n = write( file_desc, buffer, buf_size );
-	if ( n != buf_size ) {
-	    g_message("Could not write full ppm image (%d instead of %d)", n, buf_size);
+	ok = safe_write( file_desc, (gchar *)buffer, buf_size );
+	if (!ok) {
+	    g_message("Could not write full ppm image: %s", strerror(errno));
 	}
 	g_slice_free1( buf_size, buffer );
 }
