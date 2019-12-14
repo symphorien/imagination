@@ -2285,11 +2285,11 @@ static void img_show_uri(GtkMenuItem * UNUSED(menuitem), img_window_struct *img)
 	img_message (img, FALSE, "%s\n", file);
 
 	/* If help is not localized yet, show default language (english) */
-	if ( !gtk_show_uri(NULL,file, GDK_CURRENT_TIME, NULL))
+	if ( !gtk_show_uri_on_window(GTK_WINDOW(img->imagination_window), file, GDK_CURRENT_TIME, NULL))
 	{
 		g_free( file );
 		file = g_strconcat("file://",DATADIR,"/doc/",PACKAGE,"/html/en/index.html",NULL);
-		gtk_show_uri(NULL,file, GDK_CURRENT_TIME, NULL);
+		gtk_show_uri_on_window(GTK_WINDOW(img->imagination_window), file, GDK_CURRENT_TIME, NULL);
 	}
 	g_free(file);
 }
