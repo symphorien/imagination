@@ -1252,7 +1252,8 @@ img_window_struct *img_create_window (void)
 	g_signal_connect (G_OBJECT (img_struct->fadeout_duration),"value-changed",G_CALLBACK (img_fadeout_duration_changed),img_struct);
 	gtk_box_pack_start(GTK_BOX(hbox_fadeout), img_struct->fadeout_duration, TRUE, TRUE, 0);
 
-	hbox_buttons = gtk_hbox_new(TRUE, 2);
+	hbox_buttons = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+	gtk_box_set_homogeneous(hbox_buttons, TRUE);
 	gtk_box_pack_start( GTK_BOX( vbox2 ), hbox_buttons, FALSE, FALSE, 0 );
 
 	img_struct->play_audio_button = gtk_button_new();
