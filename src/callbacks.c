@@ -618,7 +618,7 @@ void img_exit_fullscreen(img_window_struct *img)
 	gtk_alignment_set(GTK_ALIGNMENT(img->viewport_align), 0.5, 0.5, 0, 0);
 
 	gtk_window_unfullscreen(GTK_WINDOW(img->imagination_window));
-	gtk_widget_add_accelerator (img->fullscreen, "activate", img->accel_group, GDK_KEY_F11, GDK_MODE_DISABLED, GTK_ACCEL_VISIBLE);
+	gtk_widget_add_accelerator (img->fullscreen, "activate", img->accel_group, GDK_KEY_F11, 0, GTK_ACCEL_VISIBLE);
 	img->window_is_fullscreen = FALSE;
 
 	/* Restore the cursor */
@@ -1010,7 +1010,7 @@ void img_go_fullscreen(GtkMenuItem * UNUSED(item), img_window_struct *img)
 	GdkWindow *win 		= gtk_widget_get_window(img->imagination_window);
 	gdk_window_set_cursor(win, cursor);
 
-	gtk_widget_remove_accelerator (img->fullscreen, img->accel_group, GDK_KEY_F11, GDK_MODE_DISABLED);
+	gtk_widget_remove_accelerator (img->fullscreen, img->accel_group, GDK_KEY_F11, 0);
 
 	gtk_widget_hide (img->thumb_scrolledwindow);
 	gtk_widget_hide (img->notebook);

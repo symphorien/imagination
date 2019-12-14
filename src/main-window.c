@@ -300,7 +300,7 @@ img_window_struct *img_create_window (void)
 	image_menu = gtk_image_new_from_pixbuf(pixbuf);
 	g_object_unref(pixbuf);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (img_struct->fullscreen_music_preview),image_menu);
-	gtk_widget_add_accelerator (img_struct->fullscreen_music_preview, "activate",img_struct->accel_group, GDK_KEY_space, GDK_MODE_DISABLED, GTK_ACCEL_VISIBLE);
+	gtk_widget_add_accelerator (img_struct->fullscreen_music_preview, "activate",img_struct->accel_group, GDK_KEY_space, 0, GTK_ACCEL_VISIBLE);
 	g_signal_connect (G_OBJECT (img_struct->fullscreen_music_preview),"activate",G_CALLBACK (img_start_stop_preview),img_struct);
 	gtk_menu_shell_append( GTK_MENU_SHELL( menu3 ), img_struct->fullscreen_music_preview );
 	
@@ -461,7 +461,7 @@ img_window_struct *img_create_window (void)
 
 	img_struct->fullscreen = gtk_image_menu_item_new_with_mnemonic (_("Fullscreen"));
 	gtk_container_add (GTK_CONTAINER (menu1),img_struct->fullscreen);
-	gtk_widget_add_accelerator (img_struct->fullscreen, "activate", img_struct->accel_group,GDK_KEY_F11,GDK_MODE_DISABLED,GTK_ACCEL_VISIBLE);
+	gtk_widget_add_accelerator (img_struct->fullscreen, "activate", img_struct->accel_group,GDK_KEY_F11,0,GTK_ACCEL_VISIBLE);
 	g_signal_connect (G_OBJECT (img_struct->fullscreen),"activate", G_CALLBACK (img_go_fullscreen), img_struct);
 	tmp_image = gtk_image_new_from_stock (GTK_STOCK_FULLSCREEN, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image (GTK_IMAGE_MENU_ITEM (img_struct->fullscreen),tmp_image);
@@ -504,7 +504,7 @@ img_window_struct *img_create_window (void)
 
 	contents = gtk_image_menu_item_new_with_mnemonic (_("Contents"));
 	gtk_container_add (GTK_CONTAINER (menu3),contents);
-	gtk_widget_add_accelerator (contents,"activate",img_struct->accel_group,GDK_KEY_F1,GDK_MODE_DISABLED,GTK_ACCEL_VISIBLE);
+	gtk_widget_add_accelerator (contents,"activate",img_struct->accel_group,GDK_KEY_F1,0,GTK_ACCEL_VISIBLE);
 	g_signal_connect (G_OBJECT (contents),"activate",G_CALLBACK (img_show_uri),img_struct);
 
 	tmp_image = gtk_image_new_from_stock ("gtk-help",GTK_ICON_SIZE_MENU);
