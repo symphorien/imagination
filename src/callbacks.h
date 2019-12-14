@@ -146,7 +146,7 @@ img_rotate_flip_slide( slide_struct   *slide,
 
 void
 img_notebook_switch_page (GtkNotebook       *notebook,
-                          GtkNotebookPage   *page,
+                          gpointer            opaque,
                           guint              page_num,
                           img_window_struct *img);
 

@@ -70,9 +70,7 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 										GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 										GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, NULL);
 
-	gtk_button_box_set_layout (GTK_BUTTON_BOX (GTK_DIALOG (dialog1)->action_area), GTK_BUTTONBOX_SPREAD);
 	gtk_window_set_default_size(GTK_WINDOW(dialog1),520,-1);
-	gtk_dialog_set_has_separator (GTK_DIALOG (dialog1), FALSE);
 
 	dialog_vbox1 = gtk_dialog_get_content_area( GTK_DIALOG( dialog1 ) );
 	vbox1 = gtk_vbox_new (FALSE, 5);

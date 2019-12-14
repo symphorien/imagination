@@ -116,7 +116,7 @@ cb_timeout( GdkPixbufAnimationIter *iter )
 		GtkWidget *widget;
 
 		widget = g_object_get_data( G_OBJECT( iter ), "widget" );
-		if( ! GTK_WIDGET_VISIBLE( widget ) )
+		if( ! gtk_widget_get_visible( widget ) )
 			return( FALSE );
 
 		gtk_widget_queue_draw( widget );
@@ -192,16 +192,18 @@ img_cell_renderer_anim_render( GtkCellRenderer      *cell,
 	cairo_t                    *cr;
 	GdkRectangle                rect,
 								draw_rect;
+	gint xpad, ypad;
 
 	priv = IMG_CELL_RENDERER_ANIM_GET_PRIVATE ( cell );
 
 	/* Get image size */
 	img_cell_renderer_anim_get_size( cell, widget, cell_a, &rect.x,
 									 &rect.y, &rect.width, &rect.height );
-	rect.x += cell_a->x + cell->xpad;
-	rect.y += cell_a->y + cell->ypad;
-	rect.width  -= 2 * cell->xpad;
-	rect.height -= 2 * cell->ypad;
+	gtk_cell_renderer_get_padding(cell, &xpad, &ypad);
+	rect.x += cell_a->x + xpad;
+	rect.y += cell_a->y + ypad;
+	rect.width  -= 2 * xpad;
+	rect.height -= 2 * ypad;
 
 	/* Check for overlaping */
 	if( ! gdk_rectangle_intersect( cell_a, &rect, &draw_rect ) ||
@@ -248,8 +250,8 @@ img_cell_renderer_anim_get_size( GtkCellRenderer *cell,
 	ImgCellRendererAnimPrivate *priv;
 	/* Calculated values */
 	gboolean calc_off;
-	gint     w = 0,
-			 h = 0;
+	gint     xpad, ypad, w = 0, h = 0;
+	gfloat     xalign, yalign;
 
 	priv = IMG_CELL_RENDERER_ANIM_GET_PRIVATE( cell );
 
@@ -262,9 +264,12 @@ img_cell_renderer_anim_get_size( GtkCellRenderer *cell,
 
 	calc_off = ( w > 0 && h > 0 ? TRUE : FALSE );
 
+	gtk_cell_renderer_get_padding(cell, &xpad, &ypad);
+	gtk_cell_renderer_get_alignment(cell, &xalign, &yalign);
+
 	/* Add padding */
-	w += (gint)cell->xpad * 2;
-	h += (gint)cell->ypad * 2;
+	w += xpad * 2;
+	h += ypad * 2;
 
 	/* Calculate offsets */
 	if( cell_area && calc_off )
@@ -275,14 +280,14 @@ img_cell_renderer_anim_get_size( GtkCellRenderer *cell,
 			
 			dir = ( gtk_widget_get_direction( widget ) == GTK_TEXT_DIR_LTR );
 
-			*x_off = ( dir ? cell->xalign : 1.0 - cell->xalign ) *
+			*x_off = ( dir ? xalign : 1.0 - xalign ) *
 					 ( cell_area->width - w );
 			*x_off = MAX( *x_off, 0 );
 		}
 
 		if( y_off )
 		{
-			*y_off = cell->yalign * ( cell_area->height - h );
+			*y_off = yalign * ( cell_area->height - h );
 			*y_off = MAX( *y_off, 0 );
 		}
 	}

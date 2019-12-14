@@ -64,7 +64,6 @@ static gboolean img_transition_timeout(img_window_struct *);
 static gboolean img_still_timeout(img_window_struct *);
 static void img_swap_toolbar_images( img_window_struct *, gboolean);
 static void img_clean_after_preview(img_window_struct *);
-static void img_about_dialog_activate_link(GtkAboutDialog * , const gchar *, gpointer );
 static GdkPixbuf *img_rotate_pixbuf( GdkPixbuf *, GtkProgressBar *, ImgAngle );
 static void img_rotate_selected_slides( img_window_struct *, gboolean );
 
@@ -951,7 +950,6 @@ void img_show_about_dialog (GtkMenuItem * UNUSED(item), img_window_struct *img_s
 	if (about == NULL)
 	{
 		about = gtk_about_dialog_new ();
-		gtk_about_dialog_set_url_hook(img_about_dialog_activate_link, NULL, NULL);
 		gtk_window_set_position (GTK_WINDOW (about),GTK_WIN_POS_CENTER_ON_PARENT);
 		gtk_window_set_transient_for (GTK_WINDOW (about),GTK_WINDOW (img_struct->imagination_window));
 		gtk_window_set_destroy_with_parent (GTK_WINDOW (about),TRUE);
@@ -984,12 +982,6 @@ void img_show_about_dialog (GtkMenuItem * UNUSED(item), img_window_struct *img_s
 	}
 	gtk_dialog_run ( GTK_DIALOG(about));
 	gtk_widget_hide (about);
-}
-
-static void img_about_dialog_activate_link(GtkAboutDialog * UNUSED(dialog), const gchar *link, gpointer UNUSED(data))
-{
-	/* Replace xdg-open with GTK+ equivalent */
-	gtk_show_uri( NULL, link, GDK_CURRENT_TIME, NULL );
 }
 
 void img_go_fullscreen(GtkMenuItem * UNUSED(item), img_window_struct *img)
@@ -1394,6 +1386,8 @@ img_on_expose_event( GtkWidget         *widget,
 					 img_window_struct *img )
 {
 	cairo_t *cr;
+	GtkAllocation allocation;
+	gtk_widget_get_allocation(img->image_area, &allocation);
 
 	/* If we're previewing or exporting, only paint frame that is being
 	 * currently produced. */
@@ -1401,11 +1395,10 @@ img_on_expose_event( GtkWidget         *widget,
 	{
 		gdouble factor;
 
-		cr = gdk_cairo_create( widget->window );
+		cr = gdk_cairo_create( gtk_widget_get_window(widget) );
 		
 		/* Do the drawing */
-		factor = (gdouble)img->image_area->allocation.width /
-						  img->video_size[0];
+		factor = allocation.width / img->video_size[0];
 		cairo_scale( cr, factor, factor );
 		cairo_set_source_surface( cr, img->exported_image, 0, 0 );
 		cairo_paint( cr );
@@ -1418,10 +1411,10 @@ img_on_expose_event( GtkWidget         *widget,
 			/* Use default handler */
 			return( FALSE );
 
-		cr = gdk_cairo_create( widget->window );
+		cr = gdk_cairo_create( gtk_widget_get_window(widget) );
 		
 		/* Do the drawing */
-		img_draw_image_on_surface( cr, img->image_area->allocation.width,
+		img_draw_image_on_surface( cr, allocation.width,
 								   img->current_image, &img->current_point, img );
 
 		/* Render subtitle if present */
@@ -1976,12 +1969,14 @@ img_zoom_fit( GtkWidget         * UNUSED(item),
               img_window_struct *img )
 {
     gdouble step, level1, level2;
+    GtkAllocation allocation;
     
     if( img->mode == 0 )
     {
+	gtk_widget_get_allocation(img->prev_root, &allocation);
         /* we want to fit the frame into prev_root. Frame = video + 4 px */
-        level1 = (float)img->prev_root->allocation.width / (img->video_size[0] + 4);
-        level2 = (float)img->prev_root->allocation.height / (img->video_size[1] + 4);
+        level1 = (float)allocation.width / (img->video_size[0] + 4);
+        level2 = (float)allocation.height / (img->video_size[1] + 4);
         if (level1 < level2)
             /* step is relative to zoom level 1 */
             step = level1 - 1;
@@ -2484,10 +2479,13 @@ void img_clipboard_cut_copy_operation(img_window_struct *img, ImgClipboardMode m
 
 void img_clipboard_get (GtkClipboard * UNUSED(clipboard), GtkSelectionData *selection_data, guint UNUSED(info), img_window_struct *img)
 {
-	if (selection_data->target != IMG_INFO_LIST)
-		return;
+    GdkAtom target;
+    target = gtk_selection_data_get_target(selection_data);
+    if (target != IMG_INFO_LIST) {
+	return;
+    }
 
-	gtk_selection_data_set (selection_data, selection_data->target, 8, (guchar *) img->selected_paths, sizeof(GList) * g_list_length(img->selected_paths) );
+    gtk_selection_data_set (selection_data, target, 8, (guchar *) img->selected_paths, sizeof(GList) * g_list_length(img->selected_paths) );
 }
 
 void img_clipboard_clear (GtkClipboard * UNUSED(clipboard), img_window_struct *img)
@@ -2574,8 +2572,6 @@ img_add_empty_slide( GtkMenuItem       *item,
 					GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
 					NULL );
 
-	gtk_button_box_set_layout (GTK_BUTTON_BOX (GTK_DIALOG (dialog)->action_area), GTK_BUTTONBOX_SPREAD);
-	gtk_dialog_set_has_separator (GTK_DIALOG (dialog), FALSE);
 	vbox = gtk_dialog_get_content_area( GTK_DIALOG( dialog ) );
 	
 	frame = gtk_frame_new( _("Empty slide options:") );
@@ -2873,7 +2869,7 @@ img_gradient_expose( GtkWidget      * UNUSED(widget),
 	gint             w, h;
 	gdouble          radius, diffx, diffy;
 
-	gdk_drawable_get_size( expose->window, &w, &h );
+	gdk_window_get_geometry( expose->window, NULL, NULL, &w, &h, NULL );
 	cr = gdk_cairo_create( expose->window );
 
 	switch( slide->gradient )
@@ -3037,7 +3033,7 @@ img_gradient_move( GtkWidget      * UNUSED(widget),
 	if( ! slide->drag )
 		return( FALSE );
 
-	gdk_drawable_get_size( motion->window, &w, &h );
+	gdk_window_get_geometry( motion->window, NULL, NULL, &w, &h, NULL);
 	switch( slide->gradient )
 	{
 		case 1:
@@ -3267,7 +3263,7 @@ img_rotate_flip_slide( slide_struct   *slide,
 
 void
 img_notebook_switch_page (GtkNotebook       * UNUSED(notebook),
-                          GtkNotebookPage   * UNUSED(page),
+                          gpointer           UNUSED(opaque),
                           guint              page_num,
                           img_window_struct *img)
 {
@@ -3287,7 +3283,7 @@ void img_align_text_horizontally_vertically(GtkMenuItem *item, img_window_struct
 	cairo_t	*cr;
 	gboolean centerX = FALSE, centerY = FALSE;
 
-	cr = gdk_cairo_create( img->image_area->window );
+	cr = gdk_cairo_create( gtk_widget_get_window(img->image_area) );
 	
 	if (GTK_WIDGET(item) == img->x_justify)
 	{

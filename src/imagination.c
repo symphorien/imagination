@@ -41,7 +41,6 @@ int main (int argc, char *argv[])
   		textdomain (GETTEXT_PACKAGE);
 	#endif
 	
-	gtk_set_locale ();
 	gtk_init (&argc, &argv);
 	
 	sox_globals.output_message_handler = output_message;

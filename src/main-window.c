@@ -2806,9 +2806,6 @@ static void img_report_slides_transitions(img_window_struct *img)
 									 480, 370 );
 		gtk_window_set_modal( GTK_WINDOW( img->report_dialog ), FALSE );
 
-		action = gtk_dialog_get_action_area( GTK_DIALOG( img->report_dialog ) );
-		gtk_button_box_set_layout( GTK_BUTTON_BOX( action ),
-								   GTK_BUTTONBOX_SPREAD);
 		g_signal_connect( G_OBJECT( img->report_dialog ), "delete-event",
 						  G_CALLBACK( gtk_widget_hide_on_delete ), NULL );
 		g_signal_connect( G_OBJECT( img->report_dialog ), "response",
@@ -2964,7 +2961,7 @@ static void img_report_slides_transitions(img_window_struct *img)
 		g_slice_free1( sizeof( gpointer ) * 3, info );
 	}
 
-	if( GTK_WIDGET_VISIBLE( img->report_dialog ) )
+	if( gtk_widget_get_visible( img->report_dialog ) )
 		gtk_widget_show_all( img->report_dialog );
 
 #undef GIP
