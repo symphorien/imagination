@@ -859,11 +859,6 @@ static GdkPixbuf *img_rotate_pixbuf( GdkPixbuf      *original,
 
 	switch( angle )
 	{
-		case ANGLE_0:
-			g_object_ref( G_OBJECT( original ) );
-			new = original;
-			break;
-
 		case ANGLE_90:
 			/* Create new rotated image */
 			new = gdk_pixbuf_new( colorspace, alpha, bps, h, w );
@@ -953,6 +948,14 @@ static GdkPixbuf *img_rotate_pixbuf( GdkPixbuf      *original,
 					gtk_main_iteration();
 			}
 			break;
+		default:
+			g_message("tried to rotate image in img_rotate_pixbug by an illegal amount %d", angle);
+			/* fallthrough */
+		case ANGLE_0:
+			g_object_ref( G_OBJECT( original ) );
+			new = original;
+			break;
+
 	}
 
 	return( new );
