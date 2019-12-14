@@ -389,9 +389,9 @@ img_append_slides_from( img_window_struct *img, const gchar *input )
 
 
 	gchar *subtitle = NULL, *pattern_name = NULL, *font_desc;
-	gdouble *my_points = NULL, *p_start, *p_stop, *c_start, *c_stop;
+	gdouble *my_points = NULL, *p_start = NULL, *p_stop = NULL, *c_start = NULL, *c_stop = NULL;
 	gsize length;
-	gint anim_id,anim_duration, posx, posy, gradient, subtitle_length, subtitle_angle;
+	gint anim_id,anim_duration, posx, posy, gradient = 0, subtitle_length, subtitle_angle;
 	GdkPixbuf *pix = NULL;
     gboolean      load_ok, flipped, img_load_ok, top_border, bottom_border;
 	gchar *original_filename = NULL;
@@ -399,7 +399,7 @@ img_append_slides_from( img_window_struct *img, const gchar *input )
 	GtkIconInfo  *icon_info;
 	const gchar  *icon_filename;
 	ImgAngle   angle = 0;
-	
+
 		/* Load last slide setting (bye bye transition) */
 		img->bye_bye_transition = g_key_file_get_boolean( img_key_file, "slideshow settings",
 										 "blank slide", NULL);
@@ -518,10 +518,12 @@ img_append_slides_from( img_window_struct *img, const gchar *input )
 				{
 					if( slide_filename )
 						img_set_slide_file_info( slide_info, slide_filename );
-					else
+					else {
+						g_return_if_fail(c_start && c_stop && p_start && p_stop);
 						img_set_slide_gradient_info( slide_info, gradient,
 													 c_start, c_stop,
 													 p_start, p_stop );
+					}
 
                     /* Handle load errors */
                     slide_info->load_ok = img_load_ok;

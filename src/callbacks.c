@@ -3238,8 +3238,6 @@ img_rotate_flip_slide( slide_struct   *slide,
 				  gboolean        flipped,
 				  GtkProgressBar *progress )
 {
-	gchar *filename;
-
 	/* If this slide is gradient, do nothing */
 	if( ! slide->o_filename )
 		return;
@@ -3251,7 +3249,7 @@ img_rotate_flip_slide( slide_struct   *slide,
 	    img_reset_rotation_flip(slide);
 	    return;
 	}
-	GdkPixbuf *image, *processed;
+	GdkPixbuf *image;
 	gint       handle;
 	gboolean   ok;
 	GError    *error = NULL;
@@ -3261,10 +3259,11 @@ img_rotate_flip_slide( slide_struct   *slide,
 	if (!image) {
 		g_message( "%s.", error->message );
 		g_error_free( error );
-		g_free( filename );
 		img_reset_rotation_flip(slide);
 		return;
 	}
+
+	GdkPixbuf *processed = NULL;
 
 	// do the rotation, flipping
 	if (angle) {
@@ -3281,6 +3280,7 @@ img_rotate_flip_slide( slide_struct   *slide,
 	}
 
 	// save result
+	gchar *filename;
 	handle = g_file_open_tmp( "img-XXXXXX.jpg", &filename, NULL );
 	close( handle );
 	ok = gdk_pixbuf_save( processed, filename, "jpeg", &error, NULL );
