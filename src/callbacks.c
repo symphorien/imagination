@@ -435,7 +435,10 @@ void img_select_audio_files_to_add ( GtkMenuItem* UNUSED(button), img_window_str
 	}
 	if (files != NULL)
 	{
-		g_slist_foreach(files, (GFunc) g_free, NULL);
+		GSList *node0;
+		for(node0 = files;node0 != NULL;node0 = node0->next) {
+			g_free(node0->data);
+		}
 		g_slist_free (files);
 	}	
 
@@ -635,7 +638,10 @@ gboolean img_quit_application(GtkWidget * UNUSED(widget), GdkEvent * UNUSED(even
 	img_free_allocated_memory(img_struct);
 
 	/* Unloads the plugins */
-	g_slist_foreach(img_struct->plugin_list,(GFunc)g_module_close,NULL);
+	GSList *node1;
+	for(node1 = img_struct->plugin_list;node1 != NULL;node1 = node1->next) {
+		g_module_close(node1->data);
+	}
 	g_slist_free(img_struct->plugin_list);
 
 	return FALSE;
