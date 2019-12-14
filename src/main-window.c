@@ -167,7 +167,7 @@ img_window_struct *img_create_window (void)
 	GtkWidget *rotate_right_menu;
 	GtkWidget *rotate_left_button;
 	GtkWidget *rotate_right_button;
-
+	AtkObject *atk;
 	GtkWidget *tmp_checks[PREVIEW_FPS_NO_PRESETS];
 
 	img_struct = g_new0(img_window_struct, 1);
@@ -648,6 +648,8 @@ img_window_struct *img_create_window (void)
 	gtk_container_add (GTK_CONTAINER (img_struct->toolbar), toolbutton_slide_goto);
 
 	img_struct->total_slide_number_label = gtk_label_new(NULL);
+	atk = gtk_widget_get_accessible(img_struct->total_slide_number_label);
+	atk_object_set_description(atk, _("Total number of slides"));
 	gtk_container_add (GTK_CONTAINER (toolbutton_slide_goto),img_struct->total_slide_number_label);
 
 	next_slide = GTK_WIDGET (gtk_tool_button_new_from_stock (GTK_STOCK_GO_FORWARD));
