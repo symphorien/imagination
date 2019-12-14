@@ -619,7 +619,8 @@ void img_exit_fullscreen(img_window_struct *img)
 	img->window_is_fullscreen = FALSE;
 
 	/* Restore the cursor */
-	GdkCursor *cursor	= gdk_cursor_new(GDK_ARROW);
+	GdkDisplay *display0 = gdk_display_get_default();
+	GdkCursor *cursor = gdk_cursor_new_for_display(display0, GDK_ARROW);
 	GdkWindow *win 		= gtk_widget_get_window(img->imagination_window);
 	gdk_window_set_cursor(win, cursor);
 }
@@ -997,7 +998,9 @@ void img_show_about_dialog (GtkMenuItem * UNUSED(item), img_window_struct *img_s
 void img_go_fullscreen(GtkMenuItem * UNUSED(item), img_window_struct *img)
 {
 	/* Hide the cursor */
-	GdkCursor *cursor	= gdk_cursor_new(GDK_BLANK_CURSOR);
+	GdkDisplay *display1 = gdk_display_get_default();
+	GdkCursor *cursor = gdk_cursor_new_for_display(display1,
+						       GDK_BLANK_CURSOR);
 	GdkWindow *win 		= gtk_widget_get_window(img->imagination_window);
 	gdk_window_set_cursor(win, cursor);
 
