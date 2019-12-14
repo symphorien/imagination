@@ -32,7 +32,10 @@ output_flow( sox_effect_t       * UNUSED(effp),
 {
 	if( ! g_atomic_int_get( global->sox_flags ) )
 	{
-		sox_write( global->output, ibuf, *isamp );
+		size_t n = sox_write( global->output, ibuf, *isamp );
+		if (n != *isamp) {
+			g_message("Could not write %lu bytes of SOX samples (only %lu).", *isamp, n);
+		}
 		*osamp = 0;
 
 		return( SOX_SUCCESS );
