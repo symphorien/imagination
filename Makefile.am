@@ -43,3 +43,6 @@ DISTCLEANFILES = \
 	intltool-merge \
 	intltool-update \
 	$(desktop_DATA)
+
+installcheck-local: tests/run_tests.sh $(wildcard tests/*.py)
+	IMAGINATION=$(bindir)/imagination tests/run_tests.sh

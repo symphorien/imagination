@@ -154,7 +154,9 @@ class TestSuite:
 
     def start(self, slideshow=None):
         """ start imagination, returns its root dogtail object """
-        app = str(Path(__file__).parent.parent / "src" / "imagination")
+        app = os.environ.get(
+            "IMAGINATION", str(Path(__file__).parent.parent / "src" / "imagination")
+        )
         cmd = app
         if slideshow:
             cmd += " " + str(slideshow)
