@@ -40,6 +40,11 @@
 #define comment_string \
 	"Imagination 2.0 Slideshow Project - http://imagination.sf.net"
 
+#ifdef __GNUC__
+#  define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
+#else
+#  define UNUSED(x) UNUSED_ ## x
+#endif
 
 /* ****************************************************************************
  * Subtitles related definitions

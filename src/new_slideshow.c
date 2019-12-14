@@ -369,7 +369,7 @@ static void img_video_format_changed (GtkComboBox *combo, img_window_struct *img
     gtk_combo_box_set_active(GTK_COMBO_BOX(img->video_size_combo), 0);
 }
 
-static void img_video_size_changed (GtkComboBox *combo, img_window_struct *img)
+static void img_video_size_changed (GtkComboBox * UNUSED(combo), img_window_struct *img)
 {
     gint size_idx, format_idx, index;
 

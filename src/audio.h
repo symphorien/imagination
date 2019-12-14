@@ -33,15 +33,15 @@ void output_message(unsigned , const char *, const char *, va_list ap);
 
 void
 img_analyze_input_files( gchar   **inputs,
-						 gint      no_inputs,
+						 guint      no_inputs,
 						 gdouble  *rate,
-						 gint     *channels );
+						 guint     *channels );
 
 gboolean
 img_eliminate_bad_files( gchar             **inputs,
-						 gint                no_inputs,
+						 guint                no_inputs,
 						 gdouble             rate,
-						 gint                channels,
+						 guint                channels,
 						 img_window_struct  *img );
 
 void

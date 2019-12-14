@@ -184,7 +184,7 @@ img_prepare_audio( img_window_struct *img )
 	gchar       **tmp;
 	gchar        *inputs[100]; /* 100 audio files is current limit */
 	gint          i = 0;
-	gint          channels;
+	guint          channels;
 	gdouble       rate;
 
 
@@ -461,7 +461,7 @@ img_start_export( img_window_struct *img )
 }
 
 gboolean
-on_close_export_dialog(GtkWidget *widget, GdkEvent *event, img_window_struct *img)
+on_close_export_dialog(GtkWidget * UNUSED(widget), GdkEvent * UNUSED(event), img_window_struct *img)
 {
     img_close_export_dialog(img);
     return TRUE;
@@ -1176,7 +1176,7 @@ static void
 img_export_frame_to_ppm( cairo_surface_t *surface,
 						 gint             file_desc )
 {
-	gint            width, height, stride, row, col;
+	gint            width, height, stride, row, col, n;
 	guchar         *data, *pix;
 	gchar          *header;
 
@@ -1195,8 +1195,12 @@ img_export_frame_to_ppm( cairo_surface_t *surface,
 	 *   - 255 is number of colors
 	 * */
 	header = g_strdup_printf( "P6\n%d %d\n255\n", width, height );
-	write( file_desc, header, sizeof( gchar ) * strlen( header ) );
+	n = write( file_desc, header, sizeof( gchar ) * strlen( header ) );
 	g_free( header );
+	if ( (unsigned)n != sizeof(gchar) * strlen(header) ) {
+	    g_message("Could not write full ppm header");
+	    return;
+	}
 
 	/* PRINCIPLES BEHING EXPORT LOOP
 	 *
@@ -1245,7 +1249,10 @@ img_export_frame_to_ppm( cairo_surface_t *surface,
 			tmp  += 3;
 		}
 	}
-	write( file_desc, buffer, buf_size );
+	n = write( file_desc, buffer, buf_size );
+	if ( n != buf_size ) {
+	    g_message("Could not write full ppm image (%d instead of %d)", n, buf_size);
+	}
 	g_slice_free1( buf_size, buffer );
 }
 
@@ -1274,7 +1281,7 @@ img_export_frame_to_ppm( cairo_surface_t *surface,
  * path to newly produced audio file (at this stage, we don't have any).
  * ************************************************************************* */
 
-void img_exporter (GtkWidget *button, img_window_struct *img )
+void img_exporter (GtkWidget * UNUSED(button), img_window_struct *img )
 {
 	gchar          *cmd_line, *bitrate_cmd, *aspect_ratio_cmd;
 	const gchar    *filename;
