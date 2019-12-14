@@ -21,7 +21,9 @@
 #ifndef __IMAGINATION_SUPPORT_H
 #define __IMAGINATION_SUPPORT_H
 
+#ifndef PLUGINS_INSTALLED
 #define PLUGINS_INSTALLED 0
+#endif
 
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
