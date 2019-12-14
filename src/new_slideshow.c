@@ -250,7 +250,7 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
 			img_update_current_slide( img );
 
 			/* Set indicator that project should be saved */
-			img_set_project_mod_state( img, TRUE );
+			img_taint_project(img);
 		}
 		
 		/* Adjust zoom level */

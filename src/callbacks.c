@@ -109,31 +109,59 @@ img_gradient_move( GtkWidget      *widget,
 				   GdkEventMotion *motion,
 				   ImgEmptySlide  *slide );
 
+/* Asks the user before discarding changes */
+gboolean img_can_discard_unsaved_project(img_window_struct *img) {
+	if (!img->project_is_modified)
+	{
+	    return TRUE;
+	}
+	int response = img_ask_user_confirmation( img,
+		_("You didn't save your slideshow yet. Are you sure you want to close it?"));
+	if (response == GTK_RESPONSE_OK)
+	    return TRUE;
+	return FALSE;
+}
 
-void img_set_window_title(img_window_struct *img, gchar *text)
+/* Mark the project as to be saved */
+void img_taint_project(img_window_struct *img)
+{
+    if (!img->project_is_modified) {
+	img->project_is_modified = TRUE;
+	img_refresh_window_title(img);
+    }
+}
+
+/* Recomputes the title to the main window depending on whether a project is open
+ * and whether it is modified */
+void img_refresh_window_title(img_window_struct *img)
 {
 	gchar *title = NULL;
+	gchar *rev =  strcmp(REVISION, "-1") == 0 ? VERSION : VERSION "-" REVISION;
 
-	if (text == NULL)
+	if (img->project_filename == NULL)
 	{
-		title = g_strconcat("Imagination ", strcmp(REVISION, "-1") == 0 ? VERSION : VERSION "-" REVISION, NULL);
-		gtk_window_set_title (GTK_WINDOW (img->imagination_window), title);
-		g_free(title);
+		title = g_strconcat("Imagination ", rev, NULL);
 	}
 	else
 	{
-		title = g_strconcat(text, " - Imagination ", strcmp(REVISION, "-1") == 0 ? VERSION : VERSION "-" REVISION, NULL);
-		gtk_window_set_title (GTK_WINDOW (img->imagination_window), title);
-		g_free(title);
+	    gchar *name = g_path_get_basename( img->project_filename );
+		title = g_strconcat(
+			img->project_is_modified ? "*" : "",
+			name,
+			" - Imagination ",
+			rev,
+			NULL);
+		g_free(name);
 	}
+	gtk_window_set_title (GTK_WINDOW (img->imagination_window), title);
+	g_free(title);
 }
 
 void img_new_slideshow(GtkMenuItem * UNUSED(item), img_window_struct *img_struct)
 {
-    if (img_struct->project_is_modified)
-        if (GTK_RESPONSE_OK != img_ask_user_confirmation(img_struct, _("You didn't save your slideshow yet. Are you sure you want to close it?")))
-            return;
-
+    if (!img_can_discard_unsaved_project(img_struct)) {
+	return;
+    }
     img_new_slideshow_settings_dialog(img_struct, FALSE);
 }
 
@@ -272,7 +300,7 @@ void img_add_slides(GSList *slides, img_window_struct *img)
 	g_slist_free(bak);
 	img_set_total_slideshow_duration(img);
 	img_set_statusbar_message(img,0);
-	img->project_is_modified = TRUE;
+	img_taint_project(img);
 
 	gtk_icon_view_set_model( GTK_ICON_VIEW( img->thumbnail_iconview ),
 							 GTK_TREE_MODEL( img->thumbnail_model ) );
@@ -334,6 +362,7 @@ void img_remove_audio_files (GtkWidget * UNUSED(widget), img_window_struct *img)
 			gtk_tree_path_free(path);
 		}
 		img->total_music_secs -= secs;
+		img_taint_project(img);
 	}
 	if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(img->music_file_liststore), &iter) == FALSE)
 	{
@@ -430,6 +459,7 @@ void img_add_audio_files (gchar *filename, img_window_struct *img)
 	if (time != NULL)
 	{
 		gtk_list_store_append(img->music_file_liststore, &iter);
+		img_taint_project(img);
 		gtk_list_store_set (img->music_file_liststore, &iter, 0, path, 1, file, 2, time, 3, secs, -1);
 		g_free(time);
 	}
@@ -593,13 +623,8 @@ void img_exit_fullscreen(img_window_struct *img)
 
 gboolean img_quit_application(GtkWidget * UNUSED(widget), GdkEvent * UNUSED(event), img_window_struct *img_struct)
 {
-	gint response;
-
-	if (img_struct->project_is_modified)
-	{
-		response = img_ask_user_confirmation( img_struct, _("You didn't save your slideshow yet. Are you sure you want to close it?"));
-		if (response != GTK_RESPONSE_OK)
-			return TRUE;
+	if (!img_can_discard_unsaved_project(img_struct)) {
+	    return TRUE;
 	}
 	if( img_save_window_settings( img_struct ) )
 		return( TRUE );
@@ -712,7 +737,7 @@ void img_delete_selected_slides(GtkMenuItem * UNUSED(item),img_window_struct *im
 	cairo_surface_destroy( img->current_image );
 	img->current_image = NULL;
 	gtk_widget_queue_draw( img->image_area );
-	img->project_is_modified = TRUE;
+	img_taint_project(img);
 	img_iconview_selection_changed(GTK_ICON_VIEW(img->active_icon),img);
 }
 
@@ -749,6 +774,7 @@ img_rotate_selected_slides( img_window_struct *img,
 	if( selected == NULL)
 		return;
 
+	img_taint_project(img);
 	gtk_widget_show(img->progress_bar);
 
 	bak = selected;
@@ -1607,9 +1633,9 @@ void img_choose_slideshow_filename(GtkWidget *widget, img_window_struct *img)
     /* close old slideshow if we import */
     if (widget == img->open_menu || widget == img->open_button)
     {
-        if (img->project_is_modified)
-            if (GTK_RESPONSE_OK != img_ask_user_confirmation(img, _("You didn't save your slideshow yet. Are you sure you want to close it?")))
-                return;
+	if (!img_can_discard_unsaved_project(img)) {
+	    return;
+	}
     }
 
 	/* If user wants to save empty slideshow, simply abort */
@@ -1696,14 +1722,13 @@ void img_choose_slideshow_filename(GtkWidget *widget, img_window_struct *img)
 void img_close_slideshow(GtkWidget *widget, img_window_struct *img)
 {
     /* When called from close_menu, ask for confirmation */
-    if (img->project_is_modified && widget == img->close_menu)
+    if (widget == img->close_menu && !img_can_discard_unsaved_project(img))
     {
-        if (GTK_RESPONSE_OK != img_ask_user_confirmation(img, _("You didn't save your slideshow yet. Are you sure you want to close it?")))
-            return;
+	return;
     }
 	img->project_is_modified = FALSE;
 	img_free_allocated_memory(img);
-	img_set_window_title(img,NULL);
+	img_refresh_window_title(img);
 	img_set_statusbar_message(img,0);
 	if( img->current_image )
 		cairo_surface_destroy( img->current_image );
@@ -1746,6 +1771,7 @@ void img_move_audio_up( GtkButton * UNUSED(button), img_window_struct *img )
 	{
 		gtk_tree_model_get_iter( model, &iter2, path );
 		gtk_list_store_swap( GTK_LIST_STORE( model ), &iter1, &iter2 );
+		img_taint_project(img);
 	}
 	gtk_tree_path_free( path );
 }
@@ -1764,8 +1790,10 @@ void img_move_audio_down( GtkButton * UNUSED(button), img_window_struct *img )
 
 	/* Get next iter and swap rows if iter exists. */
 	iter2 = iter1;
-	if( gtk_tree_model_iter_next( model, &iter2 ) )
+	if( gtk_tree_model_iter_next( model, &iter2 ) ) {
 		gtk_list_store_swap( GTK_LIST_STORE( model ), &iter1, &iter2 );
+		img_taint_project(img);
+	}
 }
 
 /*
@@ -1909,6 +1937,7 @@ void img_text_pos_changed( GtkRange *range, img_window_struct *img)
 	}
 
 	gtk_widget_queue_draw(img->image_area);
+	img_taint_project(img);
 }
 
 /* Zoom callback functions */
@@ -2763,7 +2792,7 @@ img_add_empty_slide( GtkMenuItem       *item,
 			}
 			g_object_unref( G_OBJECT( thumb ) );
 		}
-	img->project_is_modified = TRUE;
+	img_taint_project(img);
 	gtk_widget_queue_draw(img->image_area);
 	}
 	gtk_widget_destroy( dialog );
@@ -3288,6 +3317,7 @@ void img_align_text_horizontally_vertically(GtkMenuItem *item, img_window_struct
 								 centerX,
 								 centerY,
 								 1.0 );
+	img_taint_project(img);
 
 	gtk_widget_queue_draw(img->image_area);
 }
@@ -3375,6 +3405,7 @@ void img_subtitle_top_border_toggled (GtkToggleButton *button, img_window_struct
 							img->current_slide->bottom_border, -1);
 	
 	gtk_widget_queue_draw(img->image_area);
+	img_taint_project(img);
 }
 
 void img_subtitle_bottom_border_toggled (GtkToggleButton *button, img_window_struct *img)
@@ -3384,6 +3415,7 @@ void img_subtitle_bottom_border_toggled (GtkToggleButton *button, img_window_str
 								gtk_toggle_button_get_active(button), -1);
 	
 	gtk_widget_queue_draw(img->image_area);
+	img_taint_project(img);
 }
 
 void img_spinbutton_value_changed (GtkSpinButton *spinbutton, img_window_struct *img)
@@ -3407,6 +3439,7 @@ void img_spinbutton_value_changed (GtkSpinButton *spinbutton, img_window_struct 
 		gtk_tree_model_get(model, &iter,1,&info_slide,-1);
 		img_set_slide_still_info( info_slide, duration, img );
 		selected = selected->next;
+		img_taint_project(img);
 	}
 
 	g_list_foreach (bak, (GFunc)gtk_tree_path_free, NULL);
@@ -3414,6 +3447,7 @@ void img_spinbutton_value_changed (GtkSpinButton *spinbutton, img_window_struct 
 
 	/* Sync timings */
 	img_sync_timings( img->current_slide, img );
+	img_taint_project(img);
 }
 
 void img_subtitle_style_changed(GtkButton *button, img_window_struct *img)
@@ -3426,6 +3460,8 @@ void img_subtitle_style_changed(GtkButton *button, img_window_struct *img)
 	selection = gtk_text_buffer_get_selection_bounds(img->slide_text_buffer, &start, &end);
 	if (selection == 0)
 		return;
+
+	img_taint_project(img);
 
 	/* Which button did the user press? */
 	if (GTK_WIDGET(button) == img->bold_style)
@@ -3470,6 +3506,7 @@ void img_flip_horizontally(GtkMenuItem * UNUSED(item), img_window_struct *img)
 
 	if( selected == NULL)
 		return;
+	img_taint_project(img);
 
 	bak = selected;
 	while (selected)

@@ -932,18 +932,6 @@ img_scale_image( const gchar      *filename,
 }
 
 void
-img_set_project_mod_state( img_window_struct *img,
-						   gboolean           modified )
-{
-	if( ( img->project_is_modified ? modified : ! modified ) )
-		return;
-
-	img->project_is_modified = modified;
-
-	/* FIXME: Do any updates here (add "*" to window title, ...). */
-}
-
-void
 img_sync_timings( slide_struct      *slide,
 				  img_window_struct *img )
 {

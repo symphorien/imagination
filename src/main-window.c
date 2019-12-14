@@ -202,7 +202,7 @@ img_window_struct *img_create_window (void)
 	img_struct->imagination_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_icon (GTK_WINDOW(img_struct->imagination_window),icon);
 	gtk_window_set_position (GTK_WINDOW(img_struct->imagination_window),GTK_WIN_POS_CENTER);
-	img_set_window_title(img_struct,NULL);
+	img_refresh_window_title(img_struct);
 	g_signal_connect (G_OBJECT (img_struct->imagination_window),"delete-event",G_CALLBACK (img_quit_application),img_struct);
 	g_signal_connect (G_OBJECT (img_struct->imagination_window), "destroy", G_CALLBACK (gtk_main_quit), NULL );
 	g_signal_connect (G_OBJECT (img_struct->imagination_window), "key_press_event", G_CALLBACK(img_key_pressed), img_struct);
@@ -1673,6 +1673,7 @@ static void img_clear_audio_files(GtkButton * UNUSED(button), img_window_struct 
 	gtk_widget_set_sensitive(img->play_audio_button, FALSE);
 	gtk_widget_set_sensitive(img->remove_audio_button, FALSE);
 	gtk_label_set_text(GTK_LABEL(img->music_time_data), "");
+	img_taint_project(img);
 }
 
 static gboolean img_sub_textview_focus_in(GtkWidget * UNUSED(widget), GdkEventFocus * UNUSED(event), img_window_struct *img)
@@ -1966,7 +1967,7 @@ void img_combo_box_transition_type_changed (GtkComboBox *combo, img_window_struc
 	g_free( path );
 	if( pix )
 		g_object_unref( G_OBJECT( pix ) );
-	img->project_is_modified = TRUE;
+	img_taint_project(img);
 	img_report_slides_transitions( img );
 	img_set_total_slideshow_duration( img );
 	g_list_foreach( bak, (GFunc)gtk_tree_path_free, NULL );
@@ -2005,7 +2006,7 @@ static void img_random_button_clicked(GtkButton * UNUSED(button), img_window_str
 
 		selected = selected->next;
 	}
-	img->project_is_modified = TRUE;
+	img_taint_project(img);
 	g_list_foreach (bak, (GFunc)gtk_tree_path_free, NULL);
 	g_list_free(bak);
 
@@ -2102,6 +2103,7 @@ static void img_combo_box_speed_changed (GtkComboBox *combo, img_window_struct *
 			img->final_transition.speed = duration;
 
 		selected = selected->next;
+		img_taint_project(img);
 	}
 	img_set_total_slideshow_duration(img);
 
@@ -2235,6 +2237,8 @@ img_queue_subtitle_update( GtkTextBuffer     * UNUSED(buffer),
 	if( img->subtitle_update_id )
 		g_source_remove( img->subtitle_update_id );
 
+	img_taint_project(img);
+
 	img->subtitle_update_id =
 			g_timeout_add( 300, (GSourceFunc)img_subtitle_update, img );
 }
@@ -2319,6 +2323,7 @@ img_text_font_set( GtkFontButton     *button,
 								img->current_slide->top_border, img->current_slide->bottom_border,-1);
 
 	gtk_widget_queue_draw( img->image_area );
+	img_taint_project(img);
 }
 
 void
@@ -2342,6 +2347,7 @@ img_text_anim_set( GtkComboBox       *combo,
 							  (gboolean)gtk_combo_box_get_active( combo ) );
 
 	gtk_widget_queue_draw( img->image_area );
+	img_taint_project(img);
 }
 
 void
@@ -2379,6 +2385,7 @@ img_font_color_changed( GtkColorButton    *button,
 								img->current_slide->top_border, img->current_slide->bottom_border,-1);
 	}
 	gtk_widget_queue_draw( img->image_area );
+	img_taint_project(img);
 }
 
 void
@@ -2400,6 +2407,7 @@ img_font_brdr_color_changed( GtkColorButton    *button,
 							img->current_slide->top_border, img->current_slide->bottom_border, -1);
 
 	gtk_widget_queue_draw( img->image_area );
+	img_taint_project(img);
 }
 
 void
@@ -2438,6 +2446,7 @@ img_font_bg_color_changed( GtkColorButton    *button,
 								img->current_slide->top_border, img->current_slide->bottom_border, -1);
 	}
     gtk_widget_queue_draw( img->image_area );
+    img_taint_project(img);
 }
 
 void
@@ -2458,6 +2467,7 @@ img_sub_border_color_changed( GtkColorButton    *button,
 
     img_update_sub_properties( img, NULL, -1, -1, NULL, NULL, NULL, NULL, font_bgcolor, 
 								img->current_slide->top_border, img->current_slide->bottom_border, -1);
+    img_taint_project(img);
 
     gtk_widget_queue_draw( img->image_area );
 }
@@ -2471,6 +2481,7 @@ img_combo_box_anim_speed_changed( GtkSpinButton       *spinbutton,
 	speed = gtk_spin_button_get_value_as_int(spinbutton);
 	img_update_sub_properties( img, NULL, -1, speed, NULL, NULL, NULL, NULL, NULL, 
 								img->current_slide->top_border, img->current_slide->bottom_border, -1);
+	img_taint_project(img);
 }
 
 void img_sub_border_width_changed( GtkSpinButton       *spinbutton,
@@ -2483,6 +2494,7 @@ void img_sub_border_width_changed( GtkSpinButton       *spinbutton,
 								img->current_slide->top_border, img->current_slide->bottom_border, width);
 
 	gtk_widget_queue_draw( img->image_area );
+	img_taint_project(img);
 }
 
 void

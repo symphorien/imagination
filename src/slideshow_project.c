@@ -29,7 +29,7 @@ img_save_slideshow( img_window_struct *img,
 					gboolean		  relative )
 {
 	GKeyFile *img_key_file;
-	gchar *conf, *string, *path, *filename, *file, *font_desc;
+	gchar *conf, *path, *filename, *file, *font_desc;
 	gint count = 0;
 	gsize len;
 	GtkTreeIter iter;
@@ -226,16 +226,13 @@ img_save_slideshow( img_window_struct *img,
 	g_file_set_contents( output, conf, len, NULL );
 	g_free (conf);
 
-	string = g_path_get_basename( output );
-	img_set_window_title(img,string);
-	g_free(string);
 	g_key_file_free(img_key_file);
 
 	if( img->project_filename )
 		g_free( img->project_filename );
 	img->project_filename = g_strdup( output );
-
 	img->project_is_modified = FALSE;
+	img_refresh_window_title(img);
 }
 
 void
@@ -656,21 +653,18 @@ img_load_slideshow( img_window_struct *img,
 
 	img_set_statusbar_message(img, 0);
 
-	dummy = g_path_get_basename( input );
-	img_set_window_title(img, dummy);
-	g_free(dummy);
-
 	g_hash_table_destroy( table );
+	
+	/* Select the first slide */
+	img_goto_first_slide(NULL, img);
+	img->project_is_modified = FALSE;
 
 	/* If we made it to here, we succesfully loaded project, so it's safe to set
 	 * filename field in global data structure. */
 	if( img->project_filename )
 		g_free( img->project_filename );
 	img->project_filename = g_strdup( input );
-	
-	/* Select the first slide */
-	img_goto_first_slide(NULL, img);
-	img->project_is_modified = FALSE;
+	img_refresh_window_title(img);
 
 	/* Update incompatibilities display */
 	img_update_inc_audio_display( img );
