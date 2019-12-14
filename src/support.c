@@ -1326,35 +1326,6 @@ void img_check_for_rtf_colors(img_window_struct *img, gchar *subtitle)
 	}
 }
 
-void img_flip_slide(slide_struct *info_slide)
-{
-	GdkPixbuf	*flipped_pixbuf, *thumb;
-	gint		handle;
-	gchar		*filename;
-	GError     *error = NULL;
-	
-	info_slide->flipped = TRUE;
-	handle = g_file_open_tmp( "img-XXXXXX.jpg", &filename, NULL );
-	close( handle );
-	info_slide->p_filename = filename;
-
-	thumb = gdk_pixbuf_new_from_file( info_slide->o_filename, &error );
-	if (!thumb) {
-		g_message( "%s.", error->message );
-		g_error_free( error );
-		g_free( filename );
-		info_slide->p_filename = g_strdup( info_slide->o_filename );
-		info_slide->flipped = FALSE;
-		return;
-	}
-
-	flipped_pixbuf = gdk_pixbuf_flip(thumb, TRUE);
-	g_object_unref(thumb);
-				
-	gdk_pixbuf_save(flipped_pixbuf, info_slide->p_filename, "jpeg", NULL, NULL);
-	g_object_unref(flipped_pixbuf);
-}
-
 // Resets info_slide->p_filename to filename and removes the associated temp file if applicable
 void img_slide_set_p_filename(slide_struct *info_slide, gchar *filename)
 {

@@ -517,17 +517,10 @@ img_load_slideshow( img_window_struct *img,
                     slide_info->original_filename = original_filename;
 
 					
-		    // FIXME
-					/* If image has been flipped, flip it now too. */
-					if( flipped )
+					/* If image has been flipped or rotated, do it now too. */
+					if( flipped || angle)
 					{
-						slide_info->flipped = flipped;
-						img_flip_slide(slide_info);
-						img_scale_image( slide_info->p_filename, img->video_ratio,
-										 88, 0, img->background_color, &thumb, NULL );
-					} else /* If image has been rotated, rotate it now too. */ if( angle )
-					{
-						img_rotate_slide( slide_info, angle, NULL );
+						img_rotate_flip_slide( slide_info, angle, flipped, NULL );
 						g_object_unref( thumb );
 						img_scale_image( slide_info->p_filename, img->video_ratio,
 										 88, 0,
