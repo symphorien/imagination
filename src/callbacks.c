@@ -3450,6 +3450,12 @@ void img_spinbutton_value_changed (GtkSpinButton *spinbutton, img_window_struct 
 	img_taint_project(img);
 }
 
+void img_fadeout_duration_changed (GtkSpinButton *spinbutton, img_window_struct *img)
+{
+	img->audio_fadeout = gtk_spin_button_get_value(spinbutton);
+	img_taint_project(img);
+}
+
 void img_subtitle_style_changed(GtkButton *button, img_window_struct *img)
 {
 	gboolean 	selection;

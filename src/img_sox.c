@@ -120,8 +120,9 @@ img_produce_audio_data( ImgThreadData *data )
 	gchar               *fargs[] = { "t",   /* Logarithmic fade */
 									 "0",   /* 5 s fade-in */
 									 "",    /* Placeholder for total lenght */
-									 "5" }; /* 5 s fade-out */
+									 "" }; /* Placeholder for fade out */
 	fargs[2] = g_strdup_printf( "%d", data->length );
+	fargs[3] = g_strdup_printf( "%d", data->fadeout );
 
 	/* Initialize thread private part of the structure */
 	data->current_input = 1;

@@ -243,6 +243,7 @@ img_prepare_audio( img_window_struct *img )
 		tdata->files     =  img->exported_audio;
 		tdata->no_files  =  img->exported_audio_no;
 		tdata->length    =  img->total_secs;
+		tdata->fadeout   =  img->audio_fadeout;
 		tdata->fifo      =  img->fifo;
 
 		mkfifo( img->fifo, S_IRWXU );

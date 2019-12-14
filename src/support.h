@@ -50,6 +50,7 @@
 GtkWidget *img_load_icon(gchar *, GtkIconSize );
 gchar *img_convert_seconds_to_time(gint );
 GtkWidget *_gtk_combo_box_new_text(gint);
+void img_set_fadeout_duration(img_window_struct *, gint);
 void img_set_statusbar_message(img_window_struct *, gint);
 void img_load_available_transitions(img_window_struct *);
 void img_show_file_chooser(GtkWidget *, GtkEntryIconPosition, int, img_window_struct *);

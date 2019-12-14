@@ -123,6 +123,12 @@ GtkWidget *_gtk_combo_box_new_text(gboolean pointer)
 	return combo_box;
 }
 
+void img_set_fadeout_duration(img_window_struct *img_struct, gint duration)
+{
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(img_struct->fadeout_duration), duration);
+    img_struct->audio_fadeout = duration;
+}
+
 void img_set_statusbar_message(img_window_struct *img_struct, gint selected)
 {
 	gchar *message = NULL;

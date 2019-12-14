@@ -31,13 +31,14 @@ struct _ImgThreadData
 	gint *sox_flags; /* 0 - thread operates normally
 						1 - force thread to finish */
 
-	/* Next four fields are set in preparation stage, user as read-only
+	/* Next five fields are set in preparation stage, user as read-only
 	 * fileds inside sox thread and freed when export has finished/been
 	 * terminated */
 	gchar **files;     /* Audio files that should be exported */
 	gint    no_files;  /* Number of files in files array */
 	gchar  *fifo;      /* Write output here */
 	gint    length;    /* Slideshow length */
+	gint    fadeout;   /* Final fadeout length (s) */
 
 	/* All of the fields from here on are only accessed from thread */
 	sox_format_t *input;

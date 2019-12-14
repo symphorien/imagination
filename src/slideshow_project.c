@@ -196,6 +196,7 @@ img_save_slideshow( img_window_struct *img,
 	count = 0;
 
 	/* Background music */
+	g_key_file_set_integer(img_key_file, "music", "fadeout duration", img->audio_fadeout);
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(img->music_file_treeview));
 	if (gtk_tree_model_get_iter_first (model, &iter))
 	{
@@ -631,6 +632,10 @@ img_load_slideshow( img_window_struct *img,
 	g_object_unref( G_OBJECT( img->thumbnail_model ) );
 
 	/* Loads the audio files in the liststore */
+	img_set_fadeout_duration(img,
+	    g_key_file_get_integer(img_key_file, "music", "fadeout duration",
+	      NULL));
+
 	number = g_key_file_get_integer(img_key_file, "music", "number", NULL);
 	for (i = 1; i <= number; i++)
 	{

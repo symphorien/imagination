@@ -435,6 +435,7 @@ struct _img_window_struct
 	GThread  *sox;               /* sox thread handler */
 	gchar   **exported_audio;    /* Audio files to be exported */
 	gint      exported_audio_no; /* Number of audio files inside array */
+	gint      audio_fadeout; /* Number of audio files inside array */
 	gchar    *fifo;              /* Named pipe path */
 
 	/* Audio related stuff */
@@ -444,6 +445,7 @@ struct _img_window_struct
 	GtkListStore *music_file_liststore;
 	GtkTreeIter	next_audio_iter;
 	GtkWidget	*music_time_data;
+	GtkWidget	*fadeout_duration;
 	GPid		play_child_pid;
 	guint		audio_source_id;
     

@@ -133,6 +133,8 @@ img_window_struct *img_create_window (void)
 	GtkWidget *hbox_time_offset, *time_offset_label;
 	GtkWidget *hbox_textview, *text_animation_hbox;
 	GtkWidget *hbox_music_label;
+	GtkWidget *hbox_fadeout;
+	GtkWidget *fadeout_duration;
 	GtkWidget *music_time;
 	GtkWidget *hbox_buttons, *move_up_button;
 	GtkWidget *move_down_button, *clear_button, *image_buttons, *vbox2, *scrolledwindow1;
@@ -189,6 +191,8 @@ img_window_struct *img_create_window (void)
     img_struct->bitrate_index = 0;
     img_struct->fps_index = 0;
     img_struct->export_fps = video_format_list[img_struct->video_format_index].fps_list[img_struct->fps_index].value;
+
+    img_struct->audio_fadeout = 5;
 
 	img_struct->final_transition.duration = 0;
 	img_struct->final_transition.render = NULL;
@@ -1243,6 +1247,19 @@ img_window_struct *img_create_window (void)
 	img_struct->music_time_data = gtk_label_new(NULL);
 	gtk_box_pack_start(GTK_BOX(hbox_music_label), img_struct->music_time_data, TRUE, TRUE, 0);
 	gtk_misc_set_alignment (GTK_MISC (img_struct->music_time_data), 1, 0.5);
+
+	/* Add the fadeout duration and spinner */
+	hbox_fadeout = gtk_hbox_new(FALSE, 2);
+	gtk_box_pack_start( GTK_BOX( vbox2 ), hbox_fadeout, FALSE, FALSE, 0 );
+
+	fadeout_duration = gtk_label_new(_("Final fade-out duration:"));
+	gtk_box_pack_start(GTK_BOX(hbox_fadeout), fadeout_duration, TRUE, TRUE, 0);
+	gtk_misc_set_alignment (GTK_MISC (fadeout_duration), 0, 0.5);
+
+	GtkAdjustment *adj2 = (GtkAdjustment *) gtk_adjustment_new (img_struct->audio_fadeout, 0, 100, 1, 5, 0.0);
+	img_struct->fadeout_duration = gtk_spin_button_new (adj2, 1.0, 0);
+	g_signal_connect (G_OBJECT (img_struct->fadeout_duration),"value-changed",G_CALLBACK (img_fadeout_duration_changed),img_struct);
+	gtk_box_pack_start(GTK_BOX(hbox_fadeout), img_struct->fadeout_duration, TRUE, TRUE, 0);
 
 	hbox_buttons = gtk_hbox_new(TRUE, 2);
 	gtk_box_pack_start( GTK_BOX( vbox2 ), hbox_buttons, FALSE, FALSE, 0 );
