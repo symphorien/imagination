@@ -284,6 +284,7 @@ img_start_export( img_window_struct *img )
 	GtkWidget    *vbox, *hbox;
 	GtkWidget    *label;
 	GtkWidget    *progress;
+	AtkObject *atk;
 	gchar        *string;
 	cairo_t      *cr;
 
@@ -316,6 +317,8 @@ img_start_export( img_window_struct *img )
 
 	label = gtk_label_new( _("Preparing for export ...") );
 	gtk_misc_set_alignment( GTK_MISC( label ), 0, 0.5 );
+	atk = gtk_widget_get_accessible(label);
+	atk_object_set_description(atk, _("Status of export"));
 	img->export_label = label;
 	gtk_box_pack_start( GTK_BOX( vbox ), label, FALSE, FALSE, 0 );
 
@@ -382,18 +385,26 @@ img_start_export( img_window_struct *img )
 	gtk_tree_model_get_iter_first( model, &iter );
 	gtk_tree_model_get( model, &iter, 1, &entry, -1 );
 
+	gboolean success = FALSE;
+
 	if( ! entry->o_filename )
 	{
-		img_scale_gradient( entry->gradient, entry->g_start_point,
+		success = img_scale_gradient( entry->gradient, entry->g_start_point,
 							entry->g_stop_point, entry->g_start_color,
 							entry->g_stop_color, img->video_size[0],
 							img->video_size[1], NULL, &img->image2 );
 	}
 	else
 	{
-		img_scale_image( entry->p_filename, img->video_ratio,
+		success = img_scale_image( entry->p_filename, img->video_ratio,
 						 0, 0, img->distort_images,
 						 img->background_color, NULL, &img->image2 );
+	}
+
+	if (!success) {
+	    img->image2 = NULL;
+	    img_stop_export(img);
+	    return (FALSE);
 	}
 
 	/* Add export idle function and set initial values */
@@ -524,8 +535,8 @@ img_stop_export( img_window_struct *img )
 		g_free( img->export_cmd_line );
 	
 		/* Destroy images that were used */
-		cairo_surface_destroy( img->image1 );
-		cairo_surface_destroy( img->image2 );
+		if (img->image1) cairo_surface_destroy( img->image1 );
+		if (img->image2) cairo_surface_destroy( img->image2 );
 		cairo_surface_destroy( img->image_from );
 		cairo_surface_destroy( img->image_to );
 		cairo_surface_destroy( img->exported_image );
@@ -612,6 +623,7 @@ img_prepare_pixbufs( img_window_struct *img)
 	GtkTreePath     *path;
 	gchar			*selected_slide_nr;
 	static gboolean  last_transition = TRUE;
+	gboolean success;
 
 	model = GTK_TREE_MODEL( img->thumbnail_model );
 
@@ -656,10 +668,20 @@ img_prepare_pixbufs( img_window_struct *img)
 								img->video_size[0],
 								img->video_size[1], NULL, &img->image2 );
 		}
-		img_scale_image( img->current_slide->p_filename, img->video_ratio,
+		success = img_scale_image( img->current_slide->p_filename, img->video_ratio,
 							 0, img->video_size[1], img->distort_images,
 							 img->background_color, NULL, &img->image2 );
 
+		if (!success) {
+		    gchar *string;
+
+		    img->image2 = NULL;
+		    string = g_strdup_printf( _("Failed to load %s for slide %d of export"), img->current_slide->p_filename, img->export_slide + 1);
+		    img_message(img, TRUE, string);
+		    gtk_label_set_label( GTK_LABEL( img->export_label ), string );
+		    g_free( string );
+		    return (FALSE);
+		}
 		/* Get first stop point */
 		img->point2 = (ImgStopPoint *)( img->current_slide->no_points ?
 										img->current_slide->points->data :
@@ -884,7 +906,6 @@ static gboolean
 img_export_still( img_window_struct *img )
 {
 	gdouble export_progress;
-	gchar   string[10];
 	gchar	*dummy;
 
 	/* If there is next slide, connect transition preview, else finish
@@ -912,11 +933,13 @@ img_export_still( img_window_struct *img )
 
 			img->cur_point = NULL;
 		}
-		else
+		else {
 			img_post_export(img);
+		}
 
 		return( FALSE );
 	}
+	gchar   string[10];
 
 	/* Draw frames until we have enough of them to fill slide duration gap. */
 	

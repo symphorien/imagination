@@ -14,6 +14,10 @@ from dogtail.tree import SearchError, root
 from dogtail.utils import run
 
 
+class ExportFailed(RuntimeError):
+    pass
+
+
 def nonce(*args) -> int:
     """ Returns a (time based) nonce """
     return abs(hash((time(), args)))
@@ -217,7 +221,14 @@ class TestSuite:
         pause = self.imagination.child("Exporting the slideshow").child("Pause")
         while pause.showing:
             sleep(0.3)
+        status = (
+            self.imagination.child("Exporting the slideshow")
+            .child(description="Status of export")
+            .text
+        )
         self.imagination.child("Exporting the slideshow").button("Close").click()
+        if "failed" in status.lower():
+            raise ExportFailed(status)
         out.resolve()
         return out
 

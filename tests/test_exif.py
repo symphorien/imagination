@@ -22,7 +22,7 @@ with TestSuite() as t:
                 elif angle == 180 and flip:
                     letter = "P"
                 if letter:
-                    real = t.ocr(new) 
+                    real = t.ocr(new)
                     assert real == letter, f"rotation of b by {angle}° and flip:{flip} yields {real} and not {letter}"
                 data.append((new, angle, flip, letter))
 
