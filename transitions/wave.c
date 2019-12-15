@@ -20,6 +20,12 @@
 #include <cairo.h>
 #include <glib.h>
 
+#ifdef __GNUC__
+#  define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
+#else
+#  define UNUSED(x) UNUSED_ ## x
+#endif
+
 /* Local functions declarations */
 static void
 transition_render( cairo_t         *cr,
@@ -70,7 +76,7 @@ img_down( cairo_t         *cr,
 		cairo_surface_t *image_from,
 		cairo_surface_t *image_to,
 		gdouble          progress,
-		gint             direction )
+		gint             UNUSED(direction) )
 {
 	transition_render( cr, image_from, image_to, progress, 1 );
 }
@@ -80,7 +86,7 @@ img_up( cairo_t         *cr,
 		cairo_surface_t *image_from,
 		cairo_surface_t *image_to,
 		gdouble          progress,
-		gint             direction )
+		gint             UNUSED(direction) )
 {
 	transition_render( cr, image_from, image_to, progress, 2 );
 }
@@ -91,7 +97,7 @@ img_right(	cairo_t         *cr,
 			cairo_surface_t *image_from,
 			cairo_surface_t *image_to,
 			gdouble          progress,
-			gint             direction )
+			gint             UNUSED(direction) )
 {
 	transition_render( cr, image_from, image_to, progress, 3 );
 }
@@ -101,7 +107,7 @@ img_left(	cairo_t         *cr,
 			cairo_surface_t *image_from,
 			cairo_surface_t *image_to,
 			gdouble          progress,
-			gint             direction )
+			gint             UNUSED(direction) )
 {
 	transition_render( cr, image_from, image_to, progress, 4 );
 }
@@ -111,7 +117,7 @@ img_right_down( cairo_t         *cr,
 				cairo_surface_t *image_from,
 				cairo_surface_t *image_to,
 				gdouble          progress,
-				gint             direction )
+				gint             UNUSED(direction) )
 {
 	transition_render( cr, image_from, image_to, progress, 5 );
 }
@@ -121,7 +127,7 @@ img_right_up(	cairo_t         *cr,
 				cairo_surface_t *image_from,
 				cairo_surface_t *image_to,
 				gdouble          progress,
-				gint             direction )
+				gint             UNUSED(direction) )
 {
 	transition_render( cr, image_from, image_to, progress, 6 );
 }
@@ -131,7 +137,7 @@ img_left_up(cairo_t         *cr,
 			cairo_surface_t *image_from,
 			cairo_surface_t *image_to,
 			gdouble          progress,
-			gint             direction )
+			gint             UNUSED(direction) )
 {
 	transition_render( cr, image_from, image_to, progress, 7 );
 }
@@ -141,7 +147,7 @@ img_left_down(	cairo_t         *cr,
 				cairo_surface_t *image_from,
 				cairo_surface_t *image_to,
 				gdouble          progress,
-				gint             direction )
+				gint             UNUSED(direction) )
 {
 	transition_render( cr, image_from, image_to, progress, 8 );
 }

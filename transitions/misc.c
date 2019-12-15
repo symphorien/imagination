@@ -22,6 +22,13 @@
 #include <glib.h>
 #include <stdlib.h>
 
+#ifdef __GNUC__
+#  define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
+#else
+#  define UNUSED(x) UNUSED_ ## x
+#endif
+
+
 #define RAND_VALS 10 /* Number of random values to use */
 
 /* Local functions declarations */
@@ -66,7 +73,7 @@ transition_render( cairo_t         *cr,
 				   cairo_surface_t *image_from,
 				   cairo_surface_t *image_to,
 				   gdouble          progress,
-				   gint             direction )
+				   gint             UNUSED(direction) )
 {
 	cairo_set_source_surface( cr, image_from, 0, 0 );
 	cairo_paint( cr );

@@ -20,6 +20,12 @@
 #include <cairo.h>
 #include <glib.h>
 
+#ifdef __GNUC__
+#  define UNUSED(x) UNUSED_ ## x __attribute__((__unused__))
+#else
+#  define UNUSED(x) UNUSED_ ## x
+#endif
+
 /* Local functions declarations */
 static void
 transition_render( cairo_t         *cr,
@@ -52,7 +58,7 @@ img_vertical( 	cairo_t         *cr,
 				cairo_surface_t *image_from,
 				cairo_surface_t *image_to,
 				gdouble          progress,
-			 	gint         file_desc )
+			 	gint         UNUSED(file_desc))
 {
 	transition_render( cr, image_from, image_to, progress, 1 );
 }
