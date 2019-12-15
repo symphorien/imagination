@@ -1,6 +1,5 @@
 /*
 ** Copyright (C) 2009 Tadej Borovšak <tadeboro@gmail.com>
-** Copyright (C) 2010 Robert Chéramy <robert@cheramy.net>
 **  
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by

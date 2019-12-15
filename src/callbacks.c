@@ -1,7 +1,6 @@
 /*
- *  Copyright (c) 2009-2018 Giuseppe Torelli <colossus73@gmail.com>
+ *  Copyright (c) 2009-2019 Giuseppe Torelli <colossus73@gmail.com>
  *  Copyright (c) 2009 Tadej Borovšak 	<tadeboro@gmail.com>
- *  Copyright (c) 2011 Robert Chéramy   <robert@cheramy.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -404,9 +403,9 @@ void img_select_audio_files_to_add ( GtkMenuItem* UNUSED(button), img_window_str
 										"for multiple select"),
 									  GTK_WINDOW (img->imagination_window),
 									  GTK_FILE_CHOOSER_ACTION_OPEN,
-									  GTK_STOCK_CANCEL,
+									  "_Cancel",
 									  GTK_RESPONSE_CANCEL,
-									  GTK_STOCK_OPEN,
+									  "_Open",
 									  GTK_RESPONSE_ACCEPT,
 									  NULL );
 
@@ -484,9 +483,9 @@ GSList *img_import_slides_file_chooser(img_window_struct *img)
 									   "multiple select"),
 									 GTK_WINDOW (img->imagination_window),
 									 GTK_FILE_CHOOSER_ACTION_OPEN,
-									 GTK_STOCK_CANCEL,
+									 "_Cancel",
 									 GTK_RESPONSE_CANCEL,
-									 GTK_STOCK_OPEN,
+									 "_Open",
 									 GTK_RESPONSE_ACCEPT,
 									 NULL);
 	img_file_chooser_add_preview(img);
@@ -615,7 +614,6 @@ void img_exit_fullscreen(img_window_struct *img)
 	gtk_widget_show(img->statusbar);
 	gtk_widget_show(img->menubar);
 	gtk_widget_show(img->toolbar);
-	gtk_alignment_set(GTK_ALIGNMENT(img->viewport_align), 0.5, 0.5, 0, 0);
 
 	gtk_window_unfullscreen(GTK_WINDOW(img->imagination_window));
 	gtk_widget_add_accelerator (img->fullscreen, "activate", img->accel_group, GDK_KEY_F11, 0, GTK_ACCEL_VISIBLE);
@@ -965,7 +963,7 @@ void img_show_about_dialog (GtkMenuItem * UNUSED(item), img_window_struct *img_s
 {
 	static GtkWidget *about = NULL;
 	static gchar version[] = VERSION "-" REVISION;
-    const char *authors[] = {"\nDevelopers:\nGiuseppe Torelli <colossus73@gmail.com>\nTadej Borovšak <tadeboro@gmail.com>\n",NULL};
+    const char *authors[] = {"\nDevelopers:\nGiuseppe Torelli <colossus73@gmail.com>\nTadej Borovšak <tadeboro@gmail.com>\nSymphorien Gibol <symphorien.gibol@gmail.com>",NULL};
     
 	if (about == NULL)
 	{
@@ -976,7 +974,7 @@ void img_show_about_dialog (GtkMenuItem * UNUSED(item), img_window_struct *img_s
 		g_object_set (about,
 			"name", "Imagination",
 			"version", strcmp(REVISION, "-1") == 0 ? VERSION : version,
-			"copyright","Copyright \xC2\xA9 2009-2018 Giuseppe Torelli",
+			"copyright","Copyright \xC2\xA9 2009-2019 Giuseppe Torelli",
 			"comments","A simple and lightweight slideshow maker",
 			"authors",authors,
 			"documenters",NULL,
@@ -1589,14 +1587,14 @@ static void img_swap_toolbar_images( img_window_struct *img,gboolean flag )
 
 	if( flag )
 	{
-		tmp_image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_PLAY,GTK_ICON_SIZE_LARGE_TOOLBAR);
+		tmp_image = gtk_image_new_from_icon_name ("media-playback-start", GTK_ICON_SIZE_LARGE_TOOLBAR);
 		gtk_widget_show(tmp_image);
 		gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(img->preview_button), tmp_image);
 		gtk_widget_set_tooltip_text(img->preview_button,_("Starts the preview without music"));
 	}
 	else
 	{
-		tmp_image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_STOP,GTK_ICON_SIZE_LARGE_TOOLBAR);
+		tmp_image = gtk_image_new_from_icon_name ("media-playback-stop", GTK_ICON_SIZE_LARGE_TOOLBAR);
 		gtk_widget_show(tmp_image);
 		gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(img->preview_button), tmp_image);
 		gtk_widget_set_tooltip_text(img->preview_button,_("Stops the preview"));
@@ -1677,9 +1675,9 @@ void img_choose_slideshow_filename(GtkWidget *widget, img_window_struct *img)
 		_("Save an Imagination slideshow project"),
 		GTK_WINDOW (img->imagination_window),
 		action,
-		GTK_STOCK_CANCEL,
+		"_Cancel",
 		GTK_RESPONSE_CANCEL,
-		action == GTK_FILE_CHOOSER_ACTION_OPEN ?  GTK_STOCK_OPEN : GTK_STOCK_SAVE,
+		action == GTK_FILE_CHOOSER_ACTION_OPEN ?  "_Open" : "_Save",
 		GTK_RESPONSE_ACCEPT,NULL);
 
 	/* Filter .img files */
@@ -1876,7 +1874,7 @@ img_ken_burns_zoom_changed( GtkRange          *range,
 		img->current_point.offx = CLAMP( tmpoffx, img->maxoffx, 0 );
 		img->current_point.offy = CLAMP( tmpoffy, img->maxoffy, 0 );
 	}
-
+	img_update_stop_point(NULL, img);
 	gtk_widget_queue_draw( img->image_area );
 }
 
@@ -2227,7 +2225,11 @@ img_update_stop_display( img_window_struct *img,
 									 img_update_stop_point, img );
 	
 		/* Set zoom value */
+		g_signal_handlers_block_by_func( img->ken_zoom,
+									 img_update_stop_point, img );
 		gtk_range_set_value( GTK_RANGE( img->ken_zoom ), point->zoom );
+		g_signal_handlers_unblock_by_func( img->ken_zoom,
+									 img_update_stop_point, img );
 
 		/* Do we need to refresh current stop point on screen */
 		if( update_pos )
@@ -3319,9 +3321,16 @@ img_notebook_switch_page (GtkNotebook       * UNUSED(notebook),
 void img_align_text_horizontally_vertically(GtkMenuItem *item, img_window_struct *img)
 {
 	cairo_t	*cr;
+	GdkWindow *window;
+	GdkDrawingContext *drawingContext;
+	cairo_region_t *cairoRegion;
+
 	gboolean centerX = FALSE, centerY = FALSE;
 
-	cr = gdk_cairo_create( gtk_widget_get_window(img->image_area) );
+	cairoRegion = cairo_region_create();
+	window = gtk_widget_get_window(img->image_area);	
+	drawingContext = gdk_window_begin_draw_frame(window, cairoRegion);
+    cr = gdk_drawing_context_get_cairo_context(drawingContext);
 	
 	if (GTK_WIDGET(item) == img->x_justify)
 	{
@@ -3351,9 +3360,13 @@ void img_align_text_horizontally_vertically(GtkMenuItem *item, img_window_struct
 								 centerX,
 								 centerY,
 								 1.0 );
-	img_taint_project(img);
-
+	
 	gtk_widget_queue_draw(img->image_area);
+
+	gdk_window_end_draw_frame(window, drawingContext);
+	cairo_region_destroy(cairoRegion);
+	
+	img_taint_project(img);
 }
 
 void
@@ -3371,9 +3384,9 @@ img_pattern_clicked(GtkMenuItem * UNUSED(item),
 	fc = gtk_file_chooser_dialog_new (_("Please choose a PNG file"),
 							GTK_WINDOW (img->imagination_window),
 							GTK_FILE_CHOOSER_ACTION_OPEN,
-							GTK_STOCK_CANCEL,
+							"_Cancel",
 							GTK_RESPONSE_CANCEL,
-							GTK_STOCK_OPEN,
+							"_Open",
 							GTK_RESPONSE_ACCEPT,
 							NULL);
 
@@ -3525,7 +3538,7 @@ void img_subtitle_style_changed(GtkButton *button, img_window_struct *img)
 	tag = gtk_text_tag_table_lookup(img->tag_table, string);
 
 	/* Was the style already applied? */
-	if (gtk_text_iter_begins_tag( &start, tag))
+	if (gtk_text_iter_starts_tag( &start, tag))
 		gtk_text_buffer_remove_tag(img->slide_text_buffer, tag, &start, &end);
 	else
 		gtk_text_buffer_apply_tag(img->slide_text_buffer, tag, &start, &end);

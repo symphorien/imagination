@@ -1,7 +1,6 @@
 /*
  *  Copyright (C) 2009-2018 Giuseppe Torelli <colossus73@gmail.com>
  *  Copyright (c) 2009 Tadej Borovšak 	<tadeboro@gmail.com>
- *  Copyright (c) 2011 Robert Chéramy   <robert@cheramy.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
