@@ -187,6 +187,7 @@ img_save_slideshow( img_window_struct *img,
 			g_key_file_set_boolean(img_key_file, conf,"top border",entry->top_border);
 			g_key_file_set_boolean(img_key_file, conf,"bottom border",entry->bottom_border);
 			g_key_file_set_integer(img_key_file, conf,"border width",entry->border_width);
+			g_key_file_set_integer(img_key_file, conf,"alignment",entry->alignment);
 			g_free(font_desc);
 		}
 			g_free(conf);
@@ -244,7 +245,7 @@ img_append_slides_from( img_window_struct *img, const gchar *input )
 	GKeyFile *img_key_file;
 	gchar *dummy, *slide_filename, *time;
 	GtkWidget *dialog;
-	gint number,i, n_invalid, transition_id, no_points, previous_nr_of_slides, border_width;
+	gint number,i, n_invalid, transition_id, no_points, previous_nr_of_slides, border_width, alignment;
 	guint speed;
 	GtkTreeModel *model;
 	void (*render);
@@ -506,6 +507,7 @@ img_append_slides_from( img_window_struct *img, const gchar *input )
                 top_border = g_key_file_get_boolean(img_key_file, conf, "top border", NULL);
                 bottom_border = g_key_file_get_boolean(img_key_file, conf, "bottom border", NULL);
                 border_width = g_key_file_get_integer(img_key_file, conf, "border width", NULL);
+                alignment = g_key_file_get_integer(img_key_file, conf, "alignment", NULL);
 
 				/* Get the mem address of the transition */
 				spath = (gchar *)g_hash_table_lookup( table, GINT_TO_POINTER( transition_id ) );
@@ -589,7 +591,7 @@ img_append_slides_from( img_window_struct *img, const gchar *input )
 												 &iter, NULL, pattern_name, anim_id,
 												 anim_duration, posx, posy, subtitle_angle,
 												 font_desc, font_color, font_brdr_color, font_bg_color, border_color, 
-												 top_border, bottom_border, border_width, img );
+												 top_border, bottom_border, border_width, alignment, img );
 					}
 					/* If we're loading the first slide, apply some of it's
 				 	 * data to final pseudo-slide */

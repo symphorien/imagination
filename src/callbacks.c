@@ -1450,6 +1450,7 @@ img_on_draw_event( GtkWidget         * UNUSED(widget),
 								 img->current_slide->posX,
 								 img->current_slide->posY,
 								 img->current_slide->subtitle_angle,
+								 img->current_slide->alignment,
 								 img->current_point.zoom,
 								 img->current_point.offx,
 								 img->current_point.offy,
@@ -3354,6 +3355,7 @@ void img_align_text_horizontally_vertically(GtkMenuItem *item, img_window_struct
 								 img->current_slide->posX,
 								 img->current_slide->posY,
 								 img->current_slide->subtitle_angle,
+								 img->current_slide->alignment,
 								 img->current_point.zoom,
 								 img->current_point.offx,
 								 img->current_point.offy,
@@ -3450,7 +3452,7 @@ void img_subtitle_top_border_toggled (GtkToggleButton *button, img_window_struct
 {
 	img_update_sub_properties( img, NULL, -1, -1, NULL, NULL, NULL, NULL, NULL, 
 							gtk_toggle_button_get_active(button),
-							img->current_slide->bottom_border, -1);
+							img->current_slide->bottom_border, -1, -1);
 	
 	gtk_widget_queue_draw(img->image_area);
 	img_taint_project(img);
@@ -3460,7 +3462,7 @@ void img_subtitle_bottom_border_toggled (GtkToggleButton *button, img_window_str
 {
 	img_update_sub_properties( img, NULL, -1, -1, NULL, NULL, NULL, NULL, NULL, 
 								img->current_slide->top_border,
-								gtk_toggle_button_get_active(button), -1);
+								gtk_toggle_button_get_active(button), -1, -1);
 	
 	gtk_widget_queue_draw(img->image_area);
 	img_taint_project(img);
@@ -3504,6 +3506,22 @@ void img_spinbutton_value_changed (GtkSpinButton *spinbutton, img_window_struct 
 void img_fadeout_duration_changed (GtkSpinButton *spinbutton, img_window_struct *img)
 {
 	img->audio_fadeout = gtk_spin_button_get_value(spinbutton);
+	img_taint_project(img);
+}
+
+void img_set_slide_text_align(GtkButton *button, img_window_struct *img)
+{
+	gint alignment = 0;
+
+	if (GTK_WIDGET(button) == img->left_justify)
+		alignment = PANGO_ALIGN_LEFT;
+	else if (GTK_WIDGET(button) == img->fill_justify)
+		alignment = PANGO_ALIGN_CENTER;
+	else if (GTK_WIDGET(button) == img->right_justify)
+		alignment = PANGO_ALIGN_RIGHT;
+
+	img->current_slide->alignment = alignment;
+	gtk_widget_queue_draw(img->image_area);
 	img_taint_project(img);
 }
 

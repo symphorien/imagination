@@ -991,25 +991,28 @@ img_window_struct *img_create_window (void)
 	gtk_widget_set_tooltip_text(img_struct->clear_formatting, _("Remove formatting"));
 
 	img_struct->left_justify = gtk_button_new();
-	//g_signal_connect( G_OBJECT( img_struct->left_justify ), "clicked",
-	//				  G_CALLBACK( img_delete_stop_point ), img_struct );
+	g_signal_connect( G_OBJECT( img_struct->left_justify ), "clicked",
+					  G_CALLBACK( img_set_slide_text_align ), img_struct );
 	gtk_box_pack_start (GTK_BOX (a_hbox), img_struct->left_justify, FALSE, FALSE, 0);
 	image_buttons = gtk_image_new_from_icon_name ("format-justify-left", GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(img_struct->left_justify), image_buttons);
-	
+	gtk_widget_set_tooltip_text(img_struct->left_justify, _("Align left"));
+
 	img_struct->fill_justify = gtk_button_new();
-	//g_signal_connect( G_OBJECT( img_struct->left_justify ), "clicked",
-	//				  G_CALLBACK( img_delete_stop_point ), img_struct );
+	g_signal_connect( G_OBJECT( img_struct->fill_justify ), "clicked",
+					  G_CALLBACK( img_set_slide_text_align ), img_struct );
 	gtk_box_pack_start (GTK_BOX (a_hbox), img_struct->fill_justify, FALSE, FALSE, 0);
 	image_buttons = gtk_image_new_from_icon_name ("format-justify-fill", GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(img_struct->fill_justify), image_buttons);
-	
+	gtk_widget_set_tooltip_text(img_struct->fill_justify, _("Align center"));
+
 	img_struct->right_justify = gtk_button_new();
-	//g_signal_connect( G_OBJECT( img_struct->left_justify ), "clicked",
-	//				  G_CALLBACK( img_delete_stop_point ), img_struct );
+	g_signal_connect( G_OBJECT( img_struct->right_justify ), "clicked",
+					  G_CALLBACK( img_set_slide_text_align ), img_struct );
 	gtk_box_pack_start (GTK_BOX (a_hbox), img_struct->right_justify, FALSE, FALSE, 0);
 	image_buttons = gtk_image_new_from_icon_name ("format-justify-right", GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(img_struct->right_justify), image_buttons);
+	gtk_widget_set_tooltip_text(img_struct->right_justify, _("Align right"));
 
 	hbox_textview = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 	gtk_box_pack_start (GTK_BOX (vbox_slide_caption), hbox_textview, FALSE, FALSE, 0);
@@ -2388,7 +2391,7 @@ img_text_font_set( GtkFontButton     *button,
 	string = gtk_font_button_get_font_name( button );
 
 	img_update_sub_properties( img, NULL, -1, -1, string, NULL, NULL, NULL, NULL,
-								img->current_slide->top_border, img->current_slide->bottom_border,-1);
+								img->current_slide->top_border, img->current_slide->bottom_border, img->current_slide->alignment, -1);
 
 	gtk_widget_queue_draw( img->image_area );
 	img_taint_project(img);
@@ -2408,7 +2411,7 @@ img_text_anim_set( GtkComboBox       *combo,
 	gtk_tree_model_get( model, &iter, 1, &anim, 2, &anim_id, -1 );
 
 	img_update_sub_properties( img, anim, anim_id, -1, NULL, NULL, NULL, NULL, NULL, 
-								img->current_slide->top_border, img->current_slide->bottom_border,-1);
+								img->current_slide->top_border, img->current_slide->bottom_border, img->current_slide->alignment, -1);
 
 	/* Speed should be disabled when None is in effect */
 	gtk_widget_set_sensitive( img->sub_anim_duration,
@@ -2450,7 +2453,7 @@ img_font_color_changed( GtkColorButton    *button,
 		font_color[2] = (gdouble)color.blue  / 0xffff;
 		font_color[3] = (gdouble)alpha       / 0xffff;
  		img_update_sub_properties( img, NULL, -1, -1, NULL, font_color, NULL, NULL, NULL,
-								img->current_slide->top_border, img->current_slide->bottom_border,-1);
+								img->current_slide->top_border, img->current_slide->bottom_border, img->current_slide->alignment, -1);
 	}
 	gtk_widget_queue_draw( img->image_area );
 	img_taint_project(img);
@@ -2472,7 +2475,7 @@ img_font_brdr_color_changed( GtkColorButton    *button,
 	font_brdr_color[2] = (gdouble)color.blue  / 0xffff;
 	font_brdr_color[3] = (gdouble)alpha       / 0xffff;
    	img_update_sub_properties( img, NULL, -1, -1, NULL, NULL, font_brdr_color, NULL, NULL,
-							img->current_slide->top_border, img->current_slide->bottom_border, -1);
+							img->current_slide->top_border, img->current_slide->bottom_border, img->current_slide->alignment, -1);
 
 	gtk_widget_queue_draw( img->image_area );
 	img_taint_project(img);
@@ -2511,7 +2514,7 @@ img_font_bg_color_changed( GtkColorButton    *button,
 		font_bgcolor[3] = (gdouble)alpha       / 0xffff;
 	
 		img_update_sub_properties( img, NULL, -1, -1, NULL, NULL, NULL, font_bgcolor, NULL, 
-								img->current_slide->top_border, img->current_slide->bottom_border, -1);
+								img->current_slide->top_border, img->current_slide->bottom_border, img->current_slide->alignment, -1);
 	}
     gtk_widget_queue_draw( img->image_area );
     img_taint_project(img);
@@ -2534,7 +2537,7 @@ img_sub_border_color_changed( GtkColorButton    *button,
     font_bgcolor[3] = (gdouble)alpha       / 0xffff;
 
     img_update_sub_properties( img, NULL, -1, -1, NULL, NULL, NULL, NULL, font_bgcolor, 
-								img->current_slide->top_border, img->current_slide->bottom_border, -1);
+								img->current_slide->top_border, img->current_slide->bottom_border, img->current_slide->alignment, -1);
     img_taint_project(img);
 
     gtk_widget_queue_draw( img->image_area );
@@ -2548,7 +2551,7 @@ img_combo_box_anim_speed_changed( GtkSpinButton       *spinbutton,
 
 	speed = gtk_spin_button_get_value_as_int(spinbutton);
 	img_update_sub_properties( img, NULL, -1, speed, NULL, NULL, NULL, NULL, NULL, 
-								img->current_slide->top_border, img->current_slide->bottom_border, -1);
+								img->current_slide->top_border, img->current_slide->bottom_border, img->current_slide->alignment, -1);
 	img_taint_project(img);
 }
 
@@ -2559,7 +2562,7 @@ void img_sub_border_width_changed( GtkSpinButton       *spinbutton,
 
 	width = gtk_spin_button_get_value_as_int(spinbutton);
 	img_update_sub_properties( img, NULL, -1, -1, NULL, NULL, NULL, NULL, NULL, 
-								img->current_slide->top_border, img->current_slide->bottom_border, width);
+								img->current_slide->top_border, img->current_slide->bottom_border, -1, width);
 
 	gtk_widget_queue_draw( img->image_area );
 	img_taint_project(img);
@@ -2710,7 +2713,8 @@ img_update_sub_properties( img_window_struct *img,
 						   gdouble           *border_color,
 						   gboolean			top_border,
 						   gboolean			bottom_border,
-						   gint	             border_width)
+						   gint	             border_width,
+						   gint	             alignment)
 {
 	GList        *selected,
 				 *tmp;
@@ -2735,7 +2739,7 @@ img_update_sub_properties( img_window_struct *img,
 								 anim_id, anim_duration,	img->current_slide->posX,
 															img->current_slide->posY, 
 															img->current_slide->subtitle_angle,
-								 desc, color, brdr_color, bg_color, border_color, top_border, bottom_border, border_width, img );
+								 desc, color, brdr_color, bg_color, border_color, top_border, bottom_border, border_width, alignment, img );
 	}
 
 	GList *node9;

@@ -162,5 +162,6 @@ void img_subtitle_bottom_border_toggled (GtkToggleButton *button, img_window_str
 void img_spinbutton_value_changed (GtkSpinButton *spinbutton, img_window_struct *img);
 void img_fadeout_duration_changed (GtkSpinButton *spinbutton, img_window_struct *img);
 void img_subtitle_style_changed(GtkButton *button, img_window_struct *img);
+void img_set_slide_text_align(GtkButton *button, img_window_struct *img);
 void img_flip_horizontally(GtkMenuItem *item, img_window_struct *img);
 #endif

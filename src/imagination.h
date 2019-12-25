@@ -96,7 +96,8 @@ typedef void (*TextAnimationFunc)( cairo_t     *cr,
                                    gdouble     *border_color,
                                    gboolean		top_border,
                                    gboolean		bottom_border,
-                                   gint			border_width );
+                                   gint			border_width,
+                                   gint			alignment );
 
 
 /* ****************************************************************************
@@ -191,6 +192,7 @@ struct _slide_struct
     gboolean           	  top_border;
     gboolean           	  bottom_border;
     gint               	  border_width;
+    gint               	  alignment;
 };
 
 typedef struct _img_window_struct img_window_struct;

@@ -4,7 +4,7 @@ xx/xx/19 - 3.5		- Added ability to flip the slide horizontally.
 			- Subtitle can now have multiple styles.
 			- Fixed seg-fault when quitting.
 			- Fixed the "Import slideshow" button overwriting existing slides
-			- Port to GTK 3
+			- Port to GTK+3
 			- Add end to end tests (run them with make installcheck)
 			- Support most EXIF orientation tags
 			- Added a way to control the length of the final audio fadeout
