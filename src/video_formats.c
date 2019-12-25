@@ -152,7 +152,7 @@ gchar *x3GP_extensions[] = {
     NULL
 };
 
-/* x264 */
+/* x264, x265 */
 struct video_size x264_size_list[] = {
     {"HD 852x480",      852,    480, -1, -1, -1},
     {"HD 1280x720",    1280,    720, -1, -1, -1},
@@ -220,7 +220,18 @@ struct video_format video_format_list[] = {
     },
     /* ffmpeg options for x264 thanks to David Gnedt */
     {gettext_noop("H.264/MPEG-4 AVC"), "x264",
-        "-vcodec libx264 -crf 21 " /* FIXME -crf should be in a "Quality" option that also includes bitrate */
+        "-vcodec libx264 -crf 20 " /* FIXME -crf should be in a "Quality" option that also includes bitrate */
+        "-pix_fmt yuv420p "
+		"-movflags +faststart "
+        "-acodec libmp3lame -ac 2 -ar 44100 -b:a 128k ",
+        x264_size_list,
+        aspect_ratio_list,
+        x264_bitrate_list,
+        x264_fps_list,
+        x264_extensions
+    },
+    {gettext_noop("H.265/HEVC"), "x265",
+        "-vcodec libx265 -crf 20 "
         "-pix_fmt yuv420p "
 		"-movflags +faststart "
         "-acodec libmp3lame -ac 2 -ar 44100 -b:a 128k ",

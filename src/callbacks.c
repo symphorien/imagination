@@ -114,7 +114,7 @@ gboolean img_can_discard_unsaved_project(img_window_struct *img) {
 	    return TRUE;
 	}
 	int response = img_ask_user_confirmation( img,
-		_("You didn't save your slideshow yet. Are you sure you want to close it?"));
+		_("You didn't save your slideshow yet.\nAre you sure you want to close it?"));
 	if (response == GTK_RESPONSE_OK)
 	    return TRUE;
 	return FALSE;

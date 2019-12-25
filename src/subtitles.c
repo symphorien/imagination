@@ -106,6 +106,27 @@ img_text_from_right( cairo_t     *cr,
                      gint		alignment);
 
 static void
+img_text_spin_grow( cairo_t     *cr,
+				   PangoLayout *layout,
+				   gint         sw,
+				   gint         sh,
+				   gint         lw,
+				   gint         lh,
+				   gint         posx,
+				   gint         posy,
+				   gint         angle,
+				   gchar		*pattern_filename,
+				   gdouble      progress,
+                   gdouble     *font_color,
+                   gdouble     *font_brdr_color,
+                   gdouble     *font_bgcolor,
+                   gdouble     *border_color,
+                   gboolean		top_border,
+                   gboolean		bottom_border,
+                   gint	      border_width,
+                   gint		alignment);
+
+static void
 img_text_from_top( cairo_t     *cr,
 				   PangoLayout *layout,
 				   gint         sw,
@@ -233,7 +254,7 @@ gint
 img_get_text_animation_list( TextAnimation **animations )
 {
 	TextAnimation *list;              /* List of all animations */
-	gint           no_animations = 9; /* Number of animations */
+	gint           no_animations = 10; /* Number of animations */
 	gint           i = 0;
 
 	if( animations )
@@ -271,6 +292,10 @@ img_get_text_animation_list( TextAnimation **animations )
 		list[i].name   = g_strdup( _("Grow") );
 		list[i].id     = i;
 		list[i++].func = img_text_grow;
+
+		list[i].name   = g_strdup( _("Spin & Grow") );
+		list[i].id     = i;
+		list[i++].func = img_text_spin_grow;
 
         list[i].name   = g_strdup( _("Slide bottom to top") );
         list[i].id     = i;
@@ -897,6 +922,43 @@ img_text_right_to_left( cairo_t     *cr,
     img_text_draw_layout(cr, layout,
                          sw * (1 - progress) - lw * progress,
                          posy, angle,
+                         filename,
+                         font_color, font_brdr_color, font_bgcolor,
+                         border_color, top_border, bottom_border, border_width, alignment);
+}
+
+static void
+img_text_spin_grow( cairo_t     *cr,
+				   PangoLayout *layout,
+				   gint         UNUSED(sw),
+				   gint         UNUSED(sh),
+				   gint         lw,
+				   gint         lh,
+				   gint         posx,
+				   gint         posy,
+				   gint         angle,
+				   gchar	  *filename,
+				   gdouble      progress,
+                   gdouble     *font_color,
+                   gdouble     *font_brdr_color,
+                   gdouble     *font_bgcolor,
+                   gdouble     *border_color,
+                   gboolean		top_border,
+                   gboolean		bottom_border,
+				   gint			border_width,
+				   gint			alignment)
+{
+	gint my_angle;
+	my_angle = angle + 360 * exp(log(progress));
+
+	cairo_translate( cr, posx + lw * 0.5, posy + lh * 0.5 );
+	cairo_scale( cr, exp(log(progress)), exp(log(progress)) );
+	cairo_rotate (cr, my_angle * G_PI / 180.0);
+
+    img_text_draw_layout(cr, layout,
+                         - lw * 0.5,
+                         - lh * 0.5,
+                         my_angle,
                          filename,
                          font_color, font_brdr_color, font_bgcolor,
                          border_color, top_border, bottom_border, border_width, alignment);

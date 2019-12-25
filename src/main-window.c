@@ -1002,7 +1002,7 @@ img_window_struct *img_create_window (void)
 	g_signal_connect( G_OBJECT( img_struct->fill_justify ), "clicked",
 					  G_CALLBACK( img_set_slide_text_align ), img_struct );
 	gtk_box_pack_start (GTK_BOX (a_hbox), img_struct->fill_justify, FALSE, FALSE, 0);
-	image_buttons = gtk_image_new_from_icon_name ("format-justify-fill", GTK_ICON_SIZE_BUTTON);
+	image_buttons = gtk_image_new_from_icon_name ("format-justify-center", GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(img_struct->fill_justify), image_buttons);
 	gtk_widget_set_tooltip_text(img_struct->fill_justify, _("Align center"));
 
@@ -1191,7 +1191,7 @@ img_window_struct *img_create_window (void)
 	g_signal_connect( G_OBJECT( img_struct->reset_angle ), "clicked",
 					  G_CALLBACK( img_align_text_horizontally_vertically ), img_struct );
 	gtk_table_attach (GTK_TABLE (table), img_struct->reset_angle, 2, 3, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
-	image_buttons = gtk_image_new_from_icon_name ("_Remove", GTK_ICON_SIZE_BUTTON);
+	image_buttons = gtk_image_new_from_icon_name ("edit-delete", GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(img_struct->reset_angle), image_buttons);
 	gtk_widget_set_tooltip_text(img_struct->reset_angle,_("Reset the angle"));
 
