@@ -367,54 +367,59 @@ img_render_subtitle( img_window_struct 	  *img,
 	layout = pango_cairo_create_layout( cr );
 	pango_layout_set_font_description( layout, img->current_slide->font_desc );
 
-	/* Convert the GTK Rich Text Buffer
-	 * tags to Pango language markup */
-	img->current_slide->subtitle[26] =  32;
-	img->current_slide->subtitle[27] =  32;
-	img->current_slide->subtitle[28] =  32;
-	img->current_slide->subtitle[29] =  32;
-
-	string = g_strdup(strstr((gchar*)img->current_slide->subtitle,"<text>"));
-	
-	img->current_slide->subtitle[26] =  ((img->current_slide->subtitle_length - 30) >> 24) & 0xFF;
-	img->current_slide->subtitle[27] =  ((img->current_slide->subtitle_length - 30) >> 16) & 0xFF;
-	img->current_slide->subtitle[28] =  ((img->current_slide->subtitle_length - 30) >> 8 ) & 0xFF;
-	img->current_slide->subtitle[29] =  (img->current_slide->subtitle_length - 30) >> 0;
-
-	str_replace(string, "<text>", "");
-	str_replace(string, "</text>", "");
-	str_replace(string, "</text_view_markup>", "");
-	
-	str_replace(string, "<apply_tag name=\"underline\"", "<span underline=\"single\"");
-	str_replace(string, "<apply_tag name=\"bold\"", "<span font_weight=\"bold\"");
-	str_replace(string, "<apply_tag name=\"italic\"", "<span font_style=\"italic\"");
-	if (strstr(string, "foreground"))
+	if (strstr((const gchar*)img->current_slide->subtitle, "GTKTEXTBUFFERCONTENTS-0001"))
 	{
-		str_replace(string, "<apply_tag name=\"foreground\"", "<span foreground=\"rrrrggggbbbb\"");
-		tag = gtk_text_tag_table_lookup(img->tag_table, "foreground");
-		g_object_get(tag, "foreground-gdk", &color, NULL);
-		dummy = gdk_color_to_string(color);
-		str_replace(string, "rrrrggggbbbb", dummy);
-		g_free(dummy);
-	}
-	if (strstr(string, "background"))
-	{
-		str_replace(string, "<apply_tag name=\"background\"", "<span background=\"rrrrggggbbbb\"");
-		tag = gtk_text_tag_table_lookup(img->tag_table, "background");
-		g_object_get(tag, "background-gdk", &color, NULL);
-		dummy = gdk_color_to_string(color);
-		str_replace(string, "rrrrggggbbbb", dummy);
-		g_free(dummy);
-	}
-	str_replace(string, "</apply_tag>", "</span>");
-	string[strlen(string) - 2] = '\0';
 
-	pango_parse_markup(string, strlen(string), 0, NULL, &text, NULL, NULL);
-	pango_layout_set_markup(layout, string, strlen(string));
-	
-	pango_layout_set_alignment(layout, alignment);
-	pango_layout_set_text( layout, text, -1 );
-	g_free(string);
+		/* Convert the GTK Rich Text Buffer
+		 * tags to Pango language markup */
+		img->current_slide->subtitle[26] =  32;
+		img->current_slide->subtitle[27] =  32;
+		img->current_slide->subtitle[28] =  32;
+		img->current_slide->subtitle[29] =  32;
+
+		string = g_strdup(strstr((gchar*)img->current_slide->subtitle,"<text>"));
+		
+		img->current_slide->subtitle[26] =  ((img->current_slide->subtitle_length - 30) >> 24) & 0xFF;
+		img->current_slide->subtitle[27] =  ((img->current_slide->subtitle_length - 30) >> 16) & 0xFF;
+		img->current_slide->subtitle[28] =  ((img->current_slide->subtitle_length - 30) >> 8 ) & 0xFF;
+		img->current_slide->subtitle[29] =  (img->current_slide->subtitle_length - 30) >> 0;
+
+		str_replace(string, "<text>", "");
+		str_replace(string, "</text>", "");
+		str_replace(string, "</text_view_markup>", "");
+		
+		str_replace(string, "<apply_tag name=\"underline\"", "<span underline=\"single\"");
+		str_replace(string, "<apply_tag name=\"bold\"", "<span font_weight=\"bold\"");
+		str_replace(string, "<apply_tag name=\"italic\"", "<span font_style=\"italic\"");
+		if (strstr(string, "foreground"))
+		{
+			str_replace(string, "<apply_tag name=\"foreground\"", "<span foreground=\"rrrrggggbbbb\"");
+			tag = gtk_text_tag_table_lookup(img->tag_table, "foreground");
+			g_object_get(tag, "foreground-gdk", &color, NULL);
+			dummy = gdk_color_to_string(color);
+			str_replace(string, "rrrrggggbbbb", dummy);
+			g_free(dummy);
+		}
+		if (strstr(string, "background"))
+		{
+			str_replace(string, "<apply_tag name=\"background\"", "<span background=\"rrrrggggbbbb\"");
+			tag = gtk_text_tag_table_lookup(img->tag_table, "background");
+			g_object_get(tag, "background-gdk", &color, NULL);
+			dummy = gdk_color_to_string(color);
+			str_replace(string, "rrrrggggbbbb", dummy);
+			g_free(dummy);
+		}
+		str_replace(string, "</apply_tag>", "</span>");
+		string[strlen(string) - 2] = '\0';
+
+		pango_parse_markup(string, strlen(string), 0, NULL, &text, NULL, NULL);
+		pango_layout_set_markup(layout, string, strlen(string));
+		pango_layout_set_alignment(layout, alignment);
+		pango_layout_set_text( layout, text, -1 );
+		g_free(string);
+	}
+	else
+		pango_layout_set_text( layout, (gchar*)img->current_slide->subtitle, -1 );
 
 	pango_layout_get_size( layout, &lw, &lh );
 	lw /= PANGO_SCALE;

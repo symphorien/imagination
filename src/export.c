@@ -127,8 +127,8 @@ img_create_export_dialog( img_window_struct  *img,
 	/* Create dialog */
 	dialog = gtk_dialog_new_with_buttons( title, parent,
 										  GTK_DIALOG_DESTROY_WITH_PARENT,
-										  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-										  GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
+										  "_Cancel", GTK_RESPONSE_CANCEL,
+										  "_OK", GTK_RESPONSE_ACCEPT,
 										  NULL );
 
 	gtk_window_set_default_size(GTK_WINDOW(dialog),520,-1);
@@ -169,7 +169,7 @@ img_create_export_dialog( img_window_struct  *img,
 	gtk_label_set_yalign(GTK_LABEL(label), 0.5);
 
     slideshow_title_entry = gtk_entry_new();
-    gtk_entry_set_icon_from_icon_name(GTK_ENTRY(slideshow_title_entry), GTK_ENTRY_ICON_SECONDARY, GTK_STOCK_OPEN), 
+    gtk_entry_set_icon_from_icon_name(GTK_ENTRY(slideshow_title_entry), GTK_ENTRY_ICON_SECONDARY, "document-open"), 
 	g_signal_connect (slideshow_title_entry, "icon-press", G_CALLBACK (img_show_file_chooser), img);
 	gtk_box_pack_start( GTK_BOX( hbox_slideshow_name ), slideshow_title_entry, TRUE, TRUE, 0 );
 
@@ -367,16 +367,18 @@ img_start_export( img_window_struct *img )
 	gtk_box_set_homogeneous(GTK_BOX(hbox), TRUE);
 	gtk_box_pack_start( GTK_BOX( vbox ), hbox, FALSE, FALSE, 0 );
 
-	image = gtk_image_new_from_stock( GTK_STOCK_CANCEL, GTK_ICON_SIZE_BUTTON );
-	img->export_cancel_button = gtk_button_new();
+	image = gtk_image_new_from_icon_name("list-remove", GTK_ICON_SIZE_BUTTON );
+	img->export_cancel_button = gtk_button_new_with_label(_("Cancel"));
+	gtk_button_set_always_show_image (GTK_BUTTON (img->export_cancel_button), TRUE);
 	gtk_button_set_image (GTK_BUTTON (img->export_cancel_button), image);
 	
 	g_signal_connect_swapped( G_OBJECT( img->export_cancel_button ), "clicked",
 							  G_CALLBACK( img_close_export_dialog ), img );
 	gtk_box_pack_end( GTK_BOX( hbox ), img->export_cancel_button, FALSE, FALSE, 0 );
 
-	image = gtk_image_new_from_stock( GTK_STOCK_MEDIA_PAUSE, GTK_ICON_SIZE_BUTTON );
-	img->export_pause_button = gtk_toggle_button_new();
+	image = gtk_image_new_from_icon_name( "media-playback-pause", GTK_ICON_SIZE_BUTTON );
+	img->export_pause_button = gtk_toggle_button_new_with_label(_("Pause"));
+	gtk_button_set_always_show_image (GTK_BUTTON (img->export_pause_button), TRUE);
 	gtk_button_set_image (GTK_BUTTON (img->export_pause_button), image);
 
 	g_signal_connect( G_OBJECT( img->export_pause_button ), "toggled",

@@ -131,7 +131,7 @@ static void img_swap_audio_files_button(img_window_struct *img, gboolean flag)
 
 	if (flag)
 	{
-		tmp_image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_PLAY,GTK_ICON_SIZE_MENU);
+		tmp_image = gtk_image_new_from_icon_name("media-playback-start", GTK_ICON_SIZE_MENU);
 		gtk_button_set_image(GTK_BUTTON(img->play_audio_button), tmp_image);
 		gtk_widget_set_tooltip_text(img->play_audio_button, _("Play the selected file"));
 		gtk_statusbar_pop(GTK_STATUSBAR(img->statusbar), img->context_id);
@@ -139,7 +139,7 @@ static void img_swap_audio_files_button(img_window_struct *img, gboolean flag)
 	}
 	else
 	{
-		tmp_image = gtk_image_new_from_stock (GTK_STOCK_MEDIA_STOP,GTK_ICON_SIZE_MENU);
+		tmp_image = gtk_image_new_from_icon_name("media-playback-stop", GTK_ICON_SIZE_MENU);
 		gtk_button_set_image(GTK_BUTTON(img->play_audio_button), tmp_image);
 		gtk_widget_set_tooltip_text(img->play_audio_button, _("Stop the playback"));
 	}

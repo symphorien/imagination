@@ -615,6 +615,11 @@ void img_exit_fullscreen(img_window_struct *img)
 	gtk_widget_show(img->menubar);
 	gtk_widget_show(img->toolbar);
 
+	gtk_widget_set_halign(img->viewport_align, GTK_ALIGN_CENTER);
+	gtk_widget_set_valign(img->viewport_align, GTK_ALIGN_CENTER);
+	
+	gtk_widget_set_hexpand(img->viewport_align, FALSE);
+	gtk_widget_set_vexpand(img->viewport_align, FALSE);
 	gtk_window_unfullscreen(GTK_WINDOW(img->imagination_window));
 	gtk_widget_add_accelerator (img->fullscreen, "activate", img->accel_group, GDK_KEY_F11, 0, GTK_ACCEL_VISIBLE);
 	img->window_is_fullscreen = FALSE;
@@ -1018,8 +1023,12 @@ void img_go_fullscreen(GtkMenuItem * UNUSED(item), img_window_struct *img)
 	gtk_widget_hide (img->statusbar);
 	gtk_widget_hide (img->menubar);
 	gtk_widget_hide (img->toolbar);
-	
-	gtk_alignment_set(GTK_ALIGNMENT(img->viewport_align), 0, 0, 1, 1);
+
+	gtk_widget_set_halign(img->viewport_align, GTK_ALIGN_FILL);
+	gtk_widget_set_valign(img->viewport_align, GTK_ALIGN_FILL);
+	gtk_widget_set_hexpand(img->viewport_align, TRUE);
+	gtk_widget_set_vexpand(img->viewport_align, TRUE);
+
 	gtk_window_fullscreen(GTK_WINDOW(img->imagination_window));
 	img->window_is_fullscreen =TRUE;
 
@@ -2293,18 +2302,23 @@ img_update_subtitles_widgets( img_window_struct *img )
 	/* Update subtitle text area */
 	if (img->current_slide->subtitle)
 	{
-		format = gtk_text_buffer_register_deserialize_tagset(img->slide_text_buffer, NULL);
-		gtk_text_buffer_get_start_iter(img->slide_text_buffer, &start);
+		if (strstr((const gchar*)img->current_slide->subtitle, "GTKTEXTBUFFERCONTENTS-0001"))
+		{
+			format = gtk_text_buffer_register_deserialize_tagset(img->slide_text_buffer, NULL);
+			gtk_text_buffer_get_start_iter(img->slide_text_buffer, &start);
 
-		gtk_text_buffer_deserialize(img->slide_text_buffer,
-									img->slide_text_buffer,
-									format,
-									&start,
-									img->current_slide->subtitle,
-									img->current_slide->subtitle_length,
-									NULL);
-		gtk_text_buffer_unregister_deserialize_format(img->slide_text_buffer, format); 
-	}
+			gtk_text_buffer_deserialize(img->slide_text_buffer,
+										img->slide_text_buffer,
+										format,
+										&start,
+										img->current_slide->subtitle,
+										img->current_slide->subtitle_length,
+										NULL);
+			gtk_text_buffer_unregister_deserialize_format(img->slide_text_buffer, format); 
+		}
+		else
+			g_object_set( G_OBJECT( img->slide_text_buffer ), "text", img->current_slide->subtitle, NULL );
+	}	
 
 	/* Update text pattern */
 	if (img->current_slide->pattern_filename)

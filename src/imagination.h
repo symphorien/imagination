@@ -208,8 +208,8 @@ struct _img_window_struct
     GtkWidget   *import_project_menu;
 	GtkWidget	*save_menu;
 	GtkWidget	*save_as_menu;
-	GtkWidget	*open_button;
-	GtkWidget	*save_button;
+	GtkToolItem	*open_button;
+	GtkToolItem	*save_button;
 	GtkWidget	*cut;
 	GtkWidget	*copy;
 	GtkWidget	*paste;
@@ -221,7 +221,7 @@ struct _img_window_struct
 	GtkWidget 	*fullscreen_music_preview;
 	GtkWidget 	*fullscreen_no_music;
 	GtkWidget 	*fullscreen_loop_preview;
-	GtkWidget 	*preview_button;
+	GtkToolItem *preview_button;
 	GtkWidget	*notebook;
 	GtkWidget	*menu_preview_mode;
 	GtkWidget	*menu_overview_mode;
