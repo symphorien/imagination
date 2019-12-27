@@ -236,6 +236,28 @@ class TestSuite:
         """ Choose slide index """
         entry = self.imagination.child(description="Current slide number")
         entry.typeText(str(i) + "\n")
+        assert self.current_slide() == i
+
+    def current_slide(self) -> int:
+        """ Choose slide index """
+        entry = self.imagination.child(description="Current slide number")
+        res = int(entry.text.strip())
+        print("current slide = ", res)
+        return res
+
+    def goto_next_slide(self):
+        """ Click on the next slide button """
+        panel = self.imagination.child(
+            description="Go to the next slide of the slideshow"
+        )
+        panel.button("").click()
+
+    def goto_first_slide(self):
+        """ Click on the next slide button """
+        panel = self.imagination.child(
+            description="Go to the first slide of the slideshow"
+        )
+        panel.button("").click()
 
     def set_transition_type(self, category: str, name: str):
         """ Set the transition type of the current slide """
