@@ -2155,18 +2155,9 @@ static void img_unselect_all_thumbnails(GtkMenuItem * UNUSED(item), img_window_s
 static void img_goto_line_entry_activate(GtkWidget * UNUSED(entry), img_window_struct *img)
 {
 	gint slide;
-	GtkTreePath *path;
 
 	slide = strtol(gtk_entry_get_text(GTK_ENTRY(img->slide_number_entry)), NULL, 10);
-	if (slide > 0 && slide <= img->slides_nr)
-	{
-		gtk_icon_view_unselect_all(GTK_ICON_VIEW (img->active_icon));
-		path = gtk_tree_path_new_from_indices(slide-1,-1);
-		gtk_icon_view_set_cursor (GTK_ICON_VIEW (img->active_icon), path, NULL, FALSE);
-		gtk_icon_view_select_path (GTK_ICON_VIEW (img->active_icon), path);
-		gtk_icon_view_scroll_to_path (GTK_ICON_VIEW (img->active_icon), path, FALSE, 0, 0);
-		gtk_tree_path_free (path);
-	}
+	img_goto_slide(img, slide-1);
 }
 
 static gint img_sort_none_before_other(GtkTreeModel *model,GtkTreeIter *a,GtkTreeIter *b,gpointer UNUSED(data))

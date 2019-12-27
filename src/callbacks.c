@@ -752,6 +752,7 @@ void img_delete_selected_slides(GtkMenuItem * UNUSED(item),img_window_struct *im
 		img_free_slide_struct( entry );
 		gtk_list_store_remove(GTK_LIST_STORE(img->thumbnail_model),&iter);
 		img->slides_nr--;
+		gtk_tree_path_free(path);
 		selected = selected->next;
 	}
 	g_signal_handlers_unblock_by_func( (gpointer)img->thumbnail_iconview,
@@ -775,14 +776,7 @@ void img_delete_selected_slides(GtkMenuItem * UNUSED(item),img_window_struct *im
 	if (next_slide < 0 || next_slide >= img->slides_nr - 1)
 		next_slide = img->slides_nr - 1;
 		
-	if (next_slide > -1 )
-	{
-		path = gtk_tree_path_new_from_indices(next_slide, -1);
-		gtk_icon_view_set_cursor (GTK_ICON_VIEW (img->active_icon), path, NULL, FALSE);
-		gtk_icon_view_select_path (GTK_ICON_VIEW (img->active_icon), path);
-		gtk_icon_view_scroll_to_path (GTK_ICON_VIEW (img->active_icon), path, FALSE, 0, 0);
-		gtk_tree_path_free (path);
-	}
+	img_goto_slide(img, next_slide);
 
 	img_taint_project(img);
 	img_iconview_selection_changed(GTK_ICON_VIEW(img->active_icon),img);
@@ -1295,33 +1289,44 @@ void img_start_stop_preview(GtkWidget *item, img_window_struct *img)
 	return;
 }
 
+/* selects the specified slide
+ * Slide index must be between 0 and img->slides_nr - 1*/
+void img_goto_slide(img_window_struct *img, gint slide_index)
+{
+	GtkTreePath *path;
+	gchar *slide = NULL;
+
+	if (slide_index < 0 || img->slides_nr <= slide_index)
+		return;
+
+	slide = g_strdup_printf("%d", slide_index-1);
+	gtk_entry_set_text(GTK_ENTRY(img->slide_number_entry), slide);
+	g_free(slide);
+	gtk_icon_view_unselect_all(GTK_ICON_VIEW (img->active_icon));
+	path = gtk_tree_path_new_from_indices(slide_index,-1);
+
+	gtk_icon_view_set_cursor (GTK_ICON_VIEW (img->active_icon), path, NULL, FALSE);
+	gtk_icon_view_select_path (GTK_ICON_VIEW (img->active_icon), path);
+	gtk_icon_view_scroll_to_path (GTK_ICON_VIEW (img->active_icon), path, FALSE, 0, 0);
+	gtk_tree_path_free (path);
+
+}
+
 void img_goto_first_slide(GtkWidget * UNUSED(button), img_window_struct *img)
 {
 	GtkTreeIter iter;
-	GtkTreePath *path;
 	GtkTreeModel *model;
-	gchar *slide = NULL;
 
 	model = GTK_TREE_MODEL( img->thumbnail_model );
 	if ( ! gtk_tree_model_get_iter_first(model,&iter))
 		return;
 
-	slide = g_strdup_printf("%d", 1);
-	gtk_entry_set_text(GTK_ENTRY(img->slide_number_entry), slide);
-	g_free(slide);
-	gtk_icon_view_unselect_all(GTK_ICON_VIEW (img->active_icon));
-	path = gtk_tree_path_new_from_indices(0,-1);
-	gtk_icon_view_set_cursor (GTK_ICON_VIEW (img->active_icon), path, NULL, FALSE);
-	gtk_icon_view_select_path (GTK_ICON_VIEW (img->active_icon), path);
-	gtk_icon_view_scroll_to_path (GTK_ICON_VIEW (img->active_icon), path, FALSE, 0, 0);
-	gtk_tree_path_free (path);
+	img_goto_slide(img, 0);
 }
 
 void img_goto_prev_slide(GtkWidget * UNUSED(button), img_window_struct *img)
 {
-	GtkTreePath *path;
 	GList *icons_selected = NULL;
-	gchar *slide = NULL;
 	gint slide_nr;
 
 	icons_selected = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(img->active_icon) );
@@ -1329,20 +1334,7 @@ void img_goto_prev_slide(GtkWidget * UNUSED(button), img_window_struct *img)
 		return;
 
 	slide_nr = gtk_tree_path_get_indices(icons_selected->data)[0];
-
-	if (slide_nr == 0)
-		return;
-
-	slide = g_strdup_printf("%d", slide_nr);
-	gtk_entry_set_text(GTK_ENTRY(img->slide_number_entry), slide);
-	g_free(slide);
-	gtk_icon_view_unselect_all(GTK_ICON_VIEW (img->active_icon));
-	path = gtk_tree_path_new_from_indices(--slide_nr,-1);
-
-	gtk_icon_view_set_cursor (GTK_ICON_VIEW (img->active_icon), path, NULL, FALSE);
-	gtk_icon_view_select_path (GTK_ICON_VIEW (img->active_icon), path);
-	gtk_icon_view_scroll_to_path (GTK_ICON_VIEW (img->active_icon), path, FALSE, 0, 0);
-	gtk_tree_path_free (path);
+	img_goto_slide(img, slide_nr-1);
 
 	GList *node15;
 	for(node15 = icons_selected;node15 != NULL;node15 = node15->next) {
@@ -1353,9 +1345,7 @@ void img_goto_prev_slide(GtkWidget * UNUSED(button), img_window_struct *img)
 
 void img_goto_next_slide(GtkWidget * UNUSED(button), img_window_struct *img)
 {
-	GtkTreePath *path;
 	GList *icons_selected = NULL;
-	gchar *slide = NULL;
 	gint slide_nr;
 
 	icons_selected = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(img->active_icon) );
@@ -1364,24 +1354,11 @@ void img_goto_next_slide(GtkWidget * UNUSED(button), img_window_struct *img)
 
 	/* Now get previous iter :) */
 	slide_nr = gtk_tree_path_get_indices(icons_selected->data)[0];
+	img_goto_slide(img, slide_nr+1);
 
-	if (slide_nr == (img->slides_nr-1) )
-		return;
-
-	gtk_icon_view_unselect_all(GTK_ICON_VIEW (img->active_icon));
-	path = gtk_tree_path_new_from_indices(++slide_nr, -1);
-
-	slide = g_strdup_printf("%d", slide_nr + 1);
-	gtk_entry_set_text(GTK_ENTRY(img->slide_number_entry), slide);
-	g_free(slide);
-	gtk_icon_view_set_cursor (GTK_ICON_VIEW (img->active_icon), path, NULL, FALSE);
-	gtk_icon_view_select_path (GTK_ICON_VIEW (img->active_icon), path);
-	gtk_icon_view_scroll_to_path (GTK_ICON_VIEW (img->active_icon), path, FALSE, 0, 0);
-	gtk_tree_path_free (path);
-
-	GList *node16;
-	for(node16 = icons_selected;node16 != NULL;node16 = node16->next) {
-		gtk_tree_path_free(node16->data);
+	GList *node15;
+	for(node15 = icons_selected;node15 != NULL;node15 = node15->next) {
+		gtk_tree_path_free(node15->data);
 	}
 	g_list_free (icons_selected);
 }
@@ -1390,23 +1367,13 @@ void img_goto_next_slide(GtkWidget * UNUSED(button), img_window_struct *img)
 void img_goto_last_slide(GtkWidget * UNUSED(button), img_window_struct *img)
 {
 	GtkTreeIter iter;
-	GtkTreePath *path;
 	GtkTreeModel *model;
-	gchar *slide = NULL;
 
 	model = GTK_TREE_MODEL( img->thumbnail_model );
 	if ( ! gtk_tree_model_get_iter_first(model,&iter))
 		return;
 
-	slide = g_strdup_printf("%d", img->slides_nr);
-	gtk_entry_set_text(GTK_ENTRY(img->slide_number_entry), slide);
-	g_free(slide);
-	gtk_icon_view_unselect_all(GTK_ICON_VIEW (img->active_icon));
-	path = gtk_tree_path_new_from_indices(img->slides_nr - 1, -1);
-	gtk_icon_view_set_cursor (GTK_ICON_VIEW (img->active_icon), path, NULL, FALSE);
-	gtk_icon_view_select_path (GTK_ICON_VIEW (img->active_icon), path);
-	gtk_icon_view_scroll_to_path (GTK_ICON_VIEW (img->active_icon), path, FALSE, 0, 0);
-	gtk_tree_path_free (path);
+	img_goto_slide(img, img->slides_nr-1);
 }
 
 void img_on_drag_data_received (GtkWidget * UNUSED(widget), GdkDragContext
