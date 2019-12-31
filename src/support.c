@@ -36,7 +36,7 @@ GtkWidget *img_load_icon(gchar *filename, GtkIconSize size)
 	g_free (path);
 
 	if (file_pixbuf == NULL)
-		file_image = gtk_image_new_from_stock(GTK_STOCK_MISSING_IMAGE, size);
+		file_image = gtk_image_new_from_icon_name("image-missing", size);
     else
 	{
 		file_image = gtk_image_new_from_pixbuf(file_pixbuf);
@@ -331,9 +331,9 @@ void img_show_file_chooser(GtkWidget *entry, GtkEntryIconPosition UNUSED(icon_po
 	file_selector = gtk_file_chooser_dialog_new (_("Please choose the slideshow project filename"),
 							GTK_WINDOW (img->imagination_window),
 							GTK_FILE_CHOOSER_ACTION_SAVE,
-							GTK_STOCK_CANCEL,
+							"_Cancel",
 							GTK_RESPONSE_CANCEL,
-							GTK_STOCK_SAVE,
+							"_Save",
 							GTK_RESPONSE_ACCEPT,
 							NULL);
 
@@ -1413,4 +1413,29 @@ void img_slide_set_p_filename(slide_struct *info_slide, gchar *filename)
     }
     g_free(info_slide->p_filename);
     info_slide->p_filename = filename;
+}
+
+void img_update_zoom_variables(img_window_struct *img)
+{
+	/* Store old zoom for calculations */
+	gdouble old_zoom = img->current_point.zoom;
+	gdouble fracx, fracy;
+	gint    tmpoffx, tmpoffy;
+		
+	img->current_point.zoom = gtk_range_get_value( GTK_RANGE(img->ken_zoom) );
+		
+	gdouble aw  = img->video_size[0];
+	gdouble ah  = img->video_size[1];
+	gdouble aw2 = aw / 2;
+	gdouble ah2 = ah / 2;
+
+	fracx = (gdouble)( aw2 - img->current_point.offx ) / ( aw2 * old_zoom );
+	fracy = (gdouble)( ah2 - img->current_point.offy ) / ( ah2 * old_zoom );
+	img->maxoffx = aw * ( 1 - img->current_point.zoom );
+	img->maxoffy = ah * ( 1 - img->current_point.zoom );
+	tmpoffx = aw2 * ( 1 - fracx * img->current_point.zoom );
+	tmpoffy = ah2 * ( 1 - fracy * img->current_point.zoom );
+
+	img->current_point.offx = CLAMP( tmpoffx, img->maxoffx, 0 );
+	img->current_point.offy = CLAMP( tmpoffy, img->maxoffy, 0 );
 }

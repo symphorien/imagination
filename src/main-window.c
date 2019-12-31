@@ -1002,6 +1002,7 @@ img_window_struct *img_create_window (void)
 	g_object_set (G_OBJECT (img_struct->scrolled_win),"hscrollbar-policy",GTK_POLICY_AUTOMATIC,"vscrollbar-policy",GTK_POLICY_AUTOMATIC,"shadow-type",GTK_SHADOW_IN,NULL);
 	gtk_container_add(GTK_CONTAINER (img_struct->scrolled_win), img_struct->sub_textview);
 	gtk_box_pack_start (GTK_BOX (hbox_textview), img_struct->scrolled_win, TRUE, TRUE, 0);
+	gtk_widget_set_size_request(img_struct->scrolled_win, -1, 70);
 
 	text_animation_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
 	gtk_box_pack_start( GTK_BOX( vbox_slide_caption ), text_animation_hbox, FALSE, FALSE, 0 );

@@ -443,7 +443,7 @@ img_append_slides_from( img_window_struct *img, const gchar *input )
                 {
                     icon_theme = gtk_icon_theme_get_default();
                     icon_info = gtk_icon_theme_lookup_icon(icon_theme,
-                                                           GTK_STOCK_MISSING_IMAGE,
+                                                           "image-missing",
                                                            256,
                                                            GTK_ICON_LOOKUP_FORCE_SVG);
                     icon_filename = gtk_icon_info_get_filename(icon_info);

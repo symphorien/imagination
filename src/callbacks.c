@@ -968,7 +968,11 @@ void img_show_about_dialog (GtkMenuItem * UNUSED(item), img_window_struct *img_s
 {
 	static GtkWidget *about = NULL;
 	static gchar version[] = VERSION "-" REVISION;
-    const char *authors[] = {"\nDevelopers:\nGiuseppe Torelli <colossus73@gmail.com>\nTadej Borovšak <tadeboro@gmail.com>\nSymphorien Gibol <symphorien.gibol@gmail.com>",NULL};
+    const char *authors[] = {"\nDevelopers:\nGiuseppe Torelli <colossus73@gmail.com>",
+								"Tadej Borovšak <tadeboro@gmail.com>",
+								"Symphorien Gibol <symphorien.gibol@gmail.com>",
+								NULL
+							};
     
 	if (about == NULL)
 	{
@@ -1600,14 +1604,14 @@ static void img_swap_toolbar_images( img_window_struct *img,gboolean flag )
 		tmp_image = gtk_image_new_from_icon_name ("media-playback-start", GTK_ICON_SIZE_LARGE_TOOLBAR);
 		gtk_widget_show(tmp_image);
 		gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(img->preview_button), tmp_image);
-		gtk_widget_set_tooltip_text(img->preview_button,_("Starts the preview without music"));
+		gtk_widget_set_tooltip_text(GTK_WIDGET(img->preview_button),_("Starts the preview without music"));
 	}
 	else
 	{
 		tmp_image = gtk_image_new_from_icon_name ("media-playback-stop", GTK_ICON_SIZE_LARGE_TOOLBAR);
 		gtk_widget_show(tmp_image);
 		gtk_tool_button_set_icon_widget(GTK_TOOL_BUTTON(img->preview_button), tmp_image);
-		gtk_widget_set_tooltip_text(img->preview_button,_("Stops the preview"));
+		gtk_widget_set_tooltip_text(GTK_WIDGET(img->preview_button),_("Stops the preview"));
 	}
 }
 
@@ -1662,7 +1666,7 @@ void img_choose_slideshow_filename(GtkWidget *widget, img_window_struct *img)
     } else if (save) {
 	action = GTK_FILE_CHOOSER_ACTION_SAVE;
     } else {
-	img_message(img, FALSE, "I do not know what to do with this slideshow filename.");
+	img_message(img, FALSE, _("I do not know what to do with this slideshow filename."));
 	return;
     }
 
@@ -1849,41 +1853,10 @@ void img_move_audio_down( GtkButton * UNUSED(button), img_window_struct *img )
  * img_image_area_change_zoom is the thing to look at.
  */
 void
-img_ken_burns_zoom_changed( GtkRange          *range,
-							img_window_struct *img )
+img_ken_burns_zoom_changed( GtkRange *range, img_window_struct *img )
 {
-	/* Store old zoom for calcutaions */
-	gdouble old_zoom = img->current_point.zoom;
+	img_update_zoom_variables(img);
 
-	img->current_point.zoom = gtk_range_get_value( range );
-
-	/* If zoom is 1, reset parameters to avoid drift. */
-	if( img->current_point.zoom < 1.00005 )
-	{
-		img->maxoffx = 0;
-		img->maxoffy = 0;
-		img->current_point.offx = 0;
-		img->current_point.offy = 0;
-	}
-	else
-	{
-		gdouble fracx, fracy;
-		gint    tmpoffx, tmpoffy;
-		gdouble aw  = img->video_size[0];
-		gdouble ah  = img->video_size[1];
-		gdouble aw2 = aw / 2;
-		gdouble ah2 = ah / 2;
-
-		fracx = (gdouble)( aw2 - img->current_point.offx ) / ( aw2 * old_zoom );
-		fracy = (gdouble)( ah2 - img->current_point.offy ) / ( ah2 * old_zoom );
-		img->maxoffx = aw * ( 1 - img->current_point.zoom );
-		img->maxoffy = ah * ( 1 - img->current_point.zoom );
-		tmpoffx = aw2 * ( 1 - fracx * img->current_point.zoom );
-		tmpoffy = ah2 * ( 1 - fracy * img->current_point.zoom );
-
-		img->current_point.offx = CLAMP( tmpoffx, img->maxoffx, 0 );
-		img->current_point.offy = CLAMP( tmpoffy, img->maxoffy, 0 );
-	}
 	img_update_stop_point(NULL, img);
 	gtk_widget_queue_draw( img->image_area );
 }
@@ -2140,10 +2113,7 @@ img_update_stop_point( GtkSpinButton  * UNUSED(button),
 
 	/* Update data */
 	*point = img->current_point;
-	point->time = gtk_spin_button_get_value_as_int(
-						GTK_SPIN_BUTTON( img->ken_duration ) );
-	point->zoom = gtk_range_get_value( GTK_RANGE( img->ken_zoom ) );
-	
+	point->time = gtk_spin_button_get_value_as_int(	GTK_SPIN_BUTTON( img->ken_duration ) );
 	/* Update display */
 	img_update_stop_display( img, FALSE );
 
@@ -2212,7 +2182,6 @@ img_update_stop_display( img_window_struct *img,
 	gtk_label_set_text( GTK_LABEL( img->total_stop_points_label), string );
 	g_free( string );
 
-	/* If no point is set yet, use default values */
 	if( img->current_slide->no_points )
 	{
 		ImgStopPoint *point;
@@ -2228,7 +2197,6 @@ img_update_stop_display( img_window_struct *img,
 		
 		g_signal_handlers_block_by_func( img->ken_duration,
 									 img_update_stop_point, img );
-	
 		gtk_spin_button_set_value( GTK_SPIN_BUTTON( img->ken_duration ),
 								   point->time );
 		g_signal_handlers_unblock_by_func( img->ken_duration,
@@ -2236,17 +2204,20 @@ img_update_stop_display( img_window_struct *img,
 	
 		/* Set zoom value */
 		g_signal_handlers_block_by_func( img->ken_zoom,
-									 img_update_stop_point, img );
+									img_ken_burns_zoom_changed, img );
 		gtk_range_set_value( GTK_RANGE( img->ken_zoom ), point->zoom );
 		g_signal_handlers_unblock_by_func( img->ken_zoom,
-									 img_update_stop_point, img );
-
+									img_ken_burns_zoom_changed, img );
+		
+		img_update_zoom_variables(img);
+		
 		/* Do we need to refresh current stop point on screen */
 		if( update_pos )
 			img->current_point = *point;
 	}
 	else
 	{
+		/* If the slide has no ken burn effect use default one */
 		ImgStopPoint point = { 1, 0, 0, 1.0 };
 
 		gtk_entry_set_text( GTK_ENTRY( img->ken_entry ), "" );
