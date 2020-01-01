@@ -1862,6 +1862,38 @@ img_ken_burns_zoom_changed( GtkRange *range, img_window_struct *img )
 }
 
 /*
+ * img_image_area_scroll:
+ * @widget: image area
+ * @event: event description
+ * @img: global img_window_struct structure
+ *
+ * This function catched mouse wheel event and changes
+ * the zoom of the stop point accordingly to the wheel
+ * scroll direction
+ *
+ * Return value: TRUE, indicating that we handled this event.
+ */
+gboolean img_image_area_scroll( GtkWidget			* UNUSED(widget),
+								GdkEvent			*event,
+								img_window_struct	*img )
+{
+	gint direction;
+	gdouble zoom_value;
+
+	direction = event->scroll.direction;
+	
+	zoom_value = gtk_range_get_value( GTK_RANGE(img->ken_zoom) );
+	
+	if( direction == GDK_SCROLL_UP )
+		zoom_value++;
+	else if ( direction == GDK_SCROLL_DOWN )
+		zoom_value--;
+		
+	gtk_range_set_value( GTK_RANGE(img->ken_zoom), zoom_value );
+
+	return (TRUE);
+}
+/*
  * img_image_area_button_press:
  * @widget: image area
  * @event: event description
@@ -2096,6 +2128,8 @@ img_add_stop_point( GtkButton         * UNUSED(button),
 
 	/* Sync timings */
 	img_sync_timings( img->current_slide, img );
+	
+	img_taint_project(img);
 }
 
 void
@@ -2149,6 +2183,8 @@ img_delete_stop_point( GtkButton         * UNUSED(button),
 
 	/* Sync timings */
 	img_sync_timings( img->current_slide, img );
+	
+	img_taint_project(img);
 }
 
 void
@@ -2597,8 +2633,8 @@ img_add_empty_slide( GtkMenuItem       *item,
 					GTK_WIDGET(item) == img->edit_empty_slide ? _("Edit empty slide") : _("Create empty slide"),
 					GTK_WINDOW( img->imagination_window ),
 					GTK_DIALOG_MODAL,
-					GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-					GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
+					"_Cancel", GTK_RESPONSE_CANCEL,
+					"_OK", GTK_RESPONSE_ACCEPT,
 					NULL );
 
 	vbox = gtk_dialog_get_content_area( GTK_DIALOG( dialog ) );

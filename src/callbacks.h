@@ -69,6 +69,7 @@ void img_move_audio_up( GtkButton *, img_window_struct * );
 void img_move_audio_down( GtkButton *, img_window_struct * );
 gboolean img_on_draw_event(GtkWidget *,cairo_t *,img_window_struct *);
 void img_ken_burns_zoom_changed( GtkRange *, img_window_struct * );
+gboolean img_image_area_scroll( GtkWidget *, GdkEvent *, img_window_struct * );
 gboolean img_image_area_button_press( GtkWidget *, GdkEventButton *, img_window_struct * );
 gboolean img_image_area_button_release( GtkWidget *, GdkEventButton *, img_window_struct * );
 gboolean img_image_area_motion( GtkWidget *, GdkEventMotion *, img_window_struct * );

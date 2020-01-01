@@ -663,7 +663,8 @@ img_window_struct *img_create_window (void)
 	gtk_widget_add_events( img_struct->image_area, GDK_BUTTON1_MOTION_MASK
 												 | GDK_POINTER_MOTION_HINT_MASK
 												 | GDK_BUTTON_PRESS_MASK
-												 | GDK_BUTTON_RELEASE_MASK );
+												 | GDK_BUTTON_RELEASE_MASK
+												 | GDK_SCROLL_MASK );
 	g_signal_connect( G_OBJECT( img_struct->image_area ), "draw",
 					  G_CALLBACK( img_on_draw_event ), img_struct );
 	g_signal_connect( G_OBJECT( img_struct->image_area ), "button-press-event",
@@ -672,7 +673,9 @@ img_window_struct *img_create_window (void)
 					  G_CALLBACK( img_image_area_button_release ), img_struct );
 	g_signal_connect( G_OBJECT( img_struct->image_area ), "motion-notify-event",
 					  G_CALLBACK( img_image_area_motion ), img_struct );
-
+	g_signal_connect( G_OBJECT( img_struct->image_area ), "scroll-event", 
+					  G_CALLBACK( img_image_area_scroll ), img_struct);
+	
 	vbox_frames = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
 	scrollable_window = gtk_scrolled_window_new(NULL, NULL);
 	g_object_set (G_OBJECT (scrollable_window),"hscrollbar-policy",GTK_POLICY_AUTOMATIC,"vscrollbar-policy",GTK_POLICY_AUTOMATIC,NULL);
