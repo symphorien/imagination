@@ -20,9 +20,6 @@
 #include "subtitles.h"
 #include "support.h"
 
-/* Wrap width for subtitles (fraction of image size) */
-#define WRAP_WIDTH 0.75
-
 /* ****************************************************************************
  * Local declarations
  * ************************************************************************* */
@@ -529,11 +526,10 @@ img_set_slide_text_info( slide_struct      *slide,
 						 gint	           border_width,
                          img_window_struct *img )
 {
-	/* Set the slide text info parameters */
-	if( slide->pattern_filename )
-		g_free( slide->pattern_filename );
-	slide->pattern_filename = g_strdup( pattern_filename );
+	if (pattern_filename)
+		slide->pattern_filename = pattern_filename;
 
+	/* Set the slide text info parameters */
 	if( ( anim_id > -1 ) && ( anim_id != slide->anim_id ) )
 	{
 		GtkTreeModel *model;

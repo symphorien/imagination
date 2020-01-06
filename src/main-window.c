@@ -105,7 +105,6 @@ img_window_struct *img_create_window (void)
 	GtkWidget *imagemenuitem5;
 	GtkWidget *separatormenuitem1;
 	GtkWidget *slide_menu;
-	GtkWidget *image_menu;
 	GtkWidget *deselect_all_menu;
 	GtkWidget *menuitem3;
 	GtkWidget *tmp_image;
@@ -2711,7 +2710,7 @@ img_update_sub_properties( img_window_struct *img,
 
 		gtk_tree_model_get_iter( model, &iter, (GtkTreePath *)tmp->data );
 		gtk_tree_model_get( model, &iter, 1, &slide, -1 );
-		img_set_slide_text_info( slide, NULL, NULL, NULL, NULL,
+		img_set_slide_text_info( slide, NULL, NULL, NULL, img->current_slide->pattern_filename,
 								 anim_id, anim_duration,	img->current_slide->posX,
 															img->current_slide->posY, 
 															img->current_slide->subtitle_angle,

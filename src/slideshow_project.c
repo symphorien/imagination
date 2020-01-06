@@ -196,10 +196,10 @@ img_save_slideshow( img_window_struct *img,
 	count = 0;
 
 	/* Background music */
-	g_key_file_set_integer(img_key_file, "music", "fadeout duration", img->audio_fadeout);
 	model = gtk_tree_view_get_model(GTK_TREE_VIEW(img->music_file_treeview));
 	if (gtk_tree_model_get_iter_first (model, &iter))
 	{
+		g_key_file_set_integer(img_key_file, "music", "fadeout duration", img->audio_fadeout);
 		g_key_file_set_integer(img_key_file, "music", "number", gtk_tree_model_iter_n_children(model, NULL));
 		do
 		{
@@ -518,7 +518,7 @@ img_append_slides_from( img_window_struct *img, const gchar *input )
 				if( slide_info )
 				{
 					if( slide_filename )
-						img_set_slide_file_info( slide_info, slide_filename );
+						img_set_slide_file_info( slide_info, original_filename );
 					else {
 						g_return_if_fail(c_start && c_stop && p_start && p_stop);
 						img_set_slide_gradient_info( slide_info, gradient,
@@ -579,12 +579,15 @@ img_append_slides_from( img_window_struct *img, const gchar *input )
 						/* Does the slide have a foreground color? */
 						img_check_for_rtf_colors(img, subtitle);
 
-						subtitle[26] = (subtitle_length >> 24);
-						subtitle[27] = (subtitle_length >> 16) & 0xFF;
-						subtitle[28] = (subtitle_length >> 8) & 0xFF;
-						subtitle[29] = subtitle_length & 0xFF;
+						if (strstr((const gchar*)subtitle, "GTKTEXTBUFFERCONTENTS-0001"))
+						{
+							subtitle[26] = (subtitle_length >> 24);
+							subtitle[27] = (subtitle_length >> 16) & 0xFF;
+							subtitle[28] = (subtitle_length >> 8) & 0xFF;
+							subtitle[29] = subtitle_length & 0xFF;
 
-						slide_info->subtitle_length = subtitle_length + 30;
+							slide_info->subtitle_length = subtitle_length + 30;
+						}
 						slide_info->subtitle = (guint8*)subtitle;
 
 						img_set_slide_text_info( slide_info, img->thumbnail_model,

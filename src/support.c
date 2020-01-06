@@ -296,7 +296,7 @@ void img_load_available_transitions(img_window_struct *img)
 					g_module_symbol( module, trans[1], &address );
 					gtk_tree_store_append( model, &citer, &piter );
 					gtk_tree_store_set( model, &citer, 0, pixbuf,
-													   1, trans[0],
+													   1, "",
 													   2, address,
 													   3, id,
 													   4, anim,

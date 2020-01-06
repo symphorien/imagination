@@ -711,9 +711,14 @@ void img_delete_selected_slides(GtkMenuItem * UNUSED(item),img_window_struct *im
 {
 	GList *selected, *bak;
 	GtkTreeIter iter;
+	GtkTreePath *path;
 	GtkTreeModel *model;
 	slide_struct *entry;
+	gint *indices;
 
+	/* slide to select after all slides are removed: the slide after the first one being removed */
+	gint next_slide = img->slides_nr;
+	
 	model =	GTK_TREE_MODEL( img->thumbnail_model );
 	
 	selected = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(img->active_icon));
@@ -728,10 +733,19 @@ void img_delete_selected_slides(GtkMenuItem * UNUSED(item),img_window_struct *im
 	g_signal_handlers_block_by_func( (gpointer)img->over_icon,
 									 (gpointer)img_iconview_selection_changed,
 									 img );
+
 	while (selected)
 	{
 		gtk_tree_model_get_iter(model, &iter,selected->data);
 		gtk_tree_model_get(model, &iter,1,&entry,-1);
+		path = gtk_tree_model_get_path(model, &iter);
+		indices = gtk_tree_path_get_indices(path);
+		if (indices)
+		{
+		    gint index = indices[0];
+		    if (index < next_slide)
+				next_slide = index;
+		}
 		img_free_slide_struct( entry );
 		gtk_list_store_remove(GTK_LIST_STORE(img->thumbnail_model),&iter);
 		img->slides_nr--;
@@ -753,6 +767,20 @@ void img_delete_selected_slides(GtkMenuItem * UNUSED(item),img_window_struct *im
 	cairo_surface_destroy( img->current_image );
 	img->current_image = NULL;
 	gtk_widget_queue_draw( img->image_area );
+
+	/* Select the next slide */
+	if (next_slide < 0 || next_slide >= img->slides_nr - 1)
+		next_slide = img->slides_nr - 1;
+		
+	if (next_slide > -1 )
+	{
+		path = gtk_tree_path_new_from_indices(next_slide, -1);
+		gtk_icon_view_set_cursor (GTK_ICON_VIEW (img->active_icon), path, NULL, FALSE);
+		gtk_icon_view_select_path (GTK_ICON_VIEW (img->active_icon), path);
+		gtk_icon_view_scroll_to_path (GTK_ICON_VIEW (img->active_icon), path, FALSE, 0, 0);
+		gtk_tree_path_free (path);
+	}
+
 	img_taint_project(img);
 	img_iconview_selection_changed(GTK_ICON_VIEW(img->active_icon),img);
 }
@@ -1658,8 +1686,8 @@ void img_choose_slideshow_filename(GtkWidget *widget, img_window_struct *img)
 
     /* Determine what to do */
     append = widget == img->import_project_menu;
-    open_replace = widget == img->open_menu || widget == img->open_button;
-    save = widget == img->save_as_menu || widget == img->save_menu || widget == img->save_button;
+    open_replace = widget == img->open_menu || widget == GTK_WIDGET(img->open_button);
+    save = widget == img->save_as_menu || widget == img->save_menu || widget == GTK_WIDGET(img->save_button);
     /* Determine the mode of the chooser. */
     if (open_replace || append) {
 	action = GTK_FILE_CHOOSER_ACTION_OPEN;
@@ -1673,14 +1701,13 @@ void img_choose_slideshow_filename(GtkWidget *widget, img_window_struct *img)
     /* close old slideshow if we import */
     if (open_replace)
     {
-	if (!img_can_discard_unsaved_project(img)) {
-	    return;
-	}
+		if (!img_can_discard_unsaved_project(img))
+			return;
     }
 
     /* If user wants to save empty slideshow, do nothing */
     if( img->slides_nr == 0 && save )
-	return;
+		return;
 
     /* ask for a file name if the project has never been saved yet, if we save as or if we open a project */
     if (img->project_filename == NULL || widget == img->save_as_menu || action == GTK_FILE_CHOOSER_ACTION_OPEN)
@@ -1730,13 +1757,15 @@ void img_choose_slideshow_filename(GtkWidget *widget, img_window_struct *img)
 	    filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fc));
 	    if( ! filename )
 	    {
-		gtk_widget_destroy(fc);
-		return;
+			gtk_widget_destroy(fc);
+			return;
 	    }
-	    /*if (img->project_current_dir)
-	      g_free(img->project_current_dir);
-	      img->project_current_dir = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(fc));*/
+	    g_message(img->project_current_dir);
+	    
+	    if (img->project_current_dir)
+			g_free(img->project_current_dir);
 
+		img->project_current_dir = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(fc));
 	}
 	else if (response == GTK_RESPONSE_CANCEL || response == GTK_RESPONSE_DELETE_EVENT)
 	{
@@ -1747,15 +1776,14 @@ void img_choose_slideshow_filename(GtkWidget *widget, img_window_struct *img)
     }
 
     if( ! filename )
-	filename = g_strdup( img->project_filename );
+		filename = g_strdup( img->project_filename );
 
-    if (open_replace) {
-	img_load_slideshow(img, filename);
-    } else if (append) {
-	img_append_slides_from( img, filename );
-    } else if (save) {
-	img_save_slideshow( img, filename, img->relative_filenames );
-    }
+    if (open_replace)
+		img_load_slideshow(img, filename);
+    else if (append) 
+		img_append_slides_from( img, filename );
+    else if (save)
+		img_save_slideshow( img, filename, img->relative_filenames );
 
     img_refresh_window_title(img);
 
@@ -1885,9 +1913,9 @@ gboolean img_image_area_scroll( GtkWidget			* UNUSED(widget),
 	zoom_value = gtk_range_get_value( GTK_RANGE(img->ken_zoom) );
 	
 	if( direction == GDK_SCROLL_UP )
-		zoom_value++;
+		zoom_value += 0.1;
 	else if ( direction == GDK_SCROLL_DOWN )
-		zoom_value--;
+		zoom_value -= 0.1;
 		
 	gtk_range_set_value( GTK_RANGE(img->ken_zoom), zoom_value );
 
@@ -2153,6 +2181,8 @@ img_update_stop_point( GtkSpinButton  * UNUSED(button),
 
 	/* Sync timings */
 	img_sync_timings( img->current_slide, img );
+	
+	img_taint_project(img);
 }
 
 void
