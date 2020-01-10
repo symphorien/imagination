@@ -1,9 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([imagination], [3.4],
+AC_INIT([imagination], [3.5],
 		[https://sourceforge.net/p/imagination/bugs/])
 AC_CONFIG_SRCDIR([src/imagination.h])
 AM_INIT_AUTOMAKE
+
+AC_CONFIG_MACRO_DIRS([m4])
 
 # Enable silent rules if supported
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
@@ -36,7 +38,7 @@ plugins_modules="cairo >= 1.6 glib-2.0 > 2.18.0"
 PKG_CHECK_MODULES(PLUGINS, [$plugins_modules])
 
 # get svn revision
-REVISION="r0"
+REVISION="-1"
 if test "x${REVISION}" = "xr0"
 then
 	SVN=`which svn 2>/dev/null`

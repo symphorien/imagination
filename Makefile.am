@@ -8,7 +8,9 @@ EXTRA_DIST = \
 	intltool-extract.in \
 	intltool-merge.in \
 	intltool-update.in
-	
+
+ACLOCAL_AMFLAGS = -I m4
+
 uninstall-local:
 	rm -rf $(DESTDIR)$(pkgdatadir);
 

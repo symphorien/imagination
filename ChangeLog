@@ -1,15 +1,20 @@
 Imagination changelog
 
-xx/xx/19 - 3.5		- Added ability to flip the slide horizontally.
-			- Subtitle can now have multiple styles.
+10/01/20 - 3.5		- Port to GTK+3
+			- Added spin & grow text animation.
+			- Added ability to flip the slide horizontally.
+			- Subtitle can now have different styles.
+			- The slide next to the one deleted is now selected, 
+			- Added H265 codec.
 			- Fixed seg-fault when quitting.
-			- Fixed the "Import slideshow" button overwriting existing slides
-			- Port to GTK+3
-			- Add end to end tests (run them with make installcheck)
-			- Support most EXIF orientation tags
-			- Added a way to control the length of the final audio fadeout
+			- Updated Russian translations.
+			- Fixed the "Import slideshow" button overwriting existing slides.
+			- Made the zoom in the image area to react to mouse wheel. 
+			- Add end to end tests (run them with make installcheck).
+			- Support most EXIF orientation tags.
+			- Added a way to control the length of the final audio fadeout.
 			- Fixed a few crashes when opening a project whose files do not exist anymore
-			- More reliable detection of unsaved changes to ask confirmation before quitting
+			- More reliable detection of unsaved changes to ask confirmation before quitting.
 
 
 18/12/18 - 3.4		- Subtitle info are no more saved in the project file if the slide hasn't any text.
