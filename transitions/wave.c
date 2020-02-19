@@ -17,6 +17,7 @@
  *
  */
 
+#include <assert.h>
 #include <cairo.h>
 #include <glib.h>
 
@@ -206,6 +207,9 @@ transition_render(	cairo_t         *cr,
 		case 8: /* right down */
 		pattern = cairo_pattern_create_linear( 0, 0, width, height );
 		break;
+
+		default: /* never happens */
+		assert(0);
 	}
 	/* Add color stops */
 	cairo_pattern_add_color_stop_rgba(pattern, (1 - wave_factor) / 2, 0, 0, 0, 1 );	// start

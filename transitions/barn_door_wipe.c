@@ -17,6 +17,7 @@
  *
  */
 
+#include <assert.h>
 #include <cairo.h>
 #include <glib.h>
 #include <math.h>
@@ -126,6 +127,9 @@ transition_render( cairo_t         *cr,
 			dim = diag;
 			cairo_rotate( cr, atan2( width, -height ) );
 			break;
+		default:
+			/* this function is never called with such an argument */
+			assert(0);
 	}
 	cairo_rel_move_to( cr, ( dim * progress ) / 2, 0 );
 	cairo_rel_line_to( cr, 0, - diag / 2 );
