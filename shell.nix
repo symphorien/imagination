@@ -2,7 +2,7 @@ with import <nixpkgs> {};
 mkShell {
   nativeBuildInputs = [ 
   bear subversion ffmpeg sox autoreconfHook intltool libxslt.bin docbook_xml_xslt libtool pkg-config ];
-  buildInputs = map enableDebugging [ glib gtk3 ];
+  buildInputs = [ glib gtk3 ];
   checkInputs = [
     (python3.withPackages (ps: [ ps.dogtail ]))
   gnome3.gobject-introspection at-spi2-atk at-spi2-core
