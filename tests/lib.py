@@ -60,6 +60,14 @@ class TestSuite:
         self.menu("Slideshow", "Import pictures")
         self.open_file(filename)
 
+    def add_empty_slide(self):
+        """ Add a new black slide """
+        n = self.n_slides()
+        self.menu("Slide", "Add empty slide")
+        dialog = self.imagination.childNamed("Create empty slide")
+        dialog.button("OK").click()
+        assert n + 1 == self.n_slides(), "created no slide!"
+
     def _save(self):
         """ Click on save """
         self.imagination.child(roleName="tool bar").child(
@@ -141,6 +149,14 @@ class TestSuite:
         menu.click()
         sleep(0.1)
         menu.menuItem(item).click()
+
+    def set_slide_text(self, text: str):
+        """Sets the text of the selected slide"""
+        pane = self.imagination.childNamed("Video")
+        pane = pane.childNamed("Slide Text")
+        entry = pane.child(roleName = "text")
+        entry.click()
+        entry.typeText(text)
 
     def quit(self):
         """ Quits.
