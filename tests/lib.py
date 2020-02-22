@@ -12,6 +12,7 @@ from typing import Optional
 from dogtail.procedural import type
 from dogtail.tree import SearchError, root
 from dogtail.utils import run
+from dogtail import rawinput
 
 
 class ExportFailed(RuntimeError):
@@ -259,15 +260,22 @@ class TestSuite:
         )
         panel.button("").click()
 
-    def set_transition_type(self, category: str, name: str):
-        """ Set the transition type of the current slide """
+    def set_transition_type(self, category: str, index: int):
+        """ Set the transition type of the current slide.
+
+        Index is the 0-based number of the row in the category submenu
+        """
         combo = self.imagination.child("Slide Settings").child(
             description="Transition type"
         )
         combo.click()
         menu = combo.menu(category)
         menu.click()
-        menu.menuItem(name).click()
+        rawinput.pressKey("Right")
+        rawinput.pressKey("Home")
+        for _ in range(index):
+            rawinput.pressKey("Down")
+        rawinput.pressKey("Return")
 
     def assert_should_save(self):
         """ Checks that a warning dialog fires when trying to quit without saving """

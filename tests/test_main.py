@@ -9,7 +9,7 @@ with TestSuite() as t:
     t.assert_should_save()
     t.add_slide(t.text2img("CD"))
     t.choose_slide(2)
-    t.set_transition_type("Bar Wipe", "Left to Right")
+    t.set_transition_type("Bar Wipe", 0)
     slideshow = t.temp / "result.img"
     t.save_as(slideshow)
     assert t.n_slides() == 2
