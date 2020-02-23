@@ -1,5 +1,9 @@
 Imagination changelog
 
+23/02/20 - 3.5.1	- Fixed imagination svg file.
+			- Fixed gdk_pixbuf_format_get_name: assertion 'format != NULL' failed.
+			- Fixed regression causing not to render gradient slides when exporting.
+
 10/01/20 - 3.5		- Port to GTK+3
 			- Added spin & grow text animation.
 			- Added ability to flip the slide horizontally.
