@@ -640,7 +640,7 @@
       <feBlend
          id="feBlend4409"
          in2="BackgroundImage"
-         mode="screen"
+         mode="normal"
          inkscape:collect="always" />
     </filter>
     <clipPath

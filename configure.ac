@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([imagination], [3.5],
+AC_INIT([imagination], [3.5.1],
 		[https://sourceforge.net/p/imagination/bugs/])
 AC_CONFIG_SRCDIR([src/imagination.h])
 AM_INIT_AUTOMAKE
@@ -38,7 +38,7 @@ plugins_modules="cairo >= 1.6 glib-2.0 > 2.18.0"
 PKG_CHECK_MODULES(PLUGINS, [$plugins_modules])
 
 # get svn revision
-REVISION="-1"
+REVISION=""
 if test "x${REVISION}" = "xr0"
 then
 	SVN=`which svn 2>/dev/null`

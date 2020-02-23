@@ -686,15 +686,18 @@ img_prepare_pixbufs( img_window_struct *img)
 								img->video_size[0],
 								img->video_size[1], NULL, &img->image2 );
 		}
-		success = img_scale_image( img->current_slide->p_filename, img->video_ratio,
-							 0, img->video_size[1], img->distort_images,
-							 img->background_color, NULL, &img->image2 );
+		else
+		{
+			success = img_scale_image( img->current_slide->p_filename, img->video_ratio,
+								0, img->video_size[1], img->distort_images,
+								img->background_color, NULL, &img->image2 );
 
-		if (!success) {
-
-		    img->image2 = NULL;
-		    img_fail_export(img, "while loading file %s", img->current_slide->p_filename);
-		    return (FALSE);
+			if (!success)
+			{
+				img->image2 = NULL;
+				img_fail_export(img, "while loading file %s", img->current_slide->p_filename);
+				return (FALSE);
+			}
 		}
 		/* Get first stop point */
 		img->point2 = (ImgStopPoint *)( img->current_slide->no_points ?

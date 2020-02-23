@@ -1612,7 +1612,7 @@ static void img_slide_paste(GtkMenuItem* UNUSED(item), img_window_struct *img)
                         pasted_slide->p_filename = g_strdup(info_slide->p_filename);
                         pasted_slide->original_filename = g_strdup(info_slide->original_filename);
                         pasted_slide->resolution = g_strdup(info_slide->resolution);
-                        pasted_slide->type = g_strdup(info_slide->type);
+                        pasted_slide->type = info_slide->type ? g_strdup(info_slide->type): NULL;
                         pasted_slide->path = g_strdup(info_slide->path);
 
                         /* Stop Points also need to copied by hand. */
@@ -1900,7 +1900,7 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
         {
             if (info_slide->o_filename != NULL)
             {
-                slide_info_msg = g_strdup_printf("%s    %s: %s    %s: %s",info_slide->o_filename, _("Resolution"), info_slide->resolution, _("Type"), info_slide->type);
+                slide_info_msg = g_strdup_printf("%s    %s: %s    %s: %s",info_slide->o_filename, _("Resolution"), info_slide->resolution, _("Type"), info_slide->type ? info_slide->type : "?");
                 gtk_statusbar_push(GTK_STATUSBAR (img->statusbar), img->context_id, slide_info_msg);
                 g_free(slide_info_msg);
             }

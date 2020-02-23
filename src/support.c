@@ -469,7 +469,7 @@ img_set_slide_file_info( slide_struct *slide,
 	slide->angle = 0;
 
 	slide->resolution = g_strdup_printf( "%d x %d", width, height );
-	slide->type = gdk_pixbuf_format_get_name( format );
+	slide->type = format ? gdk_pixbuf_format_get_name( format ) : NULL;
 }
 
 void
@@ -627,7 +627,7 @@ img_free_slide_struct( slide_struct *entry )
 
 	g_free(entry->o_filename);
 	g_free(entry->resolution);
-	g_free(entry->type);
+	if (entry->type) g_free(entry->type);
 	
 	if (entry->subtitle)
 		g_free(entry->subtitle);
