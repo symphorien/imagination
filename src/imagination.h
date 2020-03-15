@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
+#include <libavcodec/avcodec.h>
 #include <cairo.h>
 
 /* Transition preview frame rate. I decided to use 25 fps, which

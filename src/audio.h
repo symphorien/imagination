@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2009 Giuseppe Torelli <colossus73@gmail.com>
+ *  Copyright (c) 2009-2020 Giuseppe Torelli <colossus73@gmail.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,29 +21,11 @@
 #define __IMAGINATION_AUDIO_H
 
 #include <gtk/gtk.h>
-#include <signal.h>
-#include <errno.h>
-#include <sox.h>
+
 #include "support.h"
+#include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
 
 gchar *img_get_audio_length(img_window_struct *, gchar *, gint *);
-gchar *img_get_audio_filetype(gchar *);
 void img_play_stop_selected_file(GtkButton *, img_window_struct *);
-void output_message(unsigned , const char *, const char *, va_list ap);
-
-void
-img_analyze_input_files( gchar   **inputs,
-						 guint      no_inputs,
-						 gdouble  *rate,
-						 guint     *channels );
-
-gboolean
-img_eliminate_bad_files( gchar             **inputs,
-						 guint                no_inputs,
-						 gdouble             rate,
-						 guint                channels,
-						 img_window_struct  *img );
-
-void
-img_update_inc_audio_display( img_window_struct *img );
 #endif

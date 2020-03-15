@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2009-2019 Giuseppe Torelli <colossus73@gmail.com>
+ *  Copyright (c) 2009-2020 Giuseppe Torelli <colossus73@gmail.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 
 #include "support.h"
 #include "audio.h"
-#include "video_formats.h"
 #include <glib/gstdio.h>
 
 extern gchar *img_get_audio_filetype(gchar *);
@@ -337,7 +336,7 @@ void img_show_file_chooser(GtkWidget *entry, GtkEntryIconPosition UNUSED(icon_po
 							GTK_RESPONSE_ACCEPT,
 							NULL);
 
-    /* only video files filter */
+    /* only video files filter 
     video_filter = gtk_file_filter_new ();
 
     gtk_file_filter_set_name (video_filter,
@@ -356,7 +355,7 @@ void img_show_file_chooser(GtkWidget *entry, GtkEntryIconPosition UNUSED(icon_po
     file_extention = video_format_list[img->video_format_index].file_extensions[0];
 
     gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (file_selector), video_filter);
-
+*/
     /* All files filter */
     all_files_filter = gtk_file_filter_new ();
     gtk_file_filter_set_name(all_files_filter, _("All files"));
@@ -1126,24 +1125,6 @@ img_message (img_window_struct *img,
             pango_attr_list_unref (pango_list);
         }
 
-}
-
-void
-img_check_for_encoder(img_window_struct *img)
-{
-	gchar *name = NULL;
-
-	name = g_find_program_in_path("ffmpeg");
-	if (name == NULL)
-	{
-		img_message(img, FALSE, "Using avconv for encoding.\n");
-		img->encoder_name = g_strdup("avconv");
-	}
-	else
-	{
-		img_message(img, FALSE, "Using ffmpeg for encoding.\n");
-		img->encoder_name = name;
-	} 
 }
 
 void img_delete_subtitle_pattern(GtkButton *button, img_window_struct *img)

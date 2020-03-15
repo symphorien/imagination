@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2009 Giuseppe Torelli <colossus73@gmail.com>
+ *  Copyright (c) 2009-2020 Giuseppe Torelli <colossus73@gmail.com>
  *  Copyright (c) 2009 Tadej Borovšak 	<tadeboro@gmail.com>
  * 
  *  This program is free software; you can redistribute it and/or modify
@@ -19,7 +19,6 @@
  */
 
 #include "new_slideshow.h"
-#include "video_formats.h"
 
 /* ****************************************************************************
  * Local declarations
@@ -105,11 +104,11 @@ void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean flag)
                               GTK_EXPAND | GTK_FILL, GTK_EXPAND | GTK_FILL, 0, 2);
     store = GTK_LIST_STORE( gtk_combo_box_get_model(GTK_COMBO_BOX( img->video_format_combo ) ) );
     i = 0;
-    while (video_format_list[i].name != NULL) {
-        gtk_list_store_append( store, &iter );
-        gtk_list_store_set( store, &iter, 0, gettext(video_format_list[i].name), -1 );
-        i++;
-	}
+    //~ while (video_format_list[i].name != NULL) {
+        //~ gtk_list_store_append( store, &iter );
+        //~ gtk_list_store_set( store, &iter, 0, gettext(video_format_list[i].name), -1 );
+        //~ i++;
+	//~ }
     /* Fill combobox depending on selected video format */
     g_signal_connect (G_OBJECT (img->video_format_combo), "changed", G_CALLBACK (img_video_format_changed),img);
 
@@ -314,7 +313,7 @@ static void img_video_format_changed (GtkComboBox *combo, img_window_struct *img
 
 	video_format = gtk_combo_box_get_active(combo);
 
-    /* Video size */
+    /* Video size 
     store = GTK_LIST_STORE( gtk_combo_box_get_model(GTK_COMBO_BOX( img->video_size_combo ) ) );
     gtk_list_store_clear(store);
     i = 0;
@@ -323,10 +322,10 @@ static void img_video_format_changed (GtkComboBox *combo, img_window_struct *img
 		gtk_list_store_set (store, &iter, 0,
                             video_format_list[video_format].sizelist[i].name, -1 );
         i++;
-	}
+	}*/
 	/* Combo is set to default size at the end because it triggers img_video_size_changed */
 
-    /* Aspect Ratio */
+    /* Aspect Ratio 
     if (video_format_list[video_format].aspect_ratio_list == NULL)
     {
         gtk_widget_set_sensitive(img->aspect_ratio_combo, FALSE);
@@ -347,7 +346,7 @@ static void img_video_format_changed (GtkComboBox *combo, img_window_struct *img
         gtk_combo_box_set_active(GTK_COMBO_BOX(img->aspect_ratio_combo), 0);
     }
 
-    /* FPS */
+    /* FPS 
     store = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(img->fps_combo)));
     gtk_list_store_clear(store);
     i = 0;
@@ -355,11 +354,11 @@ static void img_video_format_changed (GtkComboBox *combo, img_window_struct *img
         gtk_list_store_append( store, &iter );
         gtk_list_store_set( store, &iter, 0, video_format_list[video_format].fps_list[i].name, -1 );
         i++;
-    }
+    }*/
     gtk_combo_box_set_active(GTK_COMBO_BOX(img->fps_combo),0);
+/*
 
-
-    /* Bitrate */
+    /* Bitrate 
     if (video_format_list[video_format].bitratelist == NULL)
     {
         gtk_widget_set_sensitive(img->bitrate_combo, FALSE);
@@ -377,7 +376,7 @@ static void img_video_format_changed (GtkComboBox *combo, img_window_struct *img
             i++;
         }
         gtk_combo_box_set_active(GTK_COMBO_BOX(img->bitrate_combo),0);
-    }
+    }*/
 
     /* This triggers img_video_size_changed and presets other combo boxes to default parameters */
     gtk_combo_box_set_active(GTK_COMBO_BOX(img->video_size_combo), 0);
@@ -392,17 +391,17 @@ static void img_video_size_changed (GtkComboBox * UNUSED(combo), img_window_stru
         return;
     format_idx = gtk_combo_box_get_active(GTK_COMBO_BOX(img->video_format_combo));
 
-    index = video_format_list[format_idx].sizelist[size_idx].default_fps_idx;
-    if (index != -1)
-        gtk_combo_box_set_active(GTK_COMBO_BOX(img->fps_combo), index);
+    //~ index = video_format_list[format_idx].sizelist[size_idx].default_fps_idx;
+    //~ if (index != -1)
+        //~ gtk_combo_box_set_active(GTK_COMBO_BOX(img->fps_combo), index);
 
-    index = video_format_list[format_idx].sizelist[size_idx].default_aspect_ratio_idx;
-    if (index != -1)
-        gtk_combo_box_set_active(GTK_COMBO_BOX(img->aspect_ratio_combo), index);
+    //~ index = video_format_list[format_idx].sizelist[size_idx].default_aspect_ratio_idx;
+    //~ if (index != -1)
+        //~ gtk_combo_box_set_active(GTK_COMBO_BOX(img->aspect_ratio_combo), index);
 
-    index = video_format_list[format_idx].sizelist[size_idx].default_bitrate_idx;
-    if (index != -1)
-        gtk_combo_box_set_active(GTK_COMBO_BOX(img->bitrate_combo), index);
+    //~ index = video_format_list[format_idx].sizelist[size_idx].default_bitrate_idx;
+    //~ if (index != -1)
+        //~ gtk_combo_box_set_active(GTK_COMBO_BOX(img->bitrate_combo), index);
 }
 
 void img_get_format_options(img_window_struct *img)
@@ -413,12 +412,12 @@ void img_get_format_options(img_window_struct *img)
     video_size_index = gtk_combo_box_get_active(GTK_COMBO_BOX(img->video_size_combo));
 
     img->video_format_index = video_format_index;
-    img->video_size[0] = video_format_list[video_format_index].sizelist[video_size_index].x;
-    img->video_size[1] = video_format_list[video_format_index].sizelist[video_size_index].y;
+    //img->video_size[0] = video_format_list[video_format_index].sizelist[video_size_index].x;
+    //img->video_size[1] = video_format_list[video_format_index].sizelist[video_size_index].y;
     img->aspect_ratio_index = gtk_combo_box_get_active(GTK_COMBO_BOX(img->aspect_ratio_combo));
     img->bitrate_index = gtk_combo_box_get_active(GTK_COMBO_BOX(img->bitrate_combo));
     img->fps_index = gtk_combo_box_get_active(GTK_COMBO_BOX(img->fps_combo));
-    img->export_fps = video_format_list[video_format_index].fps_list[img->fps_index].value;
+    //img->export_fps = video_format_list[video_format_index].fps_list[img->fps_index].value;
     img->bye_bye_transition = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(img->bye_bye_transition_checkbox));
 }
 
@@ -433,7 +432,7 @@ void img_set_format_options(img_window_struct *img)
 	/* Bye bye transition */
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(img->bye_bye_transition_checkbox), img->bye_bye_transition);
 
-    /* size list */
+    /* size list 
     size_list = video_format_list[img->video_format_index].sizelist;
     i = 0;
     while (size_list[i].name != NULL)
@@ -445,18 +444,15 @@ void img_set_format_options(img_window_struct *img)
             break;
         }
         i++;
-    }
-    if (size_list[i].name == NULL) {
-        img_message(img, FALSE, "No video size found\n"); /* FIXME - add a custom Size option */
-    }
-
+    }*/
+    
     /* Aspect Ratio */
-    if (video_format_list[img->video_format_index].aspect_ratio_list != NULL)
-        gtk_combo_box_set_active(GTK_COMBO_BOX(img->aspect_ratio_combo), img->aspect_ratio_index);
+    //if (video_format_list[img->video_format_index].aspect_ratio_list != NULL)
+      //  gtk_combo_box_set_active(GTK_COMBO_BOX(img->aspect_ratio_combo), img->aspect_ratio_index);
 
     /* Bitrate */
-    if (video_format_list[img->video_format_index].bitratelist != NULL)
-        gtk_combo_box_set_active(GTK_COMBO_BOX(img->bitrate_combo), img->bitrate_index);
+    //if (video_format_list[img->video_format_index].bitratelist != NULL)
+      //  gtk_combo_box_set_active(GTK_COMBO_BOX(img->bitrate_combo), img->bitrate_index);
     
     /* FPS */
     gtk_combo_box_set_active(GTK_COMBO_BOX(img->fps_combo), img->fps_index);

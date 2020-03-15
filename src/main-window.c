@@ -28,7 +28,6 @@
 #include "export.h"
 #include "subtitles.h"
 #include "imgcellrendererpixbuf.h"
-#include "video_formats.h"
 
 static const GtkTargetEntry drop_targets[] =
 {
@@ -190,7 +189,8 @@ img_window_struct *img_create_window (void)
     img_struct->aspect_ratio_index = 0;
     img_struct->bitrate_index = 0;
     img_struct->fps_index = 0;
-    img_struct->export_fps = video_format_list[img_struct->video_format_index].fps_list[img_struct->fps_index].value;
+    img_struct->export_fps = 30;
+    //img_struct->export_fps = video_format_list[img_struct->video_format_index].fps_list[img_struct->fps_index].value;
 
     img_struct->audio_fadeout = 5;
 
@@ -1492,8 +1492,6 @@ img_window_struct *img_create_window (void)
 				GTK_CHECK_MENU_ITEM( tmp_checks[index] ), TRUE );
 	}
 	
-	/* As many distros replaced ffmpeg with avconv let's check for it */
-	img_check_for_encoder(img_struct);
 	return img_struct;
 }
 

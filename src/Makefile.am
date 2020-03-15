@@ -6,7 +6,9 @@ AM_CPPFLAGS = \
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\" \
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" \
 	@PACKAGE_CFLAGS@ \
-	@SOX_CFLAGS@
+	@LIBAVCODEC_CFLAGS@ \
+	@LIBAVUTIL_CFLAGS@
+	@LIBAVFORMAT_CFLAGS@
 
 bin_PROGRAMS = imagination
 
@@ -21,11 +23,9 @@ imagination_SOURCES = \
 	audio.c audio.h \
 	export.c export.h \
 	subtitles.c subtitles.h \
-	imgcellrendererpixbuf.c imgcellrendererpixbuf.h \
-	img_sox.c img_sox.h \
-	video_formats.c video_formats.h
+	imgcellrendererpixbuf.c imgcellrendererpixbuf.h
 
 imagination_CFLAGS = \
 	-DDATADIR=\"$(datadir)\"
 
-imagination_LDADD = @PACKAGE_LIBS@ @SOX_LIBS@ $(INTLLIBS) -lgmodule-2.0 -lm
+imagination_LDADD = @PACKAGE_LIBS@ @LIBAVCODEC_LIBS@ @LIBAVFORMAT_LIBS@ @LIBAVUTIL_LIBS@ $(INTLLIBS) -lgmodule-2.0 -lm

@@ -31,14 +31,20 @@ LIBTOOL="$LIBTOOL --silent"
 pkg_modules="gtk+-3.0"
 PKG_CHECK_MODULES(PACKAGE, [$pkg_modules])
 
-sox_modules="sox >= 14.2.0"
-PKG_CHECK_MODULES(SOX, [$sox_modules])
+libavcodec="libavcodec >= 57.107.100"
+PKG_CHECK_MODULES(LIBAVCODEC, [$libavcodec])
+
+libavutil="libavutil >= 55.78.100"
+PKG_CHECK_MODULES(LIBAVUTIL, [$libavutil])
+
+libavformat="libavformat >= 57.83.100"
+PKG_CHECK_MODULES(LIBAVFORMAT, [$libavformat])
 
 plugins_modules="cairo >= 1.6 glib-2.0 > 2.18.0"
 PKG_CHECK_MODULES(PLUGINS, [$plugins_modules])
 
 # get svn revision
-REVISION=""
+REVISION="r0"
 if test "x${REVISION}" = "xr0"
 then
 	SVN=`which svn 2>/dev/null`
@@ -59,8 +65,14 @@ AC_DEFINE_UNQUOTED(REVISION, "$REVISION", [subversion revision number])
 AC_SUBST(PACKAGE_CFLAGS)
 AC_SUBST(PACKAGE_LIBS)
 
-AC_SUBST(SOX_CFLAGS)
-AC_SUBST(SOX_LIBS)
+AC_SUBST(LIBAVCODEC_CFLAGS)
+AC_SUBST(LIBAVCODEC_LIBS)
+
+AC_SUBST(LIBAVFORMAT_CFLAGS)
+AC_SUBST(LIBAVFORMAT_LIBS)
+
+AC_SUBST(LIBAVUTIL_CFLAGS)
+AC_SUBST(LIBAVUTIL_LIBS)
 
 AC_SUBST(PLUGINS_CFLAGS)
 AC_SUBST(PLUGINS_LIBS)
@@ -78,7 +90,13 @@ ALL_LINGUAS="`sed -e '/^#/d' $srcdir/po/LINGUAS`"
 AM_GLIB_GNU_GETTEXT
 
 GTK_VERSION=`$PKG_CONFIG --modversion gtk+-3.0`
-SOX_VERSION=`$PKG_CONFIG --modversion sox`
+LIBAVCODEC_VERSION=`$PKG_CONFIG --modversion libavcodec`
+LIBAVUTIL_VERSION=`$PKG_CONFIG --modversion libavutil`
+LIBAVFORMAT_VERSION=`$PKG_CONFIG --modversion libavformat`
+
+AC_DEFINE(LIBAVUTIL_VERSION,   "$LIBAVUTIL_VERSION"  )
+AC_DEFINE(LIBAVCODEC_VERSION,  "$LIBAVCODEC_VERSION" )
+AC_DEFINE(LIBAVFORMAT_VERSION, "$LIBAVFORMAT_VERSION")
 
 AC_OUTPUT([
 Makefile
@@ -111,7 +129,10 @@ echo "--------------------------"
 echo ""
 echo "Install in  :       ${prefix}/bin"
 echo "GTK version :       ${GTK_VERSION}"
-echo "SOX version :       ${SOX_VERSION}"
+echo "LIBAVCODEC  :       ${LIBAVCODEC_VERSION}"
+echo "LIBAVUTIL   :       ${LIBAVUTIL_VERSION}"
+echo "LIBAVFORMAT   :     ${LIBAVFORMAT_VERSION}"
+
 if test "${REVISION}" != "-1"
 then
 	echo "SVN revision:       ${REVISION}"

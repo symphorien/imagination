@@ -1,5 +1,5 @@
 /*
-** Copyright (c) 2009-2019 Giuseppe Torelli <colossus73@gmail.com>
+** Copyright (c) 2009-2020 Giuseppe Torelli <colossus73@gmail.com>
 ** Copyright (C) 2009 Tadej Borovšak   <tadeboro@gmail.com>
 **
 ** This program is free software; you can redistribute it and/or modify
@@ -21,10 +21,8 @@
 #include "support.h"
 #include "callbacks.h"
 #include "audio.h"
-#include "img_sox.h"
 #include <fcntl.h>
 #include <glib/gstdio.h>
-#include "video_formats.h"
 
 static GtkWidget *
 img_create_export_dialog( img_window_struct  *img,
@@ -133,11 +131,7 @@ img_create_export_dialog( img_window_struct  *img,
 
 	gtk_window_set_default_size(GTK_WINDOW(dialog),520,-1);
 
-#if GTK_CHECK_VERSION( 2, 14, 0 )
 	vbox = gtk_dialog_get_content_area( GTK_DIALOG( dialog ) );
-#else
-	vbox = GTK_DIALOG( dialog )->vbox;
-#endif
 
 	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox1), 5);
@@ -231,23 +225,23 @@ img_prepare_audio( img_window_struct *img )
 		return( FALSE );
 	}
 
-	img_analyze_input_files( inputs, i, &rate, &channels );
+	/*img_analyze_input_files( inputs, i, &rate, &channels );
 	if( img_eliminate_bad_files( inputs, i, rate, channels, img ) )
 	{
-		/* Thread data structure */
+		/* Thread data structure 
 		ImgThreadData *tdata = g_slice_new( ImgThreadData );
 
 		/* FIFO path */
 		img->fifo = g_build_filename( g_get_tmp_dir(), "img_audio_fifo", NULL );
 
-		/* Replace audio place holder */
+		/* Replace audio place holder 
 		tmp = g_strsplit( img->export_cmd_line, "<#AUDIO#>", 0 );
 		g_free( img->export_cmd_line );
 
 		img->export_cmd_line = g_strdup_printf( "%s-f flac -i %s%s", tmp[0],
 												img->fifo, tmp[1] );
 
-		/* Fill thread structure with data */
+		/* Fill thread structure with data 
 		tdata->sox_flags = &img->sox_flags;
 		tdata->files     =  img->exported_audio;
 		tdata->no_files  =  img->exported_audio_no;
@@ -257,20 +251,20 @@ img_prepare_audio( img_window_struct *img )
 
 		mkfifo( img->fifo, S_IRWXU );
 
-		/* Spawn sox thread now. */
+		/* Spawn sox thread now. 
 		g_atomic_int_set( &img->sox_flags, 0 );
 		img->sox = g_thread_new( "Imagination" , (GThreadFunc)img_produce_audio_data,
 									tdata);
 
-		/* Chain last export step - video export */
+		/* Chain last export step - video export 
 		g_idle_add( (GSourceFunc)img_start_export, img );
 	}
 	else
 	{
-		/* User declined proposal */
+		/* User declined proposal 
 		img_stop_export( img );
 	}
-
+*/
 	return( FALSE );
 }
 
@@ -1351,10 +1345,6 @@ img_export_frame_to_ppm( cairo_surface_t *surface,
  * should be set to 25. This will ensure that ffmpeg will receive proper amount
  * of data to fill the video with frames.
  *
- * String should be newly allocated using g_strdup(_printf)? functions, since
- * export framework will try to free it using g_free. It should also contain
- * placeholder named <#AUDIO#>, which will be in next stage replaced by real
- * path to newly produced audio file (at this stage, we don't have any).
  * ************************************************************************* */
 
 void img_exporter (GtkWidget * UNUSED(button), img_window_struct *img )
@@ -1369,9 +1359,9 @@ void img_exporter (GtkWidget * UNUSED(button), img_window_struct *img )
 	 * function will take some preventive measures and also switches mode into
 	 * preview if needed. */
     /* FIXME: change with a gtk_file_chooser ? */
-	dialog = img_create_export_dialog( img, _(video_format_list[img->video_format_index].name),
-									   GTK_WINDOW( img->imagination_window ),
-									   &entry, &vbox );
+	//dialog = img_create_export_dialog( img, _(video_format_list[img->video_format_index].name),
+		//							   GTK_WINDOW( img->imagination_window ),
+			//						   &entry, &vbox );
 
 	/* If dialog is NULL, abort. */
 	if( dialog == NULL )
@@ -1397,21 +1387,6 @@ void img_exporter (GtkWidget * UNUSED(button), img_window_struct *img )
 	/* User is serious, so we better prepare ffmepg command line;) */
 	img->export_is_running = 1;
 
-    if (NULL != video_format_list[img->video_format_index].aspect_ratio_list)
-        aspect_ratio_cmd = g_strdup_printf("%s%s",
-                    img->ffmpeg_aspect_ratio_cmd,
-                    video_format_list[img->video_format_index].aspect_ratio_list[img->aspect_ratio_index].ffmpeg_option);
-    else
-        aspect_ratio_cmd = g_strdup("");
-
-    if (NULL != video_format_list[img->video_format_index].bitratelist)
-        bitrate_cmd = g_strdup_printf("-b:v %s",
-                    video_format_list[img->video_format_index].bitratelist[img->bitrate_index].value);
-    else {
-        bitrate_cmd = g_strdup("");
-    }
-
-
 	cmd_line = g_strdup_printf("%s -f image2pipe -vcodec ppm "
 				"-i pipe: <#AUDIO#> "
 				"-r %s "                /* frame rate */
@@ -1423,8 +1398,8 @@ void img_exporter (GtkWidget * UNUSED(button), img_window_struct *img )
                 "%s "
                 "\"%s\"",               /*filename */
                  img->encoder_name,
-                video_format_list[img->video_format_index].fps_list[img->fps_index].ffmpeg_option,
-                video_format_list[img->video_format_index].ffmpeg_option,
+                "",
+                "",
                 img->video_size[0], img->video_size[1],
                 aspect_ratio_cmd,
                 bitrate_cmd,
@@ -1438,42 +1413,4 @@ void img_exporter (GtkWidget * UNUSED(button), img_window_struct *img )
     g_free(aspect_ratio_cmd);
     g_free(bitrate_cmd);
 	gtk_widget_destroy( dialog );
-}
-
-
-/* Test ffmpeg abilities */
-void test_ffmpeg(img_window_struct *img)
-{
-    /* ffmpeg test */
-    gchar *ffmpeg_test_result;
-    gchar **argv;
-    gint    argc;
-
-   /* Check if ffmpeg/avconv is compiled with avfilter setdar */
-    img_message(img, FALSE, (g_strrstr(img->encoder_name, "ffmpeg") ? "Testing ffmpeg abilities with \"ffmpeg -filters\" ... "
-    															   : "Testing avconv abilities with \"avconv -filters\" ... "));
-
-    if (g_strrstr(img->encoder_name, "ffmpeg"))
-    	g_shell_parse_argv("ffmpeg -filters", &argc, &argv, NULL);
-    else
-    	g_shell_parse_argv("avconv -filters", &argc, &argv, NULL);
-
-    g_spawn_sync(NULL, argv, NULL,
-                 G_SPAWN_STDERR_TO_DEV_NULL|G_SPAWN_SEARCH_PATH,
-                 NULL, NULL,
-                 &ffmpeg_test_result, NULL,
-                 NULL, NULL);
-    if (NULL != ffmpeg_test_result && NULL != g_strrstr(ffmpeg_test_result, "setdar"))
-    {
-        img_message(img, FALSE, "setdar found!\n");
-        img->ffmpeg_aspect_ratio_cmd = "-vf setdar=";
-    }
-    else
-    {
-        img_message(img, FALSE, "setdar not found!\n");
-        img->ffmpeg_aspect_ratio_cmd = "-aspect ";
-
-    }
-    g_strfreev( argv );
-
 }

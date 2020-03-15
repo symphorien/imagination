@@ -441,9 +441,6 @@ void img_select_audio_files_to_add ( GtkMenuItem* UNUSED(button), img_window_str
 		g_slist_free (files);
 	}	
 
-	/* Update incompatibilities display */
-	img_update_inc_audio_display( img );
-
 	time = img_convert_seconds_to_time(img->total_music_secs);
 	gtk_label_set_text(GTK_LABEL(img->music_time_data), time);
 	g_free(time);
@@ -454,7 +451,7 @@ void img_select_audio_files_to_add ( GtkMenuItem* UNUSED(button), img_window_str
 void img_add_audio_files (gchar *filename, img_window_struct *img)
 {
 	GtkTreeIter iter;
-	gchar *path, *file, *time;
+	gchar *path, *file, *time = NULL;
 	gint secs;
 
 	path = g_path_get_dirname(filename);
@@ -1011,7 +1008,7 @@ void img_show_about_dialog (GtkMenuItem * UNUSED(item), img_window_struct *img_s
 		g_object_set (about,
 			"name", "Imagination",
 			"version", strcmp(REVISION, "-1") == 0 ? VERSION : version,
-			"copyright","Copyright \xC2\xA9 2009-2019 Giuseppe Torelli",
+			"copyright","Copyright \xC2\xA9 2009-2020 Giuseppe Torelli",
 			"comments","A simple and lightweight slideshow maker",
 			"authors",authors,
 			"documenters",NULL,
@@ -2913,7 +2910,8 @@ img_gradient_toggled( GtkToggleButton *button,
 	{
 		if (slide->source > 0)
 			g_source_remove(slide->source);
-		slide->source = g_timeout_add( 2000 * 0.01, (GSourceFunc)img_fade_gradient_decrease_alpha, slide );
+		else
+			slide->source = g_timeout_add( 2000 * 0.01, (GSourceFunc)img_fade_gradient_decrease_alpha, slide );
 	}
 	gtk_widget_queue_draw( slide->preview );
 }
@@ -2933,6 +2931,7 @@ img_fade_gradient_decrease_alpha(ImgEmptySlide *slide)
 		return FALSE;
 	}
 	gtk_widget_queue_draw(slide->preview);
+
 	return TRUE;
 }
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2009 Giuseppe Torelli <colossus73@gmail.com>
+ *  Copyright (c) 2009-2020 Giuseppe Torelli <colossus73@gmail.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,9 +21,10 @@
 #  include <config.h>
 #endif
 
-#include <gtk/gtk.h>
-#include <sox.h>
+#define STR_(x) #x
+#define STR(x) STR_(x)
 
+#include <gtk/gtk.h>
 #include "main-window.h"
 #include "support.h"
 #include "callbacks.h"
@@ -33,6 +34,10 @@ extern void output_message(unsigned , const char *, const char *, va_list ap);
 
 int main (int argc, char *argv[])
 {
+	static gchar libavinfo[] = "\n libavutil  : " STR(LIBAVUTIL_VERSION) \
+								"\n libavcodec : " STR(LIBAVCODEC_VERSION) \
+								"\n libavformat: " STR(LIBAVFORMAT_VERSION) "\n" ;
+
 	img_window_struct *img_window;
 
 	#ifdef ENABLE_NLS
@@ -42,9 +47,9 @@ int main (int argc, char *argv[])
 	#endif
 	
 	gtk_init (&argc, &argv);
-	
-	sox_globals.output_message_handler = output_message;
-	sox_format_init();
+
+	av_register_all();
+	avcodec_register_all();
 
 	img_window = img_create_window();
 
@@ -59,15 +64,11 @@ int main (int argc, char *argv[])
 
 	/*read the project filename passed in argv*/
  	if (argc > 1 )
-	{
 		img_load_slideshow( img_window, argv[1] );
-	}
 
-    test_ffmpeg(img_window);
-
+	img_message(img_window, TRUE, libavinfo);
 	gtk_main ();
 
-	sox_format_quit();
 	g_free(img_window);
 	return 0;
 }
