@@ -36,7 +36,7 @@ int main (int argc, char *argv[])
 {
 	static gchar libavinfo[] = "\n libavutil  : " STR(LIBAVUTIL_VERSION) \
 								"\n libavcodec : " STR(LIBAVCODEC_VERSION) \
-								"\n libavformat: " STR(LIBAVFORMAT_VERSION) "\n" ;
+								"\n libavformat: " STR(LIBAVFORMAT_VERSION) "\n\n" ;
 
 	img_window_struct *img_window;
 
@@ -62,11 +62,12 @@ int main (int argc, char *argv[])
 	gtk_widget_show( img_window->imagination_window );
 	img_set_statusbar_message(img_window,0);
 
+	img_message(img_window, TRUE, libavinfo);
+	
 	/*read the project filename passed in argv*/
  	if (argc > 1 )
 		img_load_slideshow( img_window, argv[1] );
 
-	img_message(img_window, TRUE, libavinfo);
 	gtk_main ();
 
 	g_free(img_window);

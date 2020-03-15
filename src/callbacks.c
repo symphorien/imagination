@@ -160,12 +160,7 @@ void img_new_slideshow(GtkMenuItem * UNUSED(item), img_window_struct *img_struct
     if (!img_can_discard_unsaved_project(img_struct)) {
 	return;
     }
-    img_new_slideshow_settings_dialog(img_struct, FALSE);
-}
-
-void img_project_properties(GtkMenuItem * UNUSED(item), img_window_struct *img_struct)
-{
-	img_new_slideshow_settings_dialog(img_struct, TRUE);
+    img_new_slideshow_settings_dialog(img_struct);
 }
 
 static void detect_slide_orientation_from_pixbuf(GdkPixbuf *image, gboolean *flipped, ImgAngle *angle) {

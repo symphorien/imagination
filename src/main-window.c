@@ -148,7 +148,6 @@ img_window_struct *img_create_window (void)
 	GtkWidget *a_label;
 	GtkWidget *a_hbox;
 	GtkWidget *modes_vbox;
-	GtkWidget *properties_menu;
 	GtkWidget *preview_menu;
 	GtkWidget *import_menu;
 	GtkWidget *import_audio_menu;
@@ -266,11 +265,6 @@ img_window_struct *img_create_window (void)
 	gtk_container_add (GTK_CONTAINER (menu1),import_audio_menu);
 	gtk_widget_add_accelerator (import_audio_menu,"activate",img_struct->accel_group,GDK_KEY_m,GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
 	g_signal_connect (G_OBJECT (import_audio_menu),"activate",G_CALLBACK (img_select_audio_files_to_add),img_struct);
-
-	properties_menu = gtk_menu_item_new_with_mnemonic (_("_Properties"));
-	gtk_container_add (GTK_CONTAINER (menu1), properties_menu);
-	gtk_widget_add_accelerator (properties_menu,"activate",img_struct->accel_group,GDK_KEY_p,GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
-	g_signal_connect (G_OBJECT (properties_menu), "activate", G_CALLBACK (img_project_properties), img_struct);
 
 	separatormenuitem1 = gtk_separator_menu_item_new ();
 	gtk_container_add (GTK_CONTAINER (menu1), separatormenuitem1);
@@ -1112,7 +1106,7 @@ img_window_struct *img_create_window (void)
 	gtk_label_set_yalign(GTK_LABEL(label), 0.5);
 	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 0, 0);
 
-	img_struct->sub_posX_adj = (GtkAdjustment *) gtk_adjustment_new( 1.0, 1, (gdouble)img_struct->video_size[0], 1.0, 1.0, 0.0 );
+	img_struct->sub_posX_adj = (GtkAdjustment *) gtk_adjustment_new( 1.0, 1, -1, 1.0, 1.0, 0.0 );
 	img_struct->sub_posX = gtk_scale_new(GTK_ORIENTATION_HORIZONTAL,
 					     img_struct->sub_posX_adj);
 	gtk_table_attach (GTK_TABLE (table), img_struct->sub_posX, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
@@ -1133,7 +1127,7 @@ img_window_struct *img_create_window (void)
 	gtk_label_set_yalign(GTK_LABEL(label), 0.5);
 	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
 
-	img_struct->sub_posY_adj = (GtkAdjustment *) gtk_adjustment_new( 1.0, 1, (gdouble)img_struct->video_size[1], 1.0, 1.0, 0.0 );
+	img_struct->sub_posY_adj = (GtkAdjustment *) gtk_adjustment_new( 1.0, 1, -1, 1.0, 1.0, 0.0 );
 	img_struct->sub_posY = gtk_scale_new(GTK_ORIENTATION_HORIZONTAL,
 					     img_struct->sub_posY_adj);
 	gtk_table_attach (GTK_TABLE (table), img_struct->sub_posY, 1, 2, 1, 2, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);

@@ -1,7 +1,6 @@
 /*
- *  Copyright (c) 2009 Giuseppe Torelli <colossus73@gmail.com>
+ *  Copyright (c) 2009-2020 Giuseppe Torelli <colossus73@gmail.com>
  *  Copyright (c) 2009 Tadej Borovšak 	<tadeboro@gmail.com>
- *  Copyright (c) 2011 Robert Chéramy   <robert@cheramy.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,8 +25,5 @@
 #include "main-window.h"
 #include "callbacks.h"
 
-void img_new_slideshow_settings_dialog(img_window_struct *, gboolean);
-void img_set_format_options (img_window_struct *);
-void img_get_format_options (img_window_struct *);
-
+void img_new_slideshow_settings_dialog(img_window_struct *);
 #endif

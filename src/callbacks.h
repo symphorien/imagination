@@ -32,7 +32,6 @@ gboolean img_can_discard_unsaved_project(img_window_struct *img);
 void img_taint_project(img_window_struct *img);
 void img_refresh_window_title(img_window_struct *);
 void img_new_slideshow(GtkMenuItem *,img_window_struct *);
-void img_project_properties(GtkMenuItem *, img_window_struct *);
 void img_add_slides(GSList *slides, img_window_struct *img);
 void img_add_slides_thumbnails(GtkMenuItem *,img_window_struct *);
 void img_remove_audio_files (GtkWidget *, img_window_struct *);
