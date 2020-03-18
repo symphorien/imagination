@@ -349,6 +349,8 @@ struct _img_window_struct
 									   is always 0). */
 
 	/* Variables common to export and preview functions */
+	GtkWidget		*vcodec_menu;	/* Video codec in the export dialog */
+	GtkWidget		*acodec_menu;	/* Audio codec in the export dialog */	
 	cairo_surface_t *current_image;  /* Image in preview area */
 	cairo_surface_t *exported_image; /* Image being exported */
 	cairo_surface_t *image1;         /* Original images */

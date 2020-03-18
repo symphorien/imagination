@@ -323,11 +323,9 @@ void img_show_file_chooser(GtkWidget *entry, GtkEntryIconPosition UNUSED(icon_po
 	GtkWidget *file_selector;
 	gchar *dest_dir;
 	gint response;
-    GtkFileFilter *video_filter, *all_files_filter;
-    gchar *file_extention, *dot_position, *proposed_filename, *file_basename, *stripped_filename;
-    gint i;
+    GtkFileFilter *all_files_filter;
 
-	file_selector = gtk_file_chooser_dialog_new (_("Please choose the slideshow project filename"),
+	file_selector = gtk_file_chooser_dialog_new (_("Please type the slideshow project filename"),
 							GTK_WINDOW (img->imagination_window),
 							GTK_FILE_CHOOSER_ACTION_SAVE,
 							"_Cancel",
@@ -361,29 +359,6 @@ void img_show_file_chooser(GtkWidget *entry, GtkEntryIconPosition UNUSED(icon_po
     gtk_file_filter_set_name(all_files_filter, _("All files"));
     gtk_file_filter_add_pattern(all_files_filter, "*");
     gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(file_selector), all_files_filter);
-    
-    /* Propose a file name */
-    if (img->project_filename)
-    {
-        file_basename = g_path_get_basename(img->project_filename);
-        dot_position = g_strrstr(file_basename, ".");
-        if (NULL != dot_position)
-        {
-            stripped_filename = g_strndup(file_basename, dot_position - file_basename);
-            g_free(file_basename);
-        }
-        else
-        {
-            stripped_filename = file_basename;
-        }
-        proposed_filename = g_strjoin(NULL, stripped_filename, file_extention, NULL);
-        g_free(stripped_filename);
-    }
-    else
-        proposed_filename = g_strjoin(NULL, "unknown", file_extention, NULL);
- 
-    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER (file_selector), proposed_filename);
-    g_free(proposed_filename);
 
     /* set current dir to the project current dir */
     if (img->project_current_dir)

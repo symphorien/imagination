@@ -1,6 +1,5 @@
 /*
 ** Copyright (c) 2009-2020 Giuseppe Torelli <colossus73@gmail.com>
-** Copyright (C) 2009 Tadej Borovšak   <tadeboro@gmail.com>
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -23,16 +22,6 @@
 #include "audio.h"
 #include <fcntl.h>
 #include <glib/gstdio.h>
-
-static GtkWidget *
-img_create_export_dialog( img_window_struct  *img,
-						  const gchar        *title,
-						  GtkWindow          *parent,
-						  GtkEntry          **entry,
-						  GtkWidget         **box );
-
-static gboolean
-img_prepare_audio( img_window_struct *img );
 
 static gboolean
 img_start_export( img_window_struct *img );
@@ -64,208 +53,6 @@ img_export_frame_to_ppm( cairo_surface_t *surface,
     gtk_label_set_label( GTK_LABEL( img->export_label ), string ); \
     g_free( string ); \
     img_stop_export(img); \
-}
-
-/*
- * img_create_export_dialog:
- * @title: title to display with dialog
- * @parent: parent window of this dialog
- * @box: a pointer to set to GtkVBox, or NULL
- *
- * This is convenience function used to create base for every export dialog. It
- * returns GtkDialog that should be displayed using gtk_dialog_run.
- *
- * If parameter passed in is not NULL, it will be filled with GtkVBox that can
- * be used to add optional content (this is just a convience, since accessing
- * content area of dialog box is somewhat complicated and depends on the GTK+
- * version being used).
- *
- * Aditionally, it also performs checking to avoid export being called more that
- * once at any time or along side preview.
- *
- * Return value: newly created GtkDialog or NULL if export is already running.
- */
-static GtkWidget *
-img_create_export_dialog( img_window_struct  *img,
-						  const gchar        *title,
-						  GtkWindow          *parent,
-						  GtkEntry          **entry,
-						  GtkWidget         **box )
-{
-	GtkWidget    *dialog;
-	GtkWidget    *vbox, *vbox1, *hbox_slideshow_name;
-	GtkWidget    *vbox_frame1, *main_frame;
-	GtkWidget    *label, *label1;
-	GtkWidget    *slideshow_title_entry;
-	GtkTreeModel *model;
-	GtkTreeIter   iter;
-
-	/* Abort if preview is running */
-	if( img->preview_is_running )
-		return( NULL );
-
-	/* Abort if export is running */
-	if( img->export_is_running )
-		return( NULL );
-
-	/* Switch mode */
-	if( img->mode == 1 )
-	{
-		img->auto_switch = TRUE;
-		img_switch_mode( img, 0 );
-	}
-
-	/* Abort if no slide is present */
-	model = GTK_TREE_MODEL( img->thumbnail_model );
-	if( ! gtk_tree_model_get_iter_first( model, &iter ) )
-	{
-		return( NULL );
-	}
-
-	/* Create dialog */
-	dialog = gtk_dialog_new_with_buttons( title, parent,
-										  GTK_DIALOG_DESTROY_WITH_PARENT,
-										  "_Cancel", GTK_RESPONSE_CANCEL,
-										  "_OK", GTK_RESPONSE_ACCEPT,
-										  NULL );
-
-	gtk_window_set_default_size(GTK_WINDOW(dialog),520,-1);
-
-	vbox = gtk_dialog_get_content_area( GTK_DIALOG( dialog ) );
-
-	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	gtk_container_set_border_width (GTK_CONTAINER (vbox1), 5);
-	gtk_box_pack_start (GTK_BOX (vbox), vbox1, TRUE, TRUE, 0);
-
-	main_frame = gtk_frame_new (NULL);
-	gtk_box_pack_start (GTK_BOX (vbox1), main_frame, TRUE, TRUE, 0);
-	gtk_frame_set_shadow_type (GTK_FRAME (main_frame), GTK_SHADOW_IN);
-
-	label1 = gtk_label_new (_("<b>Export Settings</b>"));
-	gtk_frame_set_label_widget (GTK_FRAME (main_frame), label1);
-	gtk_label_set_use_markup (GTK_LABEL (label1), TRUE);
-
-	vbox_frame1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-	gtk_container_add(GTK_CONTAINER(main_frame), vbox_frame1);
-	gtk_widget_set_halign(GTK_WIDGET(vbox_frame1), GTK_ALIGN_FILL);
-	gtk_widget_set_margin_top(GTK_WIDGET(vbox_frame1), 5);
-	gtk_widget_set_margin_bottom(GTK_WIDGET(vbox_frame1), 15);
-	gtk_widget_set_margin_start(GTK_WIDGET(vbox_frame1), 10);
-	gtk_widget_set_margin_end(GTK_WIDGET(vbox_frame1), 10);
-
-	hbox_slideshow_name = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_box_set_homogeneous(GTK_BOX(hbox_slideshow_name), TRUE);
-	gtk_box_pack_start (GTK_BOX (vbox_frame1), hbox_slideshow_name, TRUE, TRUE, 0);
-
-	label = gtk_label_new( _("Filename:") );
-	gtk_box_pack_start( GTK_BOX( hbox_slideshow_name ), label, FALSE, TRUE, 0 );
-	gtk_label_set_xalign(GTK_LABEL(label), 0);
-	gtk_label_set_yalign(GTK_LABEL(label), 0.5);
-
-    slideshow_title_entry = gtk_entry_new();
-    gtk_entry_set_icon_from_icon_name(GTK_ENTRY(slideshow_title_entry), GTK_ENTRY_ICON_SECONDARY, "document-open"), 
-	g_signal_connect (slideshow_title_entry, "icon-press", G_CALLBACK (img_show_file_chooser), img);
-	gtk_box_pack_start( GTK_BOX( hbox_slideshow_name ), slideshow_title_entry, TRUE, TRUE, 0 );
-
-	if( box )
-		*box = vbox_frame1;
-
-	*entry = GTK_ENTRY( slideshow_title_entry );
-
-	return( dialog );
-}
-
-/*
- * img_prepare_audio:
- * @img: global img_window_struct structure
- */
-static gboolean
-img_prepare_audio( img_window_struct *img )
-{
-	GtkTreeModel *model;
-	GtkTreeIter   iter;
-	gchar       **tmp;
-	gchar        *inputs[100]; /* 100 audio files is current limit */
-	gint          i = 0;
-	guint          channels;
-	gdouble       rate;
-
-
-	/* Set the export info */
-	img->export_is_running = 2;
-
-	model = gtk_tree_view_get_model( GTK_TREE_VIEW( img->music_file_treeview ) );
-	if( gtk_tree_model_get_iter_first( model, &iter ) )
-	{
-		gchar *path, *filename;
-
-		do
-		{
-			gtk_tree_model_get( model, &iter, 0, &path, 1, &filename, -1 );
-			inputs[i] = g_strdup_printf( "%s%s%s", path,
-										 G_DIR_SEPARATOR_S, filename );
-			i++;
-			g_free( path );
-			g_free( filename );
-		}
-		while( gtk_tree_model_iter_next( model, &iter ) );
-	}
-
-	/* If no audio is present, simply update ffmpeg command line with -an */
-	if( i == 0 )
-	{
-		/* Replace audio place holder */
-		tmp = g_strsplit( img->export_cmd_line, "<#AUDIO#>", 0 );
-		g_free( img->export_cmd_line );
-		img->export_cmd_line = g_strjoin( NULL, tmp[0], "-an", tmp[1], NULL );
-
-		/* Chain last export step - video export */
-		g_idle_add( (GSourceFunc)img_start_export, img );
-
-		return( FALSE );
-	}
-
-	/*img_analyze_input_files( inputs, i, &rate, &channels );
-	if( img_eliminate_bad_files( inputs, i, rate, channels, img ) )
-	{
-		/* Thread data structure 
-		ImgThreadData *tdata = g_slice_new( ImgThreadData );
-
-		/* FIFO path */
-		img->fifo = g_build_filename( g_get_tmp_dir(), "img_audio_fifo", NULL );
-
-		/* Replace audio place holder 
-		tmp = g_strsplit( img->export_cmd_line, "<#AUDIO#>", 0 );
-		g_free( img->export_cmd_line );
-
-		img->export_cmd_line = g_strdup_printf( "%s-f flac -i %s%s", tmp[0],
-												img->fifo, tmp[1] );
-
-		/* Fill thread structure with data 
-		tdata->sox_flags = &img->sox_flags;
-		tdata->files     =  img->exported_audio;
-		tdata->no_files  =  img->exported_audio_no;
-		tdata->length    =  img->total_secs;
-		tdata->fadeout   =  img->audio_fadeout;
-		tdata->fifo      =  img->fifo;
-
-		mkfifo( img->fifo, S_IRWXU );
-
-		/* Spawn sox thread now. 
-		g_atomic_int_set( &img->sox_flags, 0 );
-		img->sox = g_thread_new( "Imagination" , (GThreadFunc)img_produce_audio_data,
-									tdata);
-
-		/* Chain last export step - video export 
-		g_idle_add( (GSourceFunc)img_start_export, img );
-	}
-	else
-	{
-		/* User declined proposal 
-		img_stop_export( img );
-	}
-*/
-	return( FALSE );
 }
 
 /*
@@ -1326,91 +1113,416 @@ img_export_frame_to_ppm( cairo_surface_t *surface,
 	return TRUE;
 }
 
-/* ****************************************************************************
- * Exporter function
- *
- * This is the function that will be called when user selects export format.
- *
- * There is one function for all formats, data is stored in video_format_list
- * (new_slideshow.c). If you wish to add a new format, have a look at 
- * video_format_list.
- *
- * The exporter function receives a pointer to main img_window_struct structure,
- * from which it calculates appropriate ffmpeg export string.
- *
- * Structure, passed in as a parameter, should be treated like read-only
- * information source. Exceptions to this rule is the export_cmd_line field.
- *
- * For example, if we spawn ffmpeg with "-r 25" in it's cmd line, export_fps
- * should be set to 25. This will ensure that ffmpeg will receive proper amount
- * of data to fill the video with frames.
- *
- * ************************************************************************* */
-
-void img_exporter (GtkWidget * UNUSED(button), img_window_struct *img )
+void img_exporter (GtkWidget *button, img_window_struct *img )
 {
-	gchar          *cmd_line, *bitrate_cmd, *aspect_ratio_cmd;
-	const gchar    *filename;
-	GtkWidget      *dialog;
-	GtkEntry       *entry;
-	GtkWidget      *vbox;
+	const gchar *filename;
+	GtkWidget    *dialog, *container_menu;
+	GtkWidget    *vbox, *range_menu, *export_grid, *sample_rate, *bitrate;
+	GtkWidget    *ex_vbox, *audio_frame, *video_frame, *label;
+	GtkWidget    *width, *height, *frame_rate, *quality, *slideshow_title_entry;
+	GtkTreeModel *model;
+	GtkListStore *store;
+	GtkCellRenderer *cell;
+	GtkTreeIter   iter;
+	GList 		  *selected = NULL;
+	gint		  slides_selected = 0;
 
-	/* This function call should be the first thing exporter does, since this
-	 * function will take some preventive measures and also switches mode into
-	 * preview if needed. */
-    /* FIXME: change with a gtk_file_chooser ? */
-	//dialog = img_create_export_dialog( img, _(video_format_list[img->video_format_index].name),
-		//							   GTK_WINDOW( img->imagination_window ),
-			//						   &entry, &vbox );
+	gchar *container[10];
+	
+	container[0] = "3GPP";
+	container[1] = "FLV";
+	container[2] = "MPEG-1 Video";
+	container[3] = "MPEG-2 Video";
+	container[4] = "MPEG-4 Video";
+	container[5] = "MPEG-TS";
+	container[6] = "Matroska MKV";
+	container[7] = "Ogg";
+	container[8] = "QuickTime MOV";
+	container[9] = "WebM";
 
-	/* If dialog is NULL, abort. */
-	if( dialog == NULL )
+	/* Abort if preview is running */
+	if( img->preview_is_running )
 		return;
+
+	/* Abort if export is running */
+	if( img->export_is_running )
+		return;
+
+	/* Abort if no slide is present */
+	model = GTK_TREE_MODEL( img->thumbnail_model );
+	if( ! gtk_tree_model_get_iter_first( model, &iter ) )
+		return;
+
+	/* If there are selected slides count their
+	 * number to set the combo box later */
+	selected = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(img->thumbnail_iconview));
+	if (selected)
+	{
+		slides_selected = g_list_length(selected);
+		g_list_free(selected);
+	}
+	/* Create dialog */
+	dialog = gtk_dialog_new_with_buttons( _("Export Slideshow"), GTK_WINDOW(img->imagination_window),
+										  GTK_DIALOG_DESTROY_WITH_PARENT,
+										  "_Cancel", GTK_RESPONSE_CANCEL,
+										  "_Export", GTK_RESPONSE_ACCEPT,
+										  NULL );
+
+	//gtk_window_set_default_size(GTK_WINDOW(dialog), 550, -1);
+	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+
+	video_frame = gtk_frame_new (NULL);
+	gtk_box_pack_start (GTK_BOX (vbox), video_frame, TRUE, TRUE, 0);
+	gtk_frame_set_shadow_type (GTK_FRAME (video_frame), GTK_SHADOW_IN);
+
+	label = gtk_label_new (_("<b>Video Settings</b>"));
+	gtk_frame_set_label_widget (GTK_FRAME (video_frame), label);
+	gtk_label_set_use_markup (GTK_LABEL (label), TRUE);
+
+	ex_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_container_add(GTK_CONTAINER(video_frame), ex_vbox);
+    gtk_widget_set_halign(GTK_WIDGET(ex_vbox), GTK_ALIGN_FILL);
+    gtk_widget_set_margin_top(GTK_WIDGET(ex_vbox), 5);
+    gtk_widget_set_margin_bottom(GTK_WIDGET(ex_vbox), 10);
+    gtk_widget_set_margin_start(GTK_WIDGET(ex_vbox), 10);
+    gtk_widget_set_margin_end(GTK_WIDGET(ex_vbox), 10);
+
+	export_grid = gtk_grid_new();
+	gtk_grid_set_row_homogeneous(GTK_GRID(export_grid), TRUE);
+	gtk_grid_set_row_spacing (GTK_GRID(export_grid), 6);
+	gtk_grid_set_column_spacing (GTK_GRID(export_grid), 10);
+	gtk_box_pack_start (GTK_BOX (ex_vbox), export_grid, TRUE, FALSE, 0);
+
+	label = gtk_label_new( _("Container:") );
+	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
+	gtk_grid_attach( GTK_GRID(export_grid), label, 0,0,1,1);
+	
+	container_menu = gtk_combo_box_text_new();
+	gtk_grid_attach( GTK_GRID(export_grid), container_menu, 1,0,1,1);
+
+	label = gtk_label_new( _("Codec:") );
+	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
+	gtk_grid_attach( GTK_GRID(export_grid), label, 0,1,1,1);
+	
+	store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_INT);
+	model = GTK_TREE_MODEL(store);
+	img->vcodec_menu = gtk_combo_box_new_with_model(model);
+	g_object_unref(G_OBJECT(model));
+	cell = gtk_cell_renderer_text_new ();
+	gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (img->vcodec_menu), cell, TRUE);
+	gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (img->vcodec_menu), cell,
+										"text", 0,
+										NULL);
+	g_object_set(cell, "ypad", (guint)0, NULL);
+
+	gtk_grid_attach( GTK_GRID(export_grid), img->vcodec_menu, 1,1,1,1);
+	g_signal_connect(G_OBJECT (container_menu),"changed",G_CALLBACK (img_container_changed),img);
+
+	label = gtk_label_new( _("Range:") );
+	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
+	gtk_grid_attach( GTK_GRID(export_grid), label, 0,2,1,1);
+
+	range_menu = gtk_combo_box_text_new();
+	gtk_grid_attach( GTK_GRID(export_grid), range_menu, 1,2,1,1);
+
+	label = gtk_label_new( _("Width:") );
+	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
+	gtk_grid_attach( GTK_GRID(export_grid), label, 0,3,1,1);
+
+	width = gtk_spin_button_new_with_range (1280, 9999, 10);
+	gtk_grid_attach( GTK_GRID(export_grid), width, 1,3,1,1);
+	
+	label = gtk_label_new( _("Height:") );
+	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
+	gtk_grid_attach( GTK_GRID(export_grid), label, 0,4,1,1);
+
+	height = gtk_spin_button_new_with_range(720, 9999, 10);
+	gtk_grid_attach( GTK_GRID(export_grid), height, 1,4,1,1);
+	
+	label = gtk_label_new( _("Frame Rate:") );
+	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
+	gtk_grid_attach( GTK_GRID(export_grid), label, 0,5,1,1);
+
+	frame_rate = gtk_spin_button_new_with_range(20, 30, 1);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(frame_rate), 25);
+	gtk_grid_attach( GTK_GRID(export_grid), frame_rate, 1,5,1,1);
+	
+	label = gtk_label_new( _("Quality (CRF):") );
+	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
+	gtk_grid_attach( GTK_GRID(export_grid), label, 0,6,1,1);
+
+	quality = gtk_spin_button_new_with_range(20, 36, 1);
+	gtk_grid_attach( GTK_GRID(export_grid), quality, 1,6,1,1);
+
+	label = gtk_label_new( _("Filename:") );
+	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
+	gtk_grid_attach( GTK_GRID(export_grid), label, 0,7,1,1);
+	
+    slideshow_title_entry = gtk_entry_new();
+    gtk_entry_set_icon_from_icon_name(GTK_ENTRY(slideshow_title_entry), GTK_ENTRY_ICON_SECONDARY, "document-open"), 
+	g_signal_connect (slideshow_title_entry, "icon-press", G_CALLBACK (img_show_file_chooser), img);
+	gtk_grid_attach( GTK_GRID(export_grid), slideshow_title_entry, 1,7,1,1);
+	
+	/* Fill range combo box */
+	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(range_menu), NULL, _("All slides"));
+	if (slides_selected > 1)
+	{
+		gchar *string = g_strdup_printf("Selected %d slides",slides_selected);
+		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(range_menu), NULL, string);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(range_menu), 1);
+		g_free(string);
+	}
+	else
+	{	
+		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(range_menu), NULL, _("<no slides selected>"));
+		gtk_combo_box_set_active(GTK_COMBO_BOX(range_menu), 0);
+	}
+	
+	/* Audio Settings */
+	audio_frame = gtk_frame_new (NULL);
+	gtk_box_pack_start (GTK_BOX (vbox), audio_frame, TRUE, TRUE, 10);
+	gtk_frame_set_shadow_type (GTK_FRAME (audio_frame), GTK_SHADOW_IN);
+
+	/* Disable the whole Audio frame if there
+	 * is no music in the project */
+	model = gtk_tree_view_get_model(GTK_TREE_VIEW(img->music_file_treeview));
+	if(gtk_tree_model_get_iter_first(model, &iter) == FALSE)
+		gtk_widget_set_sensitive(audio_frame, FALSE);
+
+	label = gtk_label_new (_("<b>Audio Settings</b>"));
+	gtk_frame_set_label_widget (GTK_FRAME (audio_frame), label);
+	gtk_label_set_use_markup (GTK_LABEL (label), TRUE);
+
+	ex_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_container_add(GTK_CONTAINER(audio_frame), ex_vbox);
+    gtk_widget_set_halign(GTK_WIDGET(ex_vbox), GTK_ALIGN_FILL);
+    gtk_widget_set_margin_top(GTK_WIDGET(ex_vbox), 5);
+    gtk_widget_set_margin_bottom(GTK_WIDGET(ex_vbox), 5);
+    gtk_widget_set_margin_start(GTK_WIDGET(ex_vbox), 10);
+    gtk_widget_set_margin_end(GTK_WIDGET(ex_vbox), 10);
+
+	export_grid = gtk_grid_new();
+	gtk_grid_set_row_homogeneous(GTK_GRID(export_grid), TRUE);
+	gtk_grid_set_row_spacing (GTK_GRID(export_grid), 6);
+	gtk_grid_set_column_spacing (GTK_GRID(export_grid), 10);
+	gtk_box_pack_start (GTK_BOX (ex_vbox), export_grid, TRUE, FALSE, 0);
+
+	label = gtk_label_new( _("Codec:") );
+	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
+	gtk_grid_attach( GTK_GRID(export_grid), label, 0,0,1,1);
+	
+	store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_INT);
+	model = GTK_TREE_MODEL(store);
+	img->acodec_menu = gtk_combo_box_new_with_model(model);
+	g_object_unref(G_OBJECT(model));
+	cell = gtk_cell_renderer_text_new ();
+	gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (img->acodec_menu), cell, TRUE);
+	gtk_cell_layout_set_attributes (GTK_CELL_LAYOUT (img->acodec_menu), cell,
+										"text", 0,
+										NULL);
+	g_object_set(cell, "ypad", (guint)0, NULL);
+	gtk_grid_attach( GTK_GRID(export_grid), img->acodec_menu, 1,0,1,1);
+
+	/* Fill container combo box and all the
+	 * others connected to it */
+	gint i;
+	for (i = 0; i <= 9; i++)
+		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(container_menu), NULL, container[i]);
+	
+	gtk_combo_box_set_active(GTK_COMBO_BOX(container_menu), 4);
+	
+	label = gtk_label_new( _("Sample Rate:") );
+	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
+	gtk_grid_attach( GTK_GRID(export_grid), label, 0,1,1,1);
+
+	sample_rate = gtk_spin_button_new_with_range(20000, 44100, 1);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(sample_rate), 44100);
+	gtk_grid_attach( GTK_GRID(export_grid), sample_rate, 1,1,1,1);
+	
+	label = gtk_label_new( _("Bitrate (Kbps/CBR):") );
+	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
+	gtk_grid_attach( GTK_GRID(export_grid), label, 0,2,1,1);
+
+	bitrate = gtk_spin_button_new_with_range(96, 320, 1);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(bitrate), 256);
+	gtk_grid_attach( GTK_GRID(export_grid), bitrate, 1,2,1,1);
 
 	gtk_widget_show_all (dialog );
 
     /* Run dialog and abort if needed */
 	if ( gtk_dialog_run( GTK_DIALOG( dialog ) ) != GTK_RESPONSE_ACCEPT )
 	{
-		gtk_widget_destroy( dialog );
+		gtk_widget_destroy(dialog);
 		return;
 	}
 
-    if (gtk_entry_get_text_length (entry) == 0) /* No filename given */
+    if (gtk_entry_get_text_length (GTK_ENTRY(slideshow_title_entry)) == 0)
     {
         gtk_widget_destroy( dialog );
         return;
     }
 
-    filename = gtk_entry_get_text( entry );
-
-	/* User is serious, so we better prepare ffmepg command line;) */
+    filename = gtk_entry_get_text(GTK_ENTRY(slideshow_title_entry));
 	img->export_is_running = 1;
 
-	cmd_line = g_strdup_printf("%s -f image2pipe -vcodec ppm "
-				"-i pipe: <#AUDIO#> "
-				"-r %s "                /* frame rate */
-				"-y "                   /* overwrite output */
-                "%s "                   /* ffmpeg option */
-                "-s %dx%d "             /* size */
-                "%s "                   /* aspect ratio */
-                "%s "                   /* Bitrate */
-                "%s "
-                "\"%s\"",               /*filename */
-                 img->encoder_name,
-                "",
-                "",
-                img->video_size[0], img->video_size[1],
-                aspect_ratio_cmd,
-                bitrate_cmd,
-                " -metadata comment=\"Made with Imagination " VERSION "\"",
-                filename);
-	img->export_cmd_line = cmd_line;
+	//~ cmd_line = g_strdup_printf("%s -f image2pipe -vcodec ppm "
+				//~ "-i pipe: <#AUDIO#> "
+				//~ "-r %s "                /* frame rate */
+				//~ "-y "                   /* overwrite output */
+                //~ "%s "                   /* ffmpeg option */
+                //~ "-s %dx%d "             /* size */
+                //~ "%s "                   /* aspect ratio */
+                //~ "%s "                   /* Bitrate */
+                //~ "%s "
+                //~ "\"%s\"",               /*filename */
+                 //~ img->encoder_name,
+                //~ "",
+                //~ "",
+                //~ img->video_size[0], img->video_size[1],
+                //~ aspect_ratio_cmd,
+                //~ bitrate_cmd,
+                //~ " -metadata comment=\"Made with Imagination " VERSION "\"",
+                //~ filename);
+	//~ img->export_cmd_line = cmd_line;
 
 	/* Initiate stage 2 of export - audio processing */
-	g_idle_add( (GSourceFunc)img_prepare_audio, img );
+	//g_idle_add( (GSourceFunc)img_prepare_audio, img );
 
-    g_free(aspect_ratio_cmd);
-    g_free(bitrate_cmd);
 	gtk_widget_destroy( dialog );
+}
+
+void img_container_changed (GtkComboBox *combo, img_window_struct *img)
+{
+	GtkListStore *store = NULL;
+	gint x;
+	
+	x = gtk_combo_box_get_active(combo);
+	
+	store = GTK_LIST_STORE( gtk_combo_box_get_model(GTK_COMBO_BOX(img->vcodec_menu)));
+    gtk_list_store_clear(store);
+    
+    store = GTK_LIST_STORE( gtk_combo_box_get_model(GTK_COMBO_BOX(img->acodec_menu)));
+    gtk_list_store_clear(store);
+
+	switch (x)
+	{
+		case 0:
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_MPEG4);
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_H264);
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_H265);
+
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_AAC);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(img->vcodec_menu), 1);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(img->acodec_menu), 0);
+		break;
+		
+		case 1:
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_FLV1);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_MP3);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(img->vcodec_menu), 0);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(img->acodec_menu), 0);
+		break;
+		
+		case 2:
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_MPEG1VIDEO);
+
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_AC3);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_MP2);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_MP3);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_PCM_S16LE);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(img->vcodec_menu), 0);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(img->acodec_menu), 2);
+		break;
+
+		case 3:
+		case 5:
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_MPEG2VIDEO);
+		
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_AC3);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_MP2);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_MP3);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_PCM_S16LE);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(img->vcodec_menu), 0);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(img->acodec_menu), 2);
+		break;
+
+		case 4:
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_MPEG4);
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_H264);
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_H265);
+		
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_AAC);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_AC3);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_MP2);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_MP3);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(img->vcodec_menu), 1);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(img->acodec_menu), 0);
+		break;
+		
+		case 6:
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_MPEG4);
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_H264);
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_H265);
+
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_AAC);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_AC3);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_EAC3);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_FLAC);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_MP2);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_MP3);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_OPUS);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_PCM_S16LE);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_VORBIS);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(img->vcodec_menu), 1);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(img->acodec_menu), 0);
+		break;
+
+		case 7:
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_THEORA);
+
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_OPUS);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_VORBIS);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(img->vcodec_menu), 0);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(img->acodec_menu), 1);
+		break;
+		
+		case 8:
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_QTRLE);
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_MPEG4);
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_H264);
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_H265);
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_MJPEG);
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_PRORES);
+
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_AAC);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_AC3);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_MP2);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_MP3);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_PCM_S16LE);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(img->vcodec_menu), 2);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(img->acodec_menu), 0);
+		break;
+		
+		case 9:
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_VP8);
+		img_add_codec_to_container_combo(img->vcodec_menu, AV_CODEC_ID_VP9);
+
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_OPUS);
+		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_VORBIS);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(img->vcodec_menu), 0);
+		break;
+	}
+}
+
+void img_add_codec_to_container_combo(GtkWidget *combo, enum AVCodecID codec)
+{
+	GtkListStore *store;
+	GtkTreeIter   iter;
+	
+	AVCodec *codec_info;
+	codec_info = avcodec_find_encoder(codec);
+
+	store = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(combo)));
+	gtk_list_store_append(store, &iter);
+	gtk_list_store_set(store, &iter, 0, codec_info->long_name, 1, codec, -1 );
 }

@@ -84,7 +84,7 @@ img_gradient_toggled( GtkToggleButton *button,
 					  ImgEmptySlide   *slide );
 
 static void
-img_gradient_color_set( GtkColorButton *button,
+img_gradient_color_set( GtkColorChooser *button,
 						ImgEmptySlide  *slide );
 
 static gboolean
@@ -2615,7 +2615,7 @@ img_add_empty_slide( GtkMenuItem       *item,
 			  *color2,
 			  *preview,
 			  *hbox;
-	GdkColor   color;
+	GdkRGBA   color;
 	gint       i, w, h, pos;
 
 	w = img->video_size[0] / 2;
@@ -2704,7 +2704,7 @@ img_add_empty_slide( GtkMenuItem       *item,
 	color.red   = (gint)( slide.c_start[0] * 0xffff );
 	color.green = (gint)( slide.c_start[1] * 0xffff );
 	color.blue  = (gint)( slide.c_start[2] * 0xffff );
-	color1 = gtk_color_button_new_with_color( &color );
+	color1 = gtk_color_button_new_with_rgba( &color );
 	gtk_table_attach( GTK_TABLE( table ), color1, 0, 1, 4, 5,
 					  GTK_FILL, GTK_FILL, 0, 0 );
 	g_signal_connect( G_OBJECT( color1 ), "color-set",
@@ -2713,7 +2713,7 @@ img_add_empty_slide( GtkMenuItem       *item,
 	color.red   = (gint)( slide.c_stop[0] * 0xffff );
 	color.green = (gint)( slide.c_stop[1] * 0xffff );
 	color.blue  = (gint)( slide.c_stop[2] * 0xffff );
-	color2 = gtk_color_button_new_with_color( &color );
+	color2 = gtk_color_button_new_with_rgba( &color );
 	gtk_table_attach( GTK_TABLE( table ), color2, 1, 2, 4, 5,
 					  GTK_FILL, GTK_FILL, 0, 0 );
 	gtk_widget_set_sensitive( color2, (gboolean)slide.gradient );
@@ -2931,22 +2931,22 @@ img_fade_gradient_decrease_alpha(ImgEmptySlide *slide)
 }
 
 static void
-img_gradient_color_set( GtkColorButton *button,
+img_gradient_color_set( GtkColorChooser *button,
 						ImgEmptySlide  *slide )
 {
-	GdkColor  color;
+	GdkRGBA  color;
 	gdouble  *my_color;
 
-	gtk_color_button_get_color( button, &color );
+	gtk_color_chooser_get_rgba( button, &color );
 
 	if( (GtkWidget *)button == slide->color2 )
 		my_color = slide->c_stop;
 	else
 		my_color = slide->c_start;
 
-	my_color[0] = (gdouble)color.red   / 0xffff;
-	my_color[1] = (gdouble)color.green / 0xffff;
-	my_color[2] = (gdouble)color.blue  / 0xffff;
+	my_color[0] = (gdouble)color.red;
+	my_color[1] = (gdouble)color.green;
+	my_color[2] = (gdouble)color.blue;
 
 	gtk_widget_queue_draw( slide->preview );
 }

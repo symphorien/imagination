@@ -36,18 +36,18 @@ img_text_font_set( GtkFontButton     *button,
 				   img_window_struct *img );
 
 void
-img_font_color_changed( GtkColorButton    *button,
+img_font_color_changed( GtkColorChooser   *button,
 						img_window_struct *img );
 
 void
-img_font_brdr_color_changed( GtkColorButton    *button,
+img_font_brdr_color_changed( GtkColorChooser    *button,
                           img_window_struct *img );
 
-void img_sub_border_color_changed( GtkColorButton    *button,
+void img_sub_border_color_changed( GtkColorChooser    *button,
                           img_window_struct *img );
 
 void
-img_font_bg_color_changed( GtkColorButton    *button,
+img_font_bg_color_changed( GtkColorChooser    *button,
                           img_window_struct *img );
                           
 void

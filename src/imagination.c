@@ -48,8 +48,10 @@ int main (int argc, char *argv[])
 	
 	gtk_init (&argc, &argv);
 
-	av_register_all();
-	avcodec_register_all();
+	#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58,9,100)
+		av_register_all();
+		avcodec_register_all();
+	#endif
 
 	img_window = img_create_window();
 

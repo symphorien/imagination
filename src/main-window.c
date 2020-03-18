@@ -906,23 +906,22 @@ img_window_struct *img_create_window (void)
 	gtk_box_pack_start (GTK_BOX (vbox_slide_caption), a_hbox, FALSE, FALSE, 0);
 
 	img_struct->sub_color = gtk_color_button_new();
-	gtk_color_button_set_use_alpha( GTK_COLOR_BUTTON( img_struct->sub_color ), TRUE );
+	gtk_color_chooser_set_use_alpha( GTK_COLOR_CHOOSER( img_struct->sub_color ), TRUE );
 	g_signal_connect( G_OBJECT( img_struct->sub_color ), "color-set",
 					  G_CALLBACK( img_font_color_changed ), img_struct );
 	gtk_box_pack_start( GTK_BOX( a_hbox ), img_struct->sub_color, FALSE, FALSE, 0 );
     gtk_widget_set_tooltip_text(img_struct->sub_color, _("Font color"));
 
 	img_struct->sub_brdr_color = gtk_color_button_new();
-    gtk_color_button_set_use_alpha( GTK_COLOR_BUTTON( img_struct->sub_brdr_color ), TRUE );
+    gtk_color_chooser_set_use_alpha( GTK_COLOR_CHOOSER( img_struct->sub_brdr_color ), TRUE );
     g_signal_connect( G_OBJECT( img_struct->sub_brdr_color ), "color-set",
                       G_CALLBACK( img_font_brdr_color_changed ), img_struct );
     gtk_box_pack_start( GTK_BOX( a_hbox ), img_struct->sub_brdr_color, FALSE, FALSE, 0 );
     gtk_widget_set_tooltip_text(img_struct->sub_brdr_color, _("Font border color. If the opacity value is set to 0, Imagination will not render any border"));
 
 	img_struct->sub_bgcolor = gtk_color_button_new();
-	gtk_color_button_set_use_alpha( GTK_COLOR_BUTTON( img_struct->sub_bgcolor ), TRUE );
-	gtk_color_button_set_alpha(GTK_COLOR_BUTTON( img_struct->sub_bgcolor ), 0);
-    g_signal_connect( G_OBJECT( img_struct->sub_bgcolor ), "color-set",
+	gtk_color_chooser_set_use_alpha( GTK_COLOR_CHOOSER( img_struct->sub_bgcolor ), TRUE );
+	g_signal_connect( G_OBJECT( img_struct->sub_bgcolor ), "color-set",
                       G_CALLBACK( img_font_bg_color_changed ), img_struct );
     gtk_box_pack_start( GTK_BOX( a_hbox ), img_struct->sub_bgcolor, FALSE, FALSE, 0 );
 	gtk_widget_set_tooltip_text(img_struct->sub_bgcolor, _("Font background color"));
@@ -2389,24 +2388,22 @@ img_text_anim_set( GtkComboBox       *combo,
 }
 
 void
-img_font_color_changed( GtkColorButton    *button,
+img_font_color_changed( GtkColorChooser    *button,
 						img_window_struct *img )
 {
-	GdkColor color;
-	guint16  alpha;
+	GdkRGBA color;
 	gchar	 *rgb;
 	gdouble  font_color[4];
 	gboolean 	selection;
 	GtkTextIter start, end;
 	GtkTextTag 	*tag;
 
-	gtk_color_button_get_color( button, &color );
-	alpha = gtk_color_button_get_alpha( button  );
-	
+	gtk_color_chooser_get_rgba( button, &color );
+
 	selection = gtk_text_buffer_get_selection_bounds(img->slide_text_buffer, &start, &end);
 	if (selection > 0)
 	{
-		rgb = gdk_color_to_string(&color);
+		rgb = gdk_rgba_to_string(&color);
 		tag = gtk_text_tag_table_lookup(img->tag_table, "foreground");
 		g_object_set(tag, "foreground", rgb, NULL);
 		g_free(rgb);
@@ -2415,10 +2412,10 @@ img_font_color_changed( GtkColorButton    *button,
 	}
 	else
 	{
-		font_color[0] = (gdouble)color.red   / 0xffff;
-		font_color[1] = (gdouble)color.green / 0xffff;
-		font_color[2] = (gdouble)color.blue  / 0xffff;
-		font_color[3] = (gdouble)alpha       / 0xffff;
+		font_color[0] = (gdouble)color.red;
+		font_color[1] = (gdouble)color.green;
+		font_color[2] = (gdouble)color.blue;
+		font_color[3] = (gdouble)color.alpha;
  		img_update_sub_properties( img, NULL, -1, -1, NULL, font_color, NULL, NULL, NULL,
 								img->current_slide->top_border, img->current_slide->bottom_border, img->current_slide->alignment, -1);
 	}
@@ -2427,20 +2424,18 @@ img_font_color_changed( GtkColorButton    *button,
 }
 
 void
-img_font_brdr_color_changed( GtkColorButton    *button,
+img_font_brdr_color_changed( GtkColorChooser    *button,
                           img_window_struct *img )
 {
-    GdkColor color;
-    guint16  alpha;
+    GdkRGBA color;
     gdouble  font_brdr_color[4];
 
-    gtk_color_button_get_color( button, &color );
-    alpha = gtk_color_button_get_alpha( button  );
-
-	font_brdr_color[0] = (gdouble)color.red   / 0xffff;
-	font_brdr_color[1] = (gdouble)color.green / 0xffff;
-	font_brdr_color[2] = (gdouble)color.blue  / 0xffff;
-	font_brdr_color[3] = (gdouble)alpha       / 0xffff;
+    gtk_color_chooser_get_rgba( button, &color );
+    
+	font_brdr_color[0] = (gdouble)color.red;
+	font_brdr_color[1] = (gdouble)color.green;
+	font_brdr_color[2] = (gdouble)color.blue;
+	font_brdr_color[3] = (gdouble)color.alpha;
    	img_update_sub_properties( img, NULL, -1, -1, NULL, NULL, font_brdr_color, NULL, NULL,
 							img->current_slide->top_border, img->current_slide->bottom_border, img->current_slide->alignment, -1);
 
@@ -2449,24 +2444,22 @@ img_font_brdr_color_changed( GtkColorButton    *button,
 }
 
 void
-img_font_bg_color_changed( GtkColorButton    *button,
+img_font_bg_color_changed( GtkColorChooser    *button,
                           img_window_struct *img )
 {
-    GdkColor color;
-    guint16  alpha;
-	gchar	 *rgb;
+    GdkRGBA color;
+    gchar	 *rgb;
 	gdouble  font_bgcolor[4];
 	gboolean 	selection;
     GtkTextIter start, end;
 	GtkTextTag 	*tag;
 
-    gtk_color_button_get_color( button, &color );
-    alpha = gtk_color_button_get_alpha( button  );
-
+    gtk_color_chooser_get_rgba( button, &color );
+    
 	selection = gtk_text_buffer_get_selection_bounds(img->slide_text_buffer, &start, &end);
 	if (selection > 0)
 	{
-		rgb = gdk_color_to_string(&color);
+		rgb = gdk_rgba_to_string(&color);
 		tag = gtk_text_tag_table_lookup(img->tag_table, "background");
 		g_object_set(tag, "background", rgb, NULL);
 		g_free(rgb);
@@ -2475,10 +2468,10 @@ img_font_bg_color_changed( GtkColorButton    *button,
 	}
 	else
 	{
-		font_bgcolor[0] = (gdouble)color.red   / 0xffff;
-		font_bgcolor[1] = (gdouble)color.green / 0xffff;
-		font_bgcolor[2] = (gdouble)color.blue  / 0xffff;
-		font_bgcolor[3] = (gdouble)alpha       / 0xffff;
+		font_bgcolor[0] = (gdouble)color.red;
+		font_bgcolor[1] = (gdouble)color.green;
+		font_bgcolor[2] = (gdouble)color.blue;
+		font_bgcolor[3] = (gdouble)color.alpha;
 	
 		img_update_sub_properties( img, NULL, -1, -1, NULL, NULL, NULL, font_bgcolor, NULL, 
 								img->current_slide->top_border, img->current_slide->bottom_border, img->current_slide->alignment, -1);
@@ -2488,20 +2481,18 @@ img_font_bg_color_changed( GtkColorButton    *button,
 }
 
 void
-img_sub_border_color_changed( GtkColorButton    *button,
+img_sub_border_color_changed( GtkColorChooser    *button,
                           img_window_struct *img )
 {
-    GdkColor color;
-    guint16  alpha;
+    GdkRGBA color;
     gdouble  font_bgcolor[4];
 
-    gtk_color_button_get_color( button, &color );
-    alpha = gtk_color_button_get_alpha( button  );
+    gtk_color_chooser_get_rgba( button, &color );
 
-    font_bgcolor[0] = (gdouble)color.red   / 0xffff;
-    font_bgcolor[1] = (gdouble)color.green / 0xffff;
-    font_bgcolor[2] = (gdouble)color.blue  / 0xffff;
-    font_bgcolor[3] = (gdouble)alpha       / 0xffff;
+    font_bgcolor[0] = (gdouble)color.red;
+    font_bgcolor[1] = (gdouble)color.green;
+    font_bgcolor[2] = (gdouble)color.blue;
+    font_bgcolor[3] = (gdouble)color.alpha;
 
     img_update_sub_properties( img, NULL, -1, -1, NULL, NULL, NULL, NULL, font_bgcolor, 
 								img->current_slide->top_border, img->current_slide->bottom_border, img->current_slide->alignment, -1);

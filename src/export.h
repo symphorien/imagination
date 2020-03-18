@@ -22,6 +22,7 @@
 
 #include <gtk/gtk.h>
 #include "imagination.h"
+#include <libavcodec/avcodec.h>
 
 gboolean
 img_stop_export( img_window_struct *img );
@@ -56,4 +57,9 @@ img_render_still_frame( img_window_struct *img,
 void
 img_exporter(GtkWidget *button, img_window_struct *img);
 
+void
+img_container_changed (GtkComboBox *combo, img_window_struct *);
+
+void
+img_add_codec_to_container_combo(GtkWidget *, enum AVCodecID );
 #endif
