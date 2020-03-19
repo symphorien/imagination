@@ -1395,3 +1395,18 @@ void img_update_zoom_variables(img_window_struct *img)
 	img->current_point.offx = CLAMP( tmpoffx, img->maxoffx, 0 );
 	img->current_point.offy = CLAMP( tmpoffy, img->maxoffy, 0 );
 }
+
+gboolean img_check_for_recent_file(img_window_struct *img, const gchar *input)
+{
+	GList *menu_items, *node0;
+	const gchar *label;
+
+	menu_items = gtk_container_get_children(GTK_CONTAINER(img->recent_slideshows));
+	for(node0 = menu_items; node0 != NULL; node0 = node0->next)
+	{
+		label = gtk_menu_item_get_label(GTK_MENU_ITEM(node0->data));
+		if (g_strcmp0(label, input) == 0)
+			return TRUE;
+	}
+	return FALSE;
+}

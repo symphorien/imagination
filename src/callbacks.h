@@ -53,6 +53,7 @@ void img_goto_next_slide(GtkWidget *, img_window_struct *);
 void img_goto_last_slide(GtkWidget *, img_window_struct *);
 void img_on_drag_data_received (GtkWidget *,GdkDragContext *, int, int, GtkSelectionData *, unsigned int, unsigned int, img_window_struct *);
 void img_start_stop_export(GtkWidget *, img_window_struct *);
+void img_open_recent_slideshow(GtkWidget *, img_window_struct *);
 void img_choose_slideshow_filename(GtkWidget *,img_window_struct *);
 void img_close_slideshow(GtkWidget *,img_window_struct *);
 void img_select_audio_files_to_add ( GtkMenuItem* , img_window_struct *);

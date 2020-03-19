@@ -35,8 +35,9 @@ img_save_slideshow( img_window_struct *img,
 
 void
 img_load_slideshow( img_window_struct *img,
+					GtkWidget			*menu,
 					const gchar       *input );
 
-void
-img_append_slides_from( img_window_struct *img, const gchar *input );
+gboolean
+img_append_slides_from( img_window_struct *img, GtkWidget *, const gchar *input );
 #endif

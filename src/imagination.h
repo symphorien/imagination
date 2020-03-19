@@ -205,6 +205,8 @@ struct _img_window_struct
 	GtkWidget *toolbar;
 	GtkAccelGroup *accel_group;
 	GtkWidget	*open_menu;
+	GtkWidget	*open_recent;
+	GtkWidget	*recent_slideshows;
     GtkWidget   *close_menu;
     GtkWidget   *import_project_menu;
 	GtkWidget	*save_menu;

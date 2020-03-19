@@ -235,15 +235,14 @@ img_save_slideshow( img_window_struct *img,
 	img_refresh_window_title(img);
 }
 
-void
-img_append_slides_from( img_window_struct *img, const gchar *input )
+gboolean img_append_slides_from( img_window_struct *img, GtkWidget *menuitem, const gchar *input )
 {
 	GdkPixbuf *thumb;
 	slide_struct *slide_info;
 	GtkTreeIter iter;
 	GKeyFile *img_key_file;
 	gchar *dummy, *slide_filename, *time;
-	GtkWidget *dialog;
+	GtkWidget *dialog, *menu;
 	gint number,i, n_invalid, transition_id, no_points, previous_nr_of_slides, border_width, alignment;
 	guint speed;
 	GtkTreeModel *model;
@@ -255,19 +254,34 @@ img_append_slides_from( img_window_struct *img, const gchar *input )
     gchar      *video_config_name, *aspect_ratio, *fps;
     gchar      *bitrate;
 
-	/* Cretate new key file */
-	img_key_file = g_key_file_new();
-	if( ! g_key_file_load_from_file( img_key_file, input,
-									 G_KEY_FILE_KEEP_COMMENTS, NULL ) )
+	/* Check if the file still exist on the disk */
+	if (!g_file_test (input, G_FILE_TEST_EXISTS))
 	{
-		g_key_file_free( img_key_file );
-		return;
+		if (menuitem)
+		{
+			if (img_ask_user_confirmation(img, _("The file doesn't exist anymore on the disk.\nDo you want to remove it from the list?")))
+				gtk_widget_destroy(menuitem);
+		}
+		else
+		{
+			dialog = gtk_message_dialog_new(
+				GTK_WINDOW( img->imagination_window ), GTK_DIALOG_MODAL,
+				GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+				_("Error: file not found!") );
+			gtk_window_set_title( GTK_WINDOW( dialog ), "Imagination" );
+			gtk_dialog_run( GTK_DIALOG( dialog ) );
+			gtk_widget_destroy( GTK_WIDGET( dialog ) );
+		}
+		return FALSE;
 	}
 
-	/* Are we able to load this project? */
+	/* Create new key file */
+	img_key_file = g_key_file_new();
+	g_key_file_load_from_file( img_key_file, input,
+									 G_KEY_FILE_KEEP_COMMENTS, NULL );
 	dummy = g_key_file_get_comment( img_key_file, NULL, NULL, NULL);
 
-	if( strncmp( dummy, comment_string, strlen( comment_string ) ) != 0 )
+	if (dummy == NULL)
 	{
 		dialog = gtk_message_dialog_new(
 				GTK_WINDOW( img->imagination_window ), GTK_DIALOG_MODAL,
@@ -277,10 +291,17 @@ img_append_slides_from( img_window_struct *img, const gchar *input )
 		gtk_dialog_run( GTK_DIALOG( dialog ) );
 		gtk_widget_destroy( GTK_WIDGET( dialog ) );
 		g_free( dummy );
-		return;
+		return FALSE;
 	}
 	g_free( dummy );
 
+	/* Add the slideshow filename into the Open Recent submenu */
+	if ( ! img_check_for_recent_file(img, input))
+	{
+		menu = gtk_menu_item_new_with_label(input);
+		gtk_menu_shell_append(GTK_MENU_SHELL(img->recent_slideshows), menu);
+		gtk_widget_show(menu);
+	}
 	project_current_dir = g_path_get_dirname(input);
 
 	/* Create hash table for efficient searching */
@@ -303,7 +324,7 @@ img_append_slides_from( img_window_struct *img, const gchar *input )
 	if (video_config_name == NULL || video_format_list[i].name == NULL)
 	{
 		img_message(img, FALSE, "Could not find a video format, guessing VOB\n");
-		img->video_format_index = 0; /* index for VOB format*/
+		img->video_format_index = 0;
 	//}
 //	else
   //    img->video_format_index = i;
@@ -667,28 +688,31 @@ img_append_slides_from( img_window_struct *img, const gchar *input )
 	g_free(project_current_dir);
 
 	img->project_is_modified = TRUE;
+	return TRUE;
 }
 
 void
-img_load_slideshow( img_window_struct *img, const gchar *input ) {
+img_load_slideshow( img_window_struct *img, GtkWidget *menu, const gchar *input )
+{
 	img_close_slideshow(NULL, img);
-	img_append_slides_from(img, input);
-	
-	/* Select the first slide */
-	img_goto_first_slide(NULL, img);
-	img->project_is_modified = FALSE;
+	if (img_append_slides_from(img, menu, input))
+	{
+		/* Select the first slide */
+		img_goto_first_slide(NULL, img);
+		img->project_is_modified = FALSE;
 
-	/* If we made it to here, we succesfully loaded project, so it's safe to set
-	 * filename field in global data structure. */
-	if( img->project_filename )
-		g_free( img->project_filename );
-	img->project_filename = g_strdup( input );
+		/* If we made it to here, we succesfully loaded project, so it's safe to set
+		 * filename field in global data structure. */
+		if( img->project_filename )
+			g_free( img->project_filename );
+		img->project_filename = g_strdup( input );
 
-	if (img->project_current_dir)
-		g_free(img->project_current_dir);
-	img->project_current_dir = g_path_get_dirname(input);
+		if (img->project_current_dir)
+			g_free(img->project_current_dir);
+		img->project_current_dir = g_path_get_dirname(input);
 
-	img_refresh_window_title(img);
+		img_refresh_window_title(img);
+	}
 }
 
 static gboolean img_populate_hash_table( GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, GHashTable **table )

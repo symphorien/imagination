@@ -1251,7 +1251,10 @@ void img_exporter (GtkWidget *button, img_window_struct *img )
 	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
 	gtk_grid_attach( GTK_GRID(export_grid), label, 0,6,1,1);
 
-	quality = gtk_spin_button_new_with_range(20, 36, 1);
+	quality = gtk_spin_button_new_with_range(20, 51, 1);
+	gtk_widget_set_tooltip_text(quality, _("The range of the CRF scale is 0–51, where 0 is lossless," \
+	" 23 is the default, and 51 is worst quality possible." \
+	" A lower value generally leads to higher quality, and a subjectively sane range is 17–28"));
 	gtk_grid_attach( GTK_GRID(export_grid), quality, 1,6,1,1);
 
 	label = gtk_label_new( _("Filename:") );

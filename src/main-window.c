@@ -235,6 +235,12 @@ img_window_struct *img_create_window (void)
 	gtk_widget_add_accelerator (img_struct->open_menu,"activate", img_struct->accel_group,GDK_KEY_o,GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
 	g_signal_connect (G_OBJECT (img_struct->open_menu),"activate",G_CALLBACK (img_choose_slideshow_filename),img_struct);
 
+	img_struct->open_recent = gtk_menu_item_new_with_mnemonic (_("_Open Recent"));
+	gtk_menu_shell_append( GTK_MENU_SHELL( menu1 ), img_struct->open_recent);
+	
+	img_struct->recent_slideshows = gtk_menu_new ();
+	gtk_menu_item_set_submenu (GTK_MENU_ITEM (img_struct->open_recent), img_struct->recent_slideshows);
+		
     img_struct->import_project_menu = gtk_menu_item_new_with_mnemonic (_("Import slideshow"));
     gtk_container_add (GTK_CONTAINER (menu1),img_struct->import_project_menu);
     g_signal_connect (G_OBJECT (img_struct->import_project_menu),"activate",G_CALLBACK (img_choose_slideshow_filename),img_struct);
@@ -300,6 +306,7 @@ img_window_struct *img_create_window (void)
 
 	imagemenuitem5 = gtk_menu_item_new_with_mnemonic (_("_Quit"));
 	gtk_container_add (GTK_CONTAINER (menu1), imagemenuitem5);
+	gtk_widget_add_accelerator (imagemenuitem5, "activate",img_struct->accel_group,GDK_KEY_q,GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
 	g_signal_connect (G_OBJECT (imagemenuitem5),"activate",G_CALLBACK (img_quit_menu),img_struct);
 
 	/* Slide menu */

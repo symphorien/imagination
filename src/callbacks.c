@@ -1771,9 +1771,9 @@ void img_choose_slideshow_filename(GtkWidget *widget, img_window_struct *img)
 		filename = g_strdup( img->project_filename );
 
     if (open_replace)
-		img_load_slideshow(img, filename);
+		img_load_slideshow(img,NULL, filename);
     else if (append) 
-		img_append_slides_from( img, filename );
+		img_append_slides_from( img, NULL, filename );
     else if (save)
 		img_save_slideshow( img, filename, img->relative_filenames );
 
@@ -3156,11 +3156,22 @@ img_gradient_move( GtkWidget      * UNUSED(widget),
 gboolean
 img_save_window_settings( img_window_struct *img )
 {
+	GList	  *menu_items, *node0;
+	GPtrArray *recent_files;
+	const gchar *label;
 	GKeyFile *kf;
 	gchar    *group = "Interface settings";
 	gchar    *rc_file, *rc_path, *contents;
 	int       w, h, g, f; /* Width, height, gutter, flags */
 	gboolean  max;
+
+	recent_files = g_ptr_array_new();
+	menu_items = gtk_container_get_children(GTK_CONTAINER(img->recent_slideshows));
+	for(node0 = menu_items; node0 != NULL; node0 = node0->next)
+	{
+		label = gtk_menu_item_get_label(GTK_MENU_ITEM(node0->data));
+		g_ptr_array_add (recent_files, (gchar *)label);
+	}
 
 	gtk_window_get_size( GTK_WINDOW( img->imagination_window ), &w, &h );
 	g = gtk_paned_get_position( GTK_PANED( img->paned ) );
@@ -3184,6 +3195,7 @@ img_save_window_settings( img_window_struct *img )
 	g_key_file_set_double(  kf, group, "zoom_o",  img->overview_zoom );
 	g_key_file_set_boolean( kf, group, "max",     max );
 	g_key_file_set_integer( kf, group, "preview", img->preview_fps );
+	g_key_file_set_string_list(kf, group, "recent_files", (const gchar * const *)recent_files->pdata, recent_files->len);
 
 	rc_path = g_build_filename( g_get_home_dir(), ".config",
 								"imagination", NULL );
@@ -3194,9 +3206,11 @@ img_save_window_settings( img_window_struct *img )
 	g_mkdir_with_parents( rc_path, S_IRWXU );
 	g_file_set_contents( rc_file, contents, -1, NULL );
 
-	g_free( contents );
-	g_free( rc_file );
-	g_free( rc_path );
+	g_free(contents);
+	g_free(rc_file);
+	g_free(rc_path);
+	g_list_free(menu_items);
+	g_ptr_array_free(recent_files, FALSE);
 
 	return( FALSE );
 }
@@ -3204,10 +3218,13 @@ img_save_window_settings( img_window_struct *img )
 gboolean
 img_load_window_settings( img_window_struct *img )
 {
-	GKeyFile *kf;
-	gchar    *group = "Interface settings";
-	gchar    *rc_file;
-	int       w, h, g, m; /* Width, height, gutter, mode */
+	GtkWidget *menu;
+	GKeyFile  *kf;
+	gchar     *group = "Interface settings";
+	gchar	  **recent_slideshows;
+	gchar     *rc_file, *recent_files;
+	gint      w, h, g, m; /* Width, height, gutter, mode */
+	gint	  i;
 	gboolean  max;
 
 	rc_file = g_build_filename( g_get_home_dir(), ".config",
@@ -3225,7 +3242,24 @@ img_load_window_settings( img_window_struct *img )
 	img->image_area_zoom = g_key_file_get_double(  kf, group, "zoom_p",  NULL );
 	img->overview_zoom   = g_key_file_get_double(  kf, group, "zoom_o",  NULL );
 	max                  = g_key_file_get_boolean( kf, group, "max",     NULL );
+	recent_files		 = g_key_file_get_string(  kf, group, "recent_files", NULL);
 
+	if (recent_files)
+	{
+		recent_slideshows = g_strsplit(recent_files, ";", -1);
+		for (i = 0; i <= g_strv_length(recent_slideshows) - 1; i++)
+		{
+			if (strlen(recent_slideshows[i]) > 1)
+			{
+				menu = gtk_menu_item_new_with_label(recent_slideshows[i]);
+				gtk_menu_shell_append(GTK_MENU_SHELL(img->recent_slideshows), menu);
+				g_signal_connect(G_OBJECT(menu), "activate", G_CALLBACK(img_open_recent_slideshow), img);
+				gtk_widget_show(menu);
+			}
+		}
+		g_free(recent_files);
+		g_strfreev(recent_slideshows);
+	}
 	/* New addition to environment settings */
 	img->preview_fps     = g_key_file_get_integer( kf, group, "preview", NULL );
 	if( ! img->preview_fps )
@@ -3666,4 +3700,13 @@ void img_flip_horizontally(GtkMenuItem * UNUSED(item), img_window_struct *img)
 		
 		gtk_widget_queue_draw( img->image_area );
 	}
+}
+
+void img_open_recent_slideshow(GtkWidget *menu, img_window_struct *img)
+{
+	const gchar *filename;
+	
+	filename = gtk_menu_item_get_label(GTK_MENU_ITEM(menu));
+	if (img_can_discard_unsaved_project(img))
+		img_load_slideshow(img, menu, filename);
 }
