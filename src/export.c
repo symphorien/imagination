@@ -1182,7 +1182,7 @@ void img_exporter (GtkWidget *button, img_window_struct *img )
 	ex_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
     gtk_container_add(GTK_CONTAINER(video_frame), ex_vbox);
     gtk_widget_set_halign(GTK_WIDGET(ex_vbox), GTK_ALIGN_FILL);
-    gtk_widget_set_margin_top(GTK_WIDGET(ex_vbox), 5);
+	gtk_widget_set_margin_top(GTK_WIDGET(ex_vbox), 5);
     gtk_widget_set_margin_bottom(GTK_WIDGET(ex_vbox), 10);
     gtk_widget_set_margin_start(GTK_WIDGET(ex_vbox), 10);
     gtk_widget_set_margin_end(GTK_WIDGET(ex_vbox), 10);

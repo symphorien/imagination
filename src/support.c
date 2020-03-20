@@ -417,6 +417,7 @@ img_create_new_slide( void )
         slide->border_color[0] = 1; /* R */
         slide->border_color[1] = 1; /* G */
         slide->border_color[2] = 1; /* B */
+        slide->border_color[3] = 1; /* B */
 
 		slide->border_width = 1;
 
@@ -1398,7 +1399,7 @@ void img_update_zoom_variables(img_window_struct *img)
 
 gboolean img_check_for_recent_file(img_window_struct *img, const gchar *input)
 {
-	GList *menu_items, *node0;
+	GList *menu_items, *node0, *last_item;
 	const gchar *label;
 
 	menu_items = gtk_container_get_children(GTK_CONTAINER(img->recent_slideshows));
@@ -1406,7 +1407,17 @@ gboolean img_check_for_recent_file(img_window_struct *img, const gchar *input)
 	{
 		label = gtk_menu_item_get_label(GTK_MENU_ITEM(node0->data));
 		if (g_strcmp0(label, input) == 0)
+		{
+			g_list_free(menu_items);
 			return TRUE;
+		}
 	}
+	if (g_list_length(menu_items) >= 10)
+	{
+		last_item = g_list_last(menu_items);
+		gtk_widget_destroy(last_item->data);
+		menu_items = g_list_remove(menu_items, last_item->data);
+	}
+	g_list_free(menu_items);
 	return FALSE;
 }

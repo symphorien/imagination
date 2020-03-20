@@ -107,8 +107,8 @@ void img_new_slideshow_settings_dialog(img_window_struct *img)
 
 		/* Set the max value of slide subtitles hrange scale
 		* according to the new video size */
-		//gtk_adjustment_set_upper( img->sub_posX_adj, (gdouble)img->video_size[0]);
-		//gtk_adjustment_set_upper( img->sub_posY_adj, (gdouble)img->video_size[1]);
+		gtk_adjustment_set_upper( img->sub_posX_adj, (gdouble)img->video_size[0]);
+		gtk_adjustment_set_upper( img->sub_posY_adj, (gdouble)img->video_size[1]);
 	
 		/* Get color settings */
 		gtk_color_chooser_get_rgba( GTK_COLOR_CHOOSER( bg_button ), &new );

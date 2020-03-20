@@ -477,7 +477,7 @@ img_text_ani_fade( cairo_t     *cr,
                    gint			border_width,
                    gint			alignment)
 {
-    gdouble  progress_font_color[4], progress_font_brdr_color[4], progress_font_bgcolor[4], progress_border_color[3];
+    gdouble  progress_font_color[4], progress_font_brdr_color[4], progress_font_bgcolor[4], progress_border_color[4];
 
 	/* Calculate colors */
     progress_font_color[0] = font_color[0];
@@ -498,6 +498,7 @@ img_text_ani_fade( cairo_t     *cr,
     progress_border_color[0] = border_color[0];
     progress_border_color[1] = border_color[1];
     progress_border_color[2] = border_color[2];
+    progress_border_color[3] = border_color[3];
 
     /* Paint text */
     img_text_draw_layout(cr, layout, posx, posy, angle, filename, progress_font_color, progress_font_brdr_color,
@@ -600,6 +601,7 @@ img_set_slide_text_info( slide_struct      *slide,
         slide->border_color[0] = border_color[0];
         slide->border_color[1] = border_color[1];
         slide->border_color[2] = border_color[2];
+        slide->border_color[3] = border_color[3];
     }
     
     slide->top_border = top_border;
@@ -644,9 +646,10 @@ img_text_draw_layout( cairo_t     *cr,
 	if (top_border || bottom_border)
 	{
 		cairo_set_line_width(cr, (gdouble) border_width);
-		cairo_set_source_rgb(cr, border_color[0],
+		cairo_set_source_rgba(cr, border_color[0],
 							  border_color[1],
-                              border_color[2]);
+                              border_color[2],
+                              border_color[3]);
         
         if (border_width % 2 == 0)
 			cairo_factor = 0;

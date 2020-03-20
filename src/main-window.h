@@ -32,7 +32,7 @@ img_queue_subtitle_update( GtkTextBuffer     *buffer,
 						   img_window_struct *img );
 
 void
-img_text_font_set( GtkFontButton     *button,
+img_text_font_set( GtkFontChooser     *button,
 				   img_window_struct *img );
 
 void

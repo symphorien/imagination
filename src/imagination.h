@@ -189,7 +189,7 @@ struct _slide_struct
 	gdouble               font_color[4];   /* Font color (RGBA format) */
     gdouble               font_brdr_color[4]; /* Font border color (RGBA format) */
     gdouble               font_bg_color[4]; /* Font background color (RGBA format) */
-    gdouble               border_color[3]; /* Border on background color (RGB format) */
+    gdouble               border_color[4]; /* Border on background color (RGBA format) */
     gboolean           	  top_border;
     gboolean           	  bottom_border;
     gint               	  border_width;
@@ -328,19 +328,13 @@ struct _img_window_struct
 	gboolean	bye_bye_transition;
 	gboolean	project_is_modified;
 	gboolean	relative_filenames;
-    GtkWidget   *video_format_combo;
     GtkWidget   *bye_bye_transition_checkbox;
-	gint        video_format_index;
-    GtkWidget   *video_size_combo;
 	gint        video_size[2];
+	gint        frame_rate;
+	gint        video_quality;
+	gint        sample_rate;
+	gint        bitrate;
 	gdouble     video_ratio;
-    GtkWidget  *aspect_ratio_combo;
-    gint        aspect_ratio_index;
-    gchar      *ffmpeg_aspect_ratio_cmd;
-    GtkWidget  *fps_combo;
-    gint        fps_index;
-    GtkWidget  *bitrate_combo;
-    gint        bitrate_index;
     gdouble     background_color[3];
   	gdouble		total_secs;
 	gint		total_music_secs;
@@ -351,8 +345,8 @@ struct _img_window_struct
 									   is always 0). */
 
 	/* Variables common to export and preview functions */
-	GtkWidget		*vcodec_menu;	/* Video codec in the export dialog */
-	GtkWidget		*acodec_menu;	/* Audio codec in the export dialog */	
+	GtkWidget		*vcodec_menu;	/* Video codec combo box in the export dialog */
+	GtkWidget		*acodec_menu;	/* Audio codec combo box in the export dialog */	
 	cairo_surface_t *current_image;  /* Image in preview area */
 	cairo_surface_t *exported_image; /* Image being exported */
 	cairo_surface_t *image1;         /* Original images */

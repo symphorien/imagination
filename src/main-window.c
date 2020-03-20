@@ -124,7 +124,7 @@ img_window_struct *img_create_window (void)
 	GtkWidget *frame1, *frame2, *frame3, *frame4, *frame_label;
 	GtkWidget *transition_label;
 	GtkWidget *vbox_info_slide, *vbox_slide_motion, *vbox_slide_caption, *vbox_slide_position;
-	GtkWidget *table;
+	GtkWidget *grid;
 	GtkWidget *duration_label;
 	GtkWidget *trans_duration_label;
 	GtkWidget *total_time;
@@ -181,16 +181,10 @@ img_window_struct *img_create_window (void)
 	img_struct->current_point.offy = 0;
 	img_struct->current_point.zoom = 1;
 
-	img_struct->video_size[0] = 720;
-	img_struct->video_size[1] = 576;
-	img_struct->video_ratio = (gdouble)720 / 576;
-	img_struct->video_format_index = 0; /* VOB is default */
-    img_struct->aspect_ratio_index = 0;
-    img_struct->bitrate_index = 0;
-    img_struct->fps_index = 0;
-    img_struct->export_fps = 30;
-    //img_struct->export_fps = video_format_list[img_struct->video_format_index].fps_list[img_struct->fps_index].value;
-
+	img_struct->video_size[0] = 1280;
+	img_struct->video_size[1] = 720;
+	img_struct->video_ratio = (gdouble)1280 / 720;
+	img_struct->export_fps = 30;
     img_struct->audio_fadeout = 5;
 
 	img_struct->final_transition.duration = 0;
@@ -235,12 +229,12 @@ img_window_struct *img_create_window (void)
 	gtk_widget_add_accelerator (img_struct->open_menu,"activate", img_struct->accel_group,GDK_KEY_o,GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
 	g_signal_connect (G_OBJECT (img_struct->open_menu),"activate",G_CALLBACK (img_choose_slideshow_filename),img_struct);
 
-	img_struct->open_recent = gtk_menu_item_new_with_mnemonic (_("_Open Recent"));
+	img_struct->open_recent = gtk_menu_item_new_with_mnemonic (_("Open recent"));
 	gtk_menu_shell_append( GTK_MENU_SHELL( menu1 ), img_struct->open_recent);
 	
 	img_struct->recent_slideshows = gtk_menu_new ();
 	gtk_menu_item_set_submenu (GTK_MENU_ITEM (img_struct->open_recent), img_struct->recent_slideshows);
-		
+	
     img_struct->import_project_menu = gtk_menu_item_new_with_mnemonic (_("Import slideshow"));
     gtk_container_add (GTK_CONTAINER (menu1),img_struct->import_project_menu);
     g_signal_connect (G_OBJECT (img_struct->import_project_menu),"activate",G_CALLBACK (img_choose_slideshow_filename),img_struct);
@@ -717,16 +711,16 @@ img_window_struct *img_create_window (void)
 	gtk_label_set_yalign(GTK_LABEL(transition_label), -1);
 
 	/* Slide selected, slide resolution, slide type and slide total duration */
-	table = gtk_table_new (4, 2, FALSE);
-	gtk_box_pack_start (GTK_BOX (vbox_info_slide), table, TRUE, TRUE, 0);
-	gtk_table_set_row_spacings (GTK_TABLE (table), 4);
-	gtk_table_set_col_spacings (GTK_TABLE (table), 4);
+	grid = gtk_grid_new();
+	gtk_box_pack_start (GTK_BOX (vbox_info_slide), grid, TRUE, TRUE, 0);
+	gtk_grid_set_row_spacing (GTK_GRID (grid), 6);
+	gtk_grid_set_column_spacing (GTK_GRID (grid), 5);
 
 	/* Transition type */
 	img_struct->transition_type = _gtk_combo_box_new_text( TRUE );
 	atk = gtk_widget_get_accessible(img_struct->transition_type);
 	atk_object_set_description(atk, _("Transition type"));
-	gtk_table_attach (GTK_TABLE (table), img_struct->transition_type, 0, 1, 0, 1,(GtkAttachOptions) (GTK_FILL),(GtkAttachOptions) (GTK_FILL), 0, 0);
+	gtk_grid_attach (GTK_GRID (grid), img_struct->transition_type, 0, 0, 1, 1);
 	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(gtk_combo_box_get_model(GTK_COMBO_BOX(img_struct->transition_type))),
 										1, GTK_SORT_ASCENDING);
 	gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(gtk_combo_box_get_model(GTK_COMBO_BOX(img_struct->transition_type))),1, img_sort_none_before_other,NULL,NULL);
@@ -736,18 +730,18 @@ img_window_struct *img_create_window (void)
 
 	img_struct->random_button = gtk_button_new_with_mnemonic (_("Random"));
 	gtk_widget_set_tooltip_text(img_struct->random_button,_("Imagination randomly decides which transition to apply"));
-	gtk_table_attach (GTK_TABLE (table), img_struct->random_button, 1, 2, 0, 1,(GtkAttachOptions) (GTK_FILL),(GtkAttachOptions) (0), 0, 0);
+	gtk_grid_attach (GTK_GRID (grid), img_struct->random_button, 1, 0, 1, 1);
 	gtk_widget_set_sensitive(img_struct->random_button, FALSE);
 	g_signal_connect (G_OBJECT (img_struct->random_button),"clicked",G_CALLBACK (img_random_button_clicked),img_struct);
 
 	/* Transition duration */
 	trans_duration_label = gtk_label_new (_("Transition Speed:"));
-	gtk_table_attach (GTK_TABLE (table), trans_duration_label, 0, 1, 1, 2,(GtkAttachOptions) (GTK_FILL),(GtkAttachOptions) (0), 0, 0);
+	gtk_grid_attach (GTK_GRID (grid), trans_duration_label, 0, 2, 1, 1);
 	gtk_label_set_xalign(GTK_LABEL(trans_duration_label), 0);
 	gtk_label_set_yalign(GTK_LABEL(trans_duration_label), 0.5);
 
 	img_struct->trans_duration = _gtk_combo_box_new_text(FALSE);
-	gtk_table_attach (GTK_TABLE (table), img_struct->trans_duration, 1, 2, 1, 2,(GtkAttachOptions) (GTK_FILL),(GtkAttachOptions) (GTK_FILL), 0, 0);
+	gtk_grid_attach (GTK_GRID (grid), img_struct->trans_duration, 1, 2, 1, 1);
 	{
 		GtkTreeIter   iter;
 		GtkListStore *store = GTK_LIST_STORE( gtk_combo_box_get_model( GTK_COMBO_BOX( img_struct->trans_duration ) ) );
@@ -765,25 +759,25 @@ img_window_struct *img_create_window (void)
 
 	/* Slide duration */
 	duration_label = gtk_label_new (_("Slide Duration in sec:"));
-	gtk_table_attach (GTK_TABLE (table), duration_label, 0, 1, 2, 3,(GtkAttachOptions) (GTK_FILL),(GtkAttachOptions) (0), 0, 0);
+	gtk_grid_attach (GTK_GRID (grid), duration_label, 0, 3, 1, 1);
 	gtk_label_set_xalign(GTK_LABEL(duration_label), 0);
 	gtk_label_set_yalign(GTK_LABEL(duration_label), 0.5);
 
 	GtkAdjustment *adj = (GtkAdjustment *) gtk_adjustment_new (0.10, 0.01, 9999.0, 0.01, 1.0, 0.0);
 	img_struct->duration = gtk_spin_button_new (adj, 1.0, 2);
-	gtk_table_attach (GTK_TABLE (table), img_struct->duration, 1, 2, 2, 3,(GtkAttachOptions) (GTK_FILL),(GtkAttachOptions) (0), 0, 0);
+	gtk_grid_attach (GTK_GRID (grid), img_struct->duration, 1, 3, 1, 1);
 	gtk_widget_set_sensitive(img_struct->duration, FALSE);
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON (img_struct->duration),TRUE);
 	g_signal_connect (G_OBJECT (img_struct->duration),"value-changed",G_CALLBACK (img_spinbutton_value_changed),img_struct);
 
 	/* Slide Total Duration */
 	total_time = gtk_label_new (_("Slideshow Length:"));
-	gtk_table_attach (GTK_TABLE (table), total_time, 0, 1, 3, 4,(GtkAttachOptions) (GTK_FILL),(GtkAttachOptions) (0), 0, 0);
+	gtk_grid_attach (GTK_GRID (grid), total_time, 0, 4, 1, 1);
 	gtk_label_set_xalign(GTK_LABEL(total_time), 0);
 	gtk_label_set_yalign(GTK_LABEL(total_time), 0.5);
 
 	img_struct->total_time_data = gtk_label_new ("");
-	gtk_table_attach (GTK_TABLE (table), img_struct->total_time_data, 1, 2, 3, 4,(GtkAttachOptions) (GTK_FILL),(GtkAttachOptions) (0), 0, 0);
+	gtk_grid_attach (GTK_GRID (grid), img_struct->total_time_data, 1, 4, 1, 1);
 	gtk_label_set_xalign(GTK_LABEL(img_struct->total_time_data), 0);
 	gtk_label_set_yalign(GTK_LABEL(img_struct->total_time_data), 0.5);
 
@@ -1102,20 +1096,21 @@ img_window_struct *img_create_window (void)
 	gtk_widget_set_margin_start(frame_label, 2);
 	gtk_widget_set_margin_top(frame_label, 2);
 
-	table = gtk_table_new (3, 3, FALSE);
-	gtk_box_pack_start (GTK_BOX (vbox_slide_position), table, TRUE, TRUE, 0);
-	gtk_table_set_row_spacings (GTK_TABLE (table), 4);
-	gtk_table_set_col_spacings (GTK_TABLE (table), 4);
+	grid = gtk_grid_new();
+	gtk_box_pack_start (GTK_BOX (vbox_slide_position), grid, TRUE, TRUE, 0);
+	gtk_grid_set_row_spacing (GTK_GRID (grid), 6);
+	gtk_grid_set_column_spacing (GTK_GRID (grid), 10);
 
 	label = gtk_label_new(_("Horizontal Position: "));
 	gtk_label_set_xalign(GTK_LABEL(label), 0.0);
 	gtk_label_set_yalign(GTK_LABEL(label), 0.5);
-	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_grid_attach (GTK_GRID (grid), label, 0, 0, 1, 1);
 
 	img_struct->sub_posX_adj = (GtkAdjustment *) gtk_adjustment_new( 1.0, 1, -1, 1.0, 1.0, 0.0 );
 	img_struct->sub_posX = gtk_scale_new(GTK_ORIENTATION_HORIZONTAL,
 					     img_struct->sub_posX_adj);
-	gtk_table_attach (GTK_TABLE (table), img_struct->sub_posX, 1, 2, 0, 1, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
+	gtk_grid_attach (GTK_GRID (grid), img_struct->sub_posX, 1, 0, 1, 1);
+	gtk_widget_set_size_request(img_struct->sub_posX, 200, -1);
 	gtk_scale_set_draw_value( GTK_SCALE(img_struct->sub_posX), FALSE);
 	g_signal_connect( G_OBJECT( img_struct->sub_posX ), "value-changed",
 					  G_CALLBACK( img_text_pos_changed ), img_struct );
@@ -1123,20 +1118,21 @@ img_window_struct *img_create_window (void)
 	img_struct->x_justify = gtk_button_new();
 	g_signal_connect( G_OBJECT( img_struct->x_justify ), "clicked",
 					  G_CALLBACK( img_align_text_horizontally_vertically ), img_struct );
-	gtk_table_attach (GTK_TABLE (table), img_struct->x_justify, 2, 3, 0, 1, GTK_FILL, GTK_FILL, 0, 0);
 	image_buttons = gtk_image_new_from_icon_name ("format-justify-center", GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(img_struct->x_justify), image_buttons);
 	gtk_widget_set_tooltip_text(img_struct->x_justify,_("Center the text horizontally"));
+	gtk_grid_attach (GTK_GRID (grid), img_struct->x_justify, 2, 0, 1, 1);
 
 	label = gtk_label_new(_("Vertical Position: "));
 	gtk_label_set_xalign(GTK_LABEL(label), 0.0);
 	gtk_label_set_yalign(GTK_LABEL(label), 0.5);
-	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_grid_attach (GTK_GRID (grid), label, 0, 1, 1, 1);
 
 	img_struct->sub_posY_adj = (GtkAdjustment *) gtk_adjustment_new( 1.0, 1, -1, 1.0, 1.0, 0.0 );
 	img_struct->sub_posY = gtk_scale_new(GTK_ORIENTATION_HORIZONTAL,
 					     img_struct->sub_posY_adj);
-	gtk_table_attach (GTK_TABLE (table), img_struct->sub_posY, 1, 2, 1, 2, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
+	gtk_grid_attach (GTK_GRID (grid), img_struct->sub_posY, 1, 1, 1, 1);
+	//gtk_widget_set_size_request(img_struct->sub_posY, 200, -1);
 	gtk_scale_set_draw_value( GTK_SCALE(img_struct->sub_posY), FALSE);
 	g_signal_connect( G_OBJECT( img_struct->sub_posY ), "value-changed",
 					  G_CALLBACK( img_text_pos_changed ), img_struct );
@@ -1144,7 +1140,7 @@ img_window_struct *img_create_window (void)
 	img_struct->y_justify = gtk_button_new();
 	g_signal_connect( G_OBJECT( img_struct->y_justify ), "clicked",
 					  G_CALLBACK( img_align_text_horizontally_vertically ), img_struct );
-	gtk_table_attach (GTK_TABLE (table), img_struct->y_justify, 2, 3, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_grid_attach (GTK_GRID (grid), img_struct->y_justify, 2, 1, 1, 1);
 	image_buttons = gtk_image_new_from_icon_name ("format-justify-center", GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(img_struct->y_justify), image_buttons);
 	gtk_widget_set_tooltip_text(img_struct->y_justify,_("Center the text vertically"));
@@ -1152,11 +1148,11 @@ img_window_struct *img_create_window (void)
 	label = gtk_label_new(_("Angle: "));
 	gtk_label_set_xalign(GTK_LABEL(label), 0.0);
 	gtk_label_set_yalign(GTK_LABEL(label), 0.5);
-	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_grid_attach (GTK_GRID (grid), label, 0, 2, 1, 1);
 
 	img_struct->sub_angle = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL,
 							 -90, 90, 1);
-	gtk_table_attach (GTK_TABLE (table), img_struct->sub_angle, 1, 2, 2, 3, GTK_EXPAND | GTK_FILL, GTK_FILL, 0, 0);
+	gtk_grid_attach (GTK_GRID (grid), img_struct->sub_angle, 1, 2, 1, 1);
 	gtk_scale_set_draw_value( GTK_SCALE(img_struct->sub_angle), FALSE);
 	g_signal_connect( G_OBJECT( img_struct->sub_angle ), "value-changed",
 					  G_CALLBACK( img_text_pos_changed ), img_struct );
@@ -1164,7 +1160,7 @@ img_window_struct *img_create_window (void)
 	img_struct->reset_angle = gtk_button_new();
 	g_signal_connect( G_OBJECT( img_struct->reset_angle ), "clicked",
 					  G_CALLBACK( img_align_text_horizontally_vertically ), img_struct );
-	gtk_table_attach (GTK_TABLE (table), img_struct->reset_angle, 2, 3, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_grid_attach (GTK_GRID (grid), img_struct->reset_angle, 2, 2, 1, 1);
 	image_buttons = gtk_image_new_from_icon_name ("edit-delete", GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(img_struct->reset_angle), image_buttons);
 	gtk_widget_set_tooltip_text(img_struct->reset_angle,_("Reset the angle"));
@@ -2356,12 +2352,12 @@ static gboolean img_subtitle_update( img_window_struct *img )
 }
 
 void
-img_text_font_set( GtkFontButton     *button,
+img_text_font_set( GtkFontChooser     *button,
 				   img_window_struct *img )
 {
 	const gchar *string;
 	
-	string = gtk_font_button_get_font_name( button );
+	string = gtk_font_chooser_get_font( button );
 
 	img_update_sub_properties( img, NULL, -1, -1, string, NULL, NULL, NULL, NULL,
 								img->current_slide->top_border, img->current_slide->bottom_border, img->current_slide->alignment, -1);

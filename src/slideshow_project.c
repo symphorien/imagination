@@ -182,7 +182,7 @@ img_save_slideshow( img_window_struct *img,
 			g_key_file_set_double_list(img_key_file, conf,"font color",entry->font_color,4);
 			g_key_file_set_double_list(img_key_file, conf,"font bgcolor",entry->font_brdr_color,4);
 			g_key_file_set_double_list(img_key_file, conf,"font bgcolor2",entry->font_bg_color,4);
-			g_key_file_set_double_list(img_key_file, conf,"border color",entry->border_color,3);
+			g_key_file_set_double_list(img_key_file, conf,"border color",entry->border_color,4);
 			g_key_file_set_boolean(img_key_file, conf,"top border",entry->top_border);
 			g_key_file_set_boolean(img_key_file, conf,"bottom border",entry->bottom_border);
 			g_key_file_set_integer(img_key_file, conf,"border width",entry->border_width);
@@ -299,7 +299,7 @@ gboolean img_append_slides_from( img_window_struct *img, GtkWidget *menuitem, co
 	if ( ! img_check_for_recent_file(img, input))
 	{
 		menu = gtk_menu_item_new_with_label(input);
-		gtk_menu_shell_append(GTK_MENU_SHELL(img->recent_slideshows), menu);
+		gtk_menu_shell_prepend(GTK_MENU_SHELL(img->recent_slideshows), menu);
 		gtk_widget_show(menu);
 	}
 	project_current_dir = g_path_get_dirname(input);
@@ -312,23 +312,6 @@ gboolean img_append_slides_from( img_window_struct *img, GtkWidget *menuitem, co
 							(GtkTreeModelForeachFunc)img_populate_hash_table,
 							&table );
 
-	/* Set the slideshow options */
-   /* Video Codec 
-	video_config_name = g_key_file_get_string(img_key_file, "slideshow settings",
-                          "video codec", NULL);
-	i = 0;
-	while (video_config_name != NULL
-          && video_format_list[i].name != NULL
-          && strcmp (video_format_list[i].config_name, video_config_name) != 0)
-		i++;
-	if (video_config_name == NULL || video_format_list[i].name == NULL)
-	{
-		img_message(img, FALSE, "Could not find a video format, guessing VOB\n");
-		img->video_format_index = 0;
-	//}
-//	else
-  //    img->video_format_index = i;
-
 	/* Video Size */
 	img->video_size[0] = g_key_file_get_integer(img_key_file, "slideshow settings",
                           "video width", NULL);
@@ -339,64 +322,6 @@ gboolean img_append_slides_from( img_window_struct *img, GtkWidget *menuitem, co
 	 * according to the new video size */
 	gtk_adjustment_set_upper( img->sub_posX_adj, (gdouble)img->video_size[0]);
 	gtk_adjustment_set_upper( img->sub_posY_adj, (gdouble)img->video_size[1]);
-
-	/* fps 
-	fps = g_key_file_get_string(img_key_file, "slideshow settings", "fps", NULL);
-	i = 0;
-	while (fps != NULL
-          && strcmp (video_format_list[img->video_format_index].fps_list[i].name, fps) != 0)
-      i++;
-
-	if (fps == NULL
-      || video_format_list[img->video_format_index].fps_list[i].name == NULL)
-	{
-		img_message(img, FALSE, "Could not find a fps, set to default\n");
-		img->fps_index = 0; /* index for VOB format
-	}
-	else
-		img->fps_index = i;
-	img->export_fps = video_format_list[img->video_format_index].fps_list[img->fps_index].value;
-*/
-  /* Aspect ratio 
-  if (NULL != video_format_list[img->video_format_index].aspect_ratio_list)
-  {
-      aspect_ratio = g_key_file_get_string(img_key_file, "slideshow settings",
-                              "aspect ratio", NULL);
-      i = 0;
-      while (aspect_ratio != NULL
-             && video_format_list[img->video_format_index].aspect_ratio_list[i].name != NULL
-             && strcmp (video_format_list[img->video_format_index].aspect_ratio_list[i].name, aspect_ratio) != 0)
-          i++;
-
-      if (aspect_ratio == NULL
-          || video_format_list[img->video_format_index].aspect_ratio_list[i].name == NULL)
-      {
-          img_message(img, FALSE, "Could not find an aspect ratio, set to default\n");
-          img->aspect_ratio_index = 0; /* index for VOB format*/
-      //}
-      //else
-        //img->aspect_ratio_index = i;
-   //}
-        
-   /* Bitrate */
-   //~ if (NULL != video_format_list[img->video_format_index].bitratelist)
-   //~ {
-      //~ bitrate = g_key_file_get_string(img_key_file, "slideshow settings",
-                                    //~ "bitrate", NULL);
-      //~ i = 0;
-      //~ while (bitrate != NULL
-			//~ && video_format_list[img->video_format_index].bitratelist[i].name != NULL
-			//~ && strcmp (video_format_list[img->video_format_index].bitratelist[i].value, bitrate) != 0)
-         //~ i++;
- 
-      //~ if (video_format_list[img->video_format_index].bitratelist[i].name == NULL)
-      //~ {
-           //~ img_message(img, FALSE, "Could not find a bitrate, set to default\n");
-           //~ img->bitrate_index = 0; /* index for VOB format*/
-      //~ }
-      //~ else
-        //~ img->bitrate_index = i;
-    //~ }
 
 	img->video_ratio = (gdouble)img->video_size[0] / img->video_size[1];
 

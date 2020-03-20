@@ -1752,7 +1752,6 @@ void img_choose_slideshow_filename(GtkWidget *widget, img_window_struct *img)
 			gtk_widget_destroy(fc);
 			return;
 	    }
-	    g_message(img->project_current_dir);
 	    
 	    if (img->project_current_dir)
 			g_free(img->project_current_dir);
@@ -2293,7 +2292,7 @@ void
 img_update_subtitles_widgets( img_window_struct *img )
 {
 	gchar       	*string;
-	GdkColor     	color;
+	GdkRGBA     	color;
 	gdouble     	*f_colors;
 	GtkTextIter		start;
 	GtkWidget		*tmp_image;
@@ -2364,42 +2363,40 @@ img_update_subtitles_widgets( img_window_struct *img )
 
 	/* Update font button */
 	string = pango_font_description_to_string(img->current_slide->font_desc);	
-	gtk_font_button_set_font_name(GTK_FONT_BUTTON(img->sub_font), string);
+	gtk_font_chooser_set_font(GTK_FONT_CHOOSER(img->sub_font), string);
 	g_free(string);
 
 	/* Update color button */
 	f_colors = img->current_slide->font_color;
-	color.red   = (gint)( f_colors[0] * 0xffff );
-	color.green = (gint)( f_colors[1] * 0xffff );
-	color.blue  = (gint)( f_colors[2] * 0xffff );
-	gtk_color_button_set_color( GTK_COLOR_BUTTON( img->sub_color ), &color ); 
-	gtk_color_button_set_alpha( GTK_COLOR_BUTTON( img->sub_color ),
-								(gint)(f_colors[3] * 0xffff ) );
-
+	color.red   = f_colors[0];
+	color.green = f_colors[1];
+	color.blue  = f_colors[2];
+	color.alpha = f_colors[3];
+	gtk_color_chooser_set_rgba( GTK_COLOR_CHOOSER( img->sub_color ), &color ); 
+	
     /* Update border color button */
     f_colors = img->current_slide->font_brdr_color;
-    color.red   = (gint)( f_colors[0] * 0xffff );
-    color.green = (gint)( f_colors[1] * 0xffff );
-    color.blue  = (gint)( f_colors[2] * 0xffff );
-    gtk_color_button_set_color( GTK_COLOR_BUTTON( img->sub_brdr_color ), &color ); 
-    gtk_color_button_set_alpha( GTK_COLOR_BUTTON( img->sub_brdr_color ),
-                                (gint)(f_colors[3] * 0xffff ) );
-                                
+    color.red   = f_colors[0];
+    color.green = f_colors[1];
+    color.blue  = f_colors[2];
+    color.alpha = f_colors[3];
+    gtk_color_chooser_set_rgba( GTK_COLOR_CHOOSER( img->sub_brdr_color ), &color ); 
+                            
     /* Update background color button */
     f_colors = img->current_slide->font_bg_color;
-    color.red   = (gint)( f_colors[0] * 0xffff );
-    color.green = (gint)( f_colors[1] * 0xffff );
-    color.blue  = (gint)( f_colors[2] * 0xffff );
-    gtk_color_button_set_color( GTK_COLOR_BUTTON( img->sub_bgcolor ), &color ); 
-    gtk_color_button_set_alpha( GTK_COLOR_BUTTON( img->sub_bgcolor ),
-                                (gint)(f_colors[3] * 0xffff ) );
-                                
+    color.red   = f_colors[0];
+    color.green = f_colors[1];
+    color.blue  = f_colors[2];
+    color.alpha = f_colors[3];
+    gtk_color_chooser_set_rgba( GTK_COLOR_CHOOSER( img->sub_bgcolor ), &color ); 
+                            
      /* Update border color button */
     f_colors = img->current_slide->border_color;
-    color.red   = (gint)( f_colors[0] * 0xffff );
-    color.green = (gint)( f_colors[1] * 0xffff );
-    color.blue  = (gint)( f_colors[2] * 0xffff );
-    gtk_color_button_set_color( GTK_COLOR_BUTTON( img->sub_border_color ), &color ); 
+    color.red   = f_colors[0];
+    color.green = f_colors[1];
+    color.blue  = f_colors[2];
+    color.alpha = f_colors[3];
+    gtk_color_chooser_set_rgba( GTK_COLOR_CHOOSER( img->sub_border_color ), &color ); 
 
 	/* Update toggle buttons top/bottom borders */
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(img->border_top), img->current_slide->top_border);
@@ -2606,7 +2603,7 @@ img_add_empty_slide( GtkMenuItem       *item,
 	GtkWidget *dialog,
 			  *vbox,
 			  *frame,
-			  *table,
+			  *grid,
 			  *radio1,
 			  *radio2,
 			  *radio3,
@@ -2667,31 +2664,29 @@ img_add_empty_slide( GtkMenuItem       *item,
 
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
 	gtk_container_add( GTK_CONTAINER( frame ), hbox );
+	gtk_widget_set_margin_top(GTK_WIDGET(hbox), 10);
 
-	table = gtk_table_new( 6, 2, TRUE );
-	gtk_box_pack_start( GTK_BOX( hbox ), table, FALSE, FALSE, 10 );
+	grid = gtk_grid_new();
+	gtk_grid_set_row_spacing (GTK_GRID(grid), 6);
+	gtk_box_pack_start( GTK_BOX( hbox ), grid, FALSE, FALSE, 10 );
 
 	radio1 = gtk_radio_button_new_with_mnemonic( NULL, _("_Solid color") );
-	gtk_table_attach( GTK_TABLE( table ), radio1, 0, 2, 0, 1,
-					  GTK_FILL, GTK_FILL, 0, 0 );
+	gtk_grid_attach( GTK_GRID(grid), radio1, 0, 0, 1, 1);
 	slide.radio[0] = radio1;
 
 	radio2 = gtk_radio_button_new_with_mnemonic_from_widget(
 				GTK_RADIO_BUTTON( radio1 ), _("_Linear gradient") );
-	gtk_table_attach( GTK_TABLE( table ), radio2, 0, 2, 1, 2,
-					  GTK_FILL, GTK_FILL, 0, 0 );
+	gtk_grid_attach( GTK_GRID(grid), radio2, 0, 1, 1, 1);
 	slide.radio[1] = radio2;
 
 	radio3 = gtk_radio_button_new_with_mnemonic_from_widget(
 				GTK_RADIO_BUTTON( radio1 ), _("_Radial gradient") );
-	gtk_table_attach( GTK_TABLE( table ), radio3, 0, 2, 2, 3,
-					  GTK_FILL, GTK_FILL, 0, 0 );
+	gtk_grid_attach( GTK_GRID(grid), radio3, 0, 2, 1, 1);
 	slide.radio[2] = radio3;
 	
 	radio4 = gtk_radio_button_new_with_mnemonic_from_widget(
 				GTK_RADIO_BUTTON( radio1 ), _("_Fade gradient") );
-	gtk_table_attach( GTK_TABLE( table ), radio4, 0, 2, 3, 4,
-					  GTK_FILL, GTK_FILL, 0, 0 );
+	gtk_grid_attach( GTK_GRID(grid), radio4, 0, 3, 1, 1);
 	slide.radio[3] = radio4;
 
 	gtk_toggle_button_set_active(
@@ -2701,21 +2696,21 @@ img_add_empty_slide( GtkMenuItem       *item,
 		g_signal_connect( G_OBJECT( slide.radio[i] ), "toggled",
 						  G_CALLBACK( img_gradient_toggled ), &slide );
 
-	color.red   = (gint)( slide.c_start[0] * 0xffff );
-	color.green = (gint)( slide.c_start[1] * 0xffff );
-	color.blue  = (gint)( slide.c_start[2] * 0xffff );
+	color.red   = slide.c_start[0];
+	color.green = slide.c_start[1];
+	color.blue  = slide.c_start[2];
+	color.alpha = 1.0;
 	color1 = gtk_color_button_new_with_rgba( &color );
-	gtk_table_attach( GTK_TABLE( table ), color1, 0, 1, 4, 5,
-					  GTK_FILL, GTK_FILL, 0, 0 );
+	gtk_grid_attach( GTK_GRID(grid), color1, 0, 4, 1, 1);
 	g_signal_connect( G_OBJECT( color1 ), "color-set",
 					  G_CALLBACK( img_gradient_color_set ), &slide );
 
-	color.red   = (gint)( slide.c_stop[0] * 0xffff );
-	color.green = (gint)( slide.c_stop[1] * 0xffff );
-	color.blue  = (gint)( slide.c_stop[2] * 0xffff );
+	color.red   = slide.c_stop[0];
+	color.green = slide.c_stop[1];
+	color.blue  = slide.c_stop[2];
+	color.alpha = 1.0;
 	color2 = gtk_color_button_new_with_rgba( &color );
-	gtk_table_attach( GTK_TABLE( table ), color2, 1, 2, 4, 5,
-					  GTK_FILL, GTK_FILL, 0, 0 );
+	gtk_grid_attach( GTK_GRID(grid), color2, 0, 5, 1, 1);
 	gtk_widget_set_sensitive( color2, (gboolean)slide.gradient );
 	g_signal_connect( G_OBJECT( color2 ), "color-set",
 					  G_CALLBACK( img_gradient_color_set ), &slide );
@@ -2881,6 +2876,10 @@ img_add_empty_slide( GtkMenuItem       *item,
 	img_taint_project(img);
 	gtk_widget_queue_draw(img->image_area);
 	}
+	
+	if (slide.source > 0)
+		g_source_remove(slide.source);
+	
 	gtk_widget_destroy( dialog );
 }
 
@@ -3222,7 +3221,7 @@ img_load_window_settings( img_window_struct *img )
 	GKeyFile  *kf;
 	gchar     *group = "Interface settings";
 	gchar	  **recent_slideshows;
-	gchar     *rc_file, *recent_files;
+	gchar     *rc_file, *recent_files = NULL;
 	gint      w, h, g, m; /* Width, height, gutter, mode */
 	gint	  i;
 	gboolean  max;
@@ -3246,19 +3245,22 @@ img_load_window_settings( img_window_struct *img )
 
 	if (recent_files)
 	{
-		recent_slideshows = g_strsplit(recent_files, ";", -1);
-		for (i = 0; i <= g_strv_length(recent_slideshows) - 1; i++)
+		if (strlen(recent_files) > 1)
 		{
-			if (strlen(recent_slideshows[i]) > 1)
+			recent_slideshows = g_strsplit(recent_files, ";", -1);
+			for (i = 0; i <= g_strv_length(recent_slideshows) - 1; i++)
 			{
-				menu = gtk_menu_item_new_with_label(recent_slideshows[i]);
-				gtk_menu_shell_append(GTK_MENU_SHELL(img->recent_slideshows), menu);
-				g_signal_connect(G_OBJECT(menu), "activate", G_CALLBACK(img_open_recent_slideshow), img);
-				gtk_widget_show(menu);
+				if (strlen(recent_slideshows[i]) > 1)
+				{
+					menu = gtk_menu_item_new_with_label(recent_slideshows[i]);
+					gtk_menu_shell_append(GTK_MENU_SHELL(img->recent_slideshows), menu);
+					g_signal_connect(G_OBJECT(menu), "activate", G_CALLBACK(img_open_recent_slideshow), img);
+					gtk_widget_show(menu);
+				}
 			}
+			g_free(recent_files);
+			g_strfreev(recent_slideshows);
 		}
-		g_free(recent_files);
-		g_strfreev(recent_slideshows);
 	}
 	/* New addition to environment settings */
 	img->preview_fps     = g_key_file_get_integer( kf, group, "preview", NULL );
