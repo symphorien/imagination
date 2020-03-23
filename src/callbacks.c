@@ -601,6 +601,8 @@ gboolean img_key_pressed(GtkWidget * UNUSED(widget), GdkEventKey *event, img_win
 
 void img_exit_fullscreen(img_window_struct *img)
 {
+	GdkWindow *win;
+
 	gtk_widget_show(img->thumb_scrolledwindow);
 	gtk_widget_show(img->notebook);
 	gtk_widget_show(img->statusbar);
@@ -617,10 +619,8 @@ void img_exit_fullscreen(img_window_struct *img)
 	img->window_is_fullscreen = FALSE;
 
 	/* Restore the cursor */
-	GdkDisplay *display0 = gdk_display_get_default();
-	GdkCursor *cursor = gdk_cursor_new_for_display(display0, GDK_ARROW);
-	GdkWindow *win 		= gtk_widget_get_window(img->imagination_window);
-	gdk_window_set_cursor(win, cursor);
+	win = gtk_widget_get_window(img->imagination_window);
+	gdk_window_set_cursor(win, img->cursor);
 }
 
 gboolean img_quit_application(GtkWidget * UNUSED(widget), GdkEvent * UNUSED(event), img_window_struct *img_struct)
@@ -1034,10 +1034,14 @@ void img_show_about_dialog (GtkMenuItem * UNUSED(item), img_window_struct *img_s
 void img_go_fullscreen(GtkMenuItem * UNUSED(item), img_window_struct *img)
 {
 	/* Hide the cursor */
-	GdkDisplay *display1 = gdk_display_get_default();
-	GdkCursor *cursor = gdk_cursor_new_for_display(display1,
-						       GDK_BLANK_CURSOR);
-	GdkWindow *win 		= gtk_widget_get_window(img->imagination_window);
+	GdkCursor *cursor;
+	GdkWindow *win;
+	GdkDisplay *display1;
+
+	win = gtk_widget_get_window(img->imagination_window);
+	img->cursor = gdk_window_get_cursor(win);
+	display1 = gdk_display_get_default();
+	cursor = gdk_cursor_new_for_display(display1, GDK_BLANK_CURSOR);
 	gdk_window_set_cursor(win, cursor);
 
 	gtk_widget_remove_accelerator (img->fullscreen, img->accel_group, GDK_KEY_F11, 0);
@@ -1785,9 +1789,8 @@ void img_close_slideshow(GtkWidget *widget, img_window_struct *img)
 {
     /* When called from close_menu, ask for confirmation */
     if (widget && widget == img->close_menu && !img_can_discard_unsaved_project(img))
-    {
-	return;
-    }
+		return;
+
 	img->project_is_modified = FALSE;
 	img_free_allocated_memory(img);
 	img_refresh_window_title(img);
@@ -1796,7 +1799,7 @@ void img_close_slideshow(GtkWidget *widget, img_window_struct *img)
 		cairo_surface_destroy( img->current_image );
 	img->current_image = NULL;
 	gtk_widget_queue_draw( img->image_area );
-	gtk_label_set_text(GTK_LABEL (img->total_time_data),"");
+	gtk_label_set_text(GTK_LABEL (img->slideshow_duration),"");
 
 	/* Reset slideshow properties */
 	img->distort_images = TRUE;

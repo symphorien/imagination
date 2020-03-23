@@ -329,9 +329,6 @@ img_stop_export( img_window_struct *img )
 
 		close(img->file_desc);
 		g_spawn_close_pid( img->encoder_pid );
-
-		/* Free ffmpeg cmd line */
-		g_free( img->export_cmd_line );
 	
 		/* Destroy images that were used */
 		if (img->image1) cairo_surface_destroy( img->image1 );
@@ -553,38 +550,7 @@ img_prepare_pixbufs( img_window_struct *img)
 static gboolean
 img_run_encoder( img_window_struct *img )
 {
-	GtkWidget  *message;
-	GError     *error = NULL;
-	gchar     **argv;
-	gint		argc;
 	gboolean    ret;
-
-	g_shell_parse_argv( img->export_cmd_line, &argc, &argv, NULL);
-	img_message(img, FALSE, "Running %s\n", img->export_cmd_line);
-
-	ret = g_spawn_async_with_pipes( NULL, argv, NULL,
-									G_SPAWN_SEARCH_PATH,
-									NULL, NULL, &img->encoder_pid,
-									&img->file_desc,
-                                    NULL,               /* print to standard_output */
-                                    NULL,               /* print to standard_error */
-                                    &error );
-	if( ! ret )
-	{
-		message = gtk_message_dialog_new( GTK_WINDOW( img->imagination_window ),
-										  GTK_DIALOG_MODAL |
-										  GTK_DIALOG_DESTROY_WITH_PARENT,
-										  GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
-										  _("Failed to launch the encoder!" ) );
-		gtk_message_dialog_format_secondary_text( GTK_MESSAGE_DIALOG( message ),
-												  "%s.", error->message );
-		gtk_dialog_run( GTK_DIALOG( message ) );
-		gtk_widget_destroy( message );
-		g_error_free( error );
-	}
-
-	g_strfreev( argv );
-
 	return( ret );
 }
 
@@ -1113,19 +1079,21 @@ img_export_frame_to_ppm( cairo_surface_t *surface,
 	return TRUE;
 }
 
-void img_exporter (GtkWidget *button, img_window_struct *img )
+void img_show_export_dialog (GtkWidget *button, img_window_struct *img )
 {
 	const gchar *filename;
-	GtkWidget    *dialog, *container_menu;
-	GtkWidget    *vbox, *range_menu, *export_grid, *sample_rate, *bitrate;
-	GtkWidget    *ex_vbox, *audio_frame, *video_frame, *label;
-	GtkWidget    *width, *height, *frame_rate, *quality, *slideshow_title_entry;
+	GtkWidget	*dialog;
+	GtkWidget	*vbox, *range_menu, *export_grid, *sample_rate, *bitrate;
+	GtkWidget	*ex_vbox, *audio_frame, *video_frame, *label;
+	GtkWidget	*frame_rate, *slideshow_title_entry;
+	GtkWidget	*file_po, *fill_filename;
 	GtkTreeModel *model;
 	GtkListStore *store;
 	GtkCellRenderer *cell;
 	GtkTreeIter   iter;
 	GList 		  *selected = NULL;
-	gint		  slides_selected = 0;
+	gint		  result,
+				  slides_selected = 0;
 
 	gchar *container[10];
 	
@@ -1153,7 +1121,7 @@ void img_exporter (GtkWidget *button, img_window_struct *img )
 	if( ! gtk_tree_model_get_iter_first( model, &iter ) )
 		return;
 
-	/* If there are selected slides count their
+	/* If there are selected slides get their
 	 * number to set the combo box later */
 	selected = gtk_icon_view_get_selected_items(GTK_ICON_VIEW(img->thumbnail_iconview));
 	if (selected)
@@ -1196,14 +1164,14 @@ void img_exporter (GtkWidget *button, img_window_struct *img )
 	label = gtk_label_new( _("Container:") );
 	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
 	gtk_grid_attach( GTK_GRID(export_grid), label, 0,0,1,1);
-	
-	container_menu = gtk_combo_box_text_new();
-	gtk_grid_attach( GTK_GRID(export_grid), container_menu, 1,0,1,1);
+
+	img->container_menu = gtk_combo_box_text_new();
+	gtk_grid_attach( GTK_GRID(export_grid), img->container_menu, 1,0,1,1);
 
 	label = gtk_label_new( _("Codec:") );
 	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
 	gtk_grid_attach( GTK_GRID(export_grid), label, 0,1,1,1);
-	
+
 	store = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_INT);
 	model = GTK_TREE_MODEL(store);
 	img->vcodec_menu = gtk_combo_box_new_with_model(model);
@@ -1216,7 +1184,7 @@ void img_exporter (GtkWidget *button, img_window_struct *img )
 	g_object_set(cell, "ypad", (guint)0, NULL);
 
 	gtk_grid_attach( GTK_GRID(export_grid), img->vcodec_menu, 1,1,1,1);
-	g_signal_connect(G_OBJECT (container_menu),"changed",G_CALLBACK (img_container_changed),img);
+	g_signal_connect(G_OBJECT (img->container_menu),"changed",G_CALLBACK (img_container_changed),img);
 
 	label = gtk_label_new( _("Range:") );
 	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
@@ -1225,47 +1193,39 @@ void img_exporter (GtkWidget *button, img_window_struct *img )
 	range_menu = gtk_combo_box_text_new();
 	gtk_grid_attach( GTK_GRID(export_grid), range_menu, 1,2,1,1);
 
-	label = gtk_label_new( _("Width:") );
+	label = gtk_label_new( _("Frame Rate:") );
 	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
 	gtk_grid_attach( GTK_GRID(export_grid), label, 0,3,1,1);
 
-	width = gtk_spin_button_new_with_range (1280, 9999, 10);
-	gtk_grid_attach( GTK_GRID(export_grid), width, 1,3,1,1);
-	
-	label = gtk_label_new( _("Height:") );
-	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
-	gtk_grid_attach( GTK_GRID(export_grid), label, 0,4,1,1);
-
-	height = gtk_spin_button_new_with_range(720, 9999, 10);
-	gtk_grid_attach( GTK_GRID(export_grid), height, 1,4,1,1);
-	
-	label = gtk_label_new( _("Frame Rate:") );
-	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
-	gtk_grid_attach( GTK_GRID(export_grid), label, 0,5,1,1);
-
 	frame_rate = gtk_spin_button_new_with_range(20, 30, 1);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(frame_rate), 25);
-	gtk_grid_attach( GTK_GRID(export_grid), frame_rate, 1,5,1,1);
+	gtk_grid_attach( GTK_GRID(export_grid), frame_rate, 1,3,1,1);
 	
-	label = gtk_label_new( _("Quality (CRF):") );
-	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
-	gtk_grid_attach( GTK_GRID(export_grid), label, 0,6,1,1);
+	img->quality_label = gtk_label_new( _("Quality (CRF):") );
+	gtk_label_set_xalign (GTK_LABEL(img->quality_label), 0.0);
+	gtk_grid_attach( GTK_GRID(export_grid), img->quality_label, 0,4,1,1);
 
-	quality = gtk_spin_button_new_with_range(20, 51, 1);
-	gtk_widget_set_tooltip_text(quality, _("The range of the CRF scale is 0–51, where 0 is lossless," \
+	img->video_quality = gtk_spin_button_new_with_range(20, 51, 1);
+	gtk_widget_set_tooltip_text(img->video_quality, _("The range of the CRF scale is 0–51, where 0 is lossless," \
 	" 23 is the default, and 51 is worst quality possible." \
 	" A lower value generally leads to higher quality, and a subjectively sane range is 17–28"));
-	gtk_grid_attach( GTK_GRID(export_grid), quality, 1,6,1,1);
+	gtk_grid_attach( GTK_GRID(export_grid), img->video_quality, 1,4,1,1);
 
 	label = gtk_label_new( _("Filename:") );
 	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
-	gtk_grid_attach( GTK_GRID(export_grid), label, 0,7,1,1);
+	gtk_grid_attach( GTK_GRID(export_grid), label, 0,5,1,1);
 	
     slideshow_title_entry = gtk_entry_new();
     gtk_entry_set_icon_from_icon_name(GTK_ENTRY(slideshow_title_entry), GTK_ENTRY_ICON_SECONDARY, "document-open"), 
 	g_signal_connect (slideshow_title_entry, "icon-press", G_CALLBACK (img_show_file_chooser), img);
-	gtk_grid_attach( GTK_GRID(export_grid), slideshow_title_entry, 1,7,1,1);
-	
+	gtk_grid_attach( GTK_GRID(export_grid), slideshow_title_entry, 1,5,1,1);
+
+	/* Define the popup error message */
+	file_po = gtk_popover_new(slideshow_title_entry);
+	fill_filename = gtk_label_new(_("\n Please fill this field \n"));
+	gtk_container_add (GTK_CONTAINER(file_po), fill_filename);
+	gtk_widget_show_all(file_po);
+
 	/* Fill range combo box */
 	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(range_menu), NULL, _("All slides"));
 	if (slides_selected > 1)
@@ -1330,9 +1290,9 @@ void img_exporter (GtkWidget *button, img_window_struct *img )
 	 * others connected to it */
 	gint i;
 	for (i = 0; i <= 9; i++)
-		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(container_menu), NULL, container[i]);
+		gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(img->container_menu), NULL, container[i]);
 	
-	gtk_combo_box_set_active(GTK_COMBO_BOX(container_menu), 4);
+	gtk_combo_box_set_active(GTK_COMBO_BOX(img->container_menu), 4);
 	
 	label = gtk_label_new( _("Sample Rate:") );
 	gtk_label_set_xalign (GTK_LABEL(label), 0.0);
@@ -1353,50 +1313,30 @@ void img_exporter (GtkWidget *button, img_window_struct *img )
 	gtk_widget_show_all (dialog );
 
     /* Run dialog and abort if needed */
-	if ( gtk_dialog_run( GTK_DIALOG( dialog ) ) != GTK_RESPONSE_ACCEPT )
+	while ( (result = gtk_dialog_run(GTK_DIALOG(dialog)) ) )
 	{
-		gtk_widget_destroy(dialog);
-		return;
+		if (result != GTK_RESPONSE_ACCEPT)
+		{
+			gtk_widget_destroy(dialog);
+			return;
+		}
+		if (gtk_entry_get_text_length (GTK_ENTRY(slideshow_title_entry)) == 0)
+		{
+			gtk_popover_popup(GTK_POPOVER(file_po));
+			continue;
+		}
+		break;
 	}
 
-    if (gtk_entry_get_text_length (GTK_ENTRY(slideshow_title_entry)) == 0)
-    {
-        gtk_widget_destroy( dialog );
-        return;
-    }
-
-    filename = gtk_entry_get_text(GTK_ENTRY(slideshow_title_entry));
-	img->export_is_running = 1;
-
-	//~ cmd_line = g_strdup_printf("%s -f image2pipe -vcodec ppm "
-				//~ "-i pipe: <#AUDIO#> "
-				//~ "-r %s "                /* frame rate */
-				//~ "-y "                   /* overwrite output */
-                //~ "%s "                   /* ffmpeg option */
-                //~ "-s %dx%d "             /* size */
-                //~ "%s "                   /* aspect ratio */
-                //~ "%s "                   /* Bitrate */
-                //~ "%s "
-                //~ "\"%s\"",               /*filename */
-                 //~ img->encoder_name,
-                //~ "",
-                //~ "",
-                //~ img->video_size[0], img->video_size[1],
-                //~ aspect_ratio_cmd,
-                //~ bitrate_cmd,
-                //~ " -metadata comment=\"Made with Imagination " VERSION "\"",
-                //~ filename);
-	//~ img->export_cmd_line = cmd_line;
-
-	/* Initiate stage 2 of export - audio processing */
-	//g_idle_add( (GSourceFunc)img_prepare_audio, img );
+	filename = gtk_entry_get_text(GTK_ENTRY(slideshow_title_entry));
+	//img->export_is_running = 1;
 
 	gtk_widget_destroy( dialog );
 }
 
 void img_container_changed (GtkComboBox *combo, img_window_struct *img)
 {
-	GtkListStore *store = NULL;
+	GtkListStore	*store = NULL;
 	gint x;
 	
 	x = gtk_combo_box_get_active(combo);
@@ -1417,6 +1357,7 @@ void img_container_changed (GtkComboBox *combo, img_window_struct *img)
 		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_AAC);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(img->vcodec_menu), 1);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(img->acodec_menu), 0);
+		img_swap_bitrate_for_quality(img);
 		break;
 		
 		case 1:
@@ -1424,6 +1365,7 @@ void img_container_changed (GtkComboBox *combo, img_window_struct *img)
 		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_MP3);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(img->vcodec_menu), 0);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(img->acodec_menu), 0);
+		img_swap_quality_for_bitrate(img);
 		break;
 		
 		case 2:
@@ -1435,6 +1377,7 @@ void img_container_changed (GtkComboBox *combo, img_window_struct *img)
 		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_PCM_S16LE);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(img->vcodec_menu), 0);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(img->acodec_menu), 2);
+		img_swap_quality_for_bitrate(img);
 		break;
 
 		case 3:
@@ -1447,6 +1390,7 @@ void img_container_changed (GtkComboBox *combo, img_window_struct *img)
 		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_PCM_S16LE);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(img->vcodec_menu), 0);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(img->acodec_menu), 2);
+		img_swap_quality_for_bitrate(img);
 		break;
 
 		case 4:
@@ -1460,6 +1404,7 @@ void img_container_changed (GtkComboBox *combo, img_window_struct *img)
 		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_MP3);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(img->vcodec_menu), 1);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(img->acodec_menu), 0);
+		img_swap_bitrate_for_quality(img);
 		break;
 		
 		case 6:
@@ -1478,6 +1423,7 @@ void img_container_changed (GtkComboBox *combo, img_window_struct *img)
 		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_VORBIS);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(img->vcodec_menu), 1);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(img->acodec_menu), 0);
+		img_swap_bitrate_for_quality(img);
 		break;
 
 		case 7:
@@ -1487,6 +1433,7 @@ void img_container_changed (GtkComboBox *combo, img_window_struct *img)
 		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_VORBIS);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(img->vcodec_menu), 0);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(img->acodec_menu), 1);
+		img_swap_quality_for_bitrate(img);
 		break;
 		
 		case 8:
@@ -1504,6 +1451,7 @@ void img_container_changed (GtkComboBox *combo, img_window_struct *img)
 		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_PCM_S16LE);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(img->vcodec_menu), 2);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(img->acodec_menu), 0);
+		img_swap_bitrate_for_quality(img);
 		break;
 		
 		case 9:
@@ -1513,6 +1461,8 @@ void img_container_changed (GtkComboBox *combo, img_window_struct *img)
 		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_OPUS);
 		img_add_codec_to_container_combo(img->acodec_menu, AV_CODEC_ID_VORBIS);
 		gtk_combo_box_set_active(GTK_COMBO_BOX(img->vcodec_menu), 0);
+		gtk_combo_box_set_active(GTK_COMBO_BOX(img->acodec_menu), 0);
+		img_swap_quality_for_bitrate(img);
 		break;
 	}
 }
@@ -1528,4 +1478,21 @@ void img_add_codec_to_container_combo(GtkWidget *combo, enum AVCodecID codec)
 	store = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(combo)));
 	gtk_list_store_append(store, &iter);
 	gtk_list_store_set(store, &iter, 0, codec_info->long_name, 1, codec, -1 );
+}
+
+void img_swap_quality_for_bitrate(img_window_struct *img)
+{
+	gtk_label_set_text(GTK_LABEL(img->quality_label), _("Bitrate (Mbps):"));
+	gtk_spin_button_set_range(GTK_SPIN_BUTTON(img->video_quality), 5, 99);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(img->video_quality), 5);
+	gtk_widget_set_tooltip_text(img->video_quality, "");
+}
+
+void img_swap_bitrate_for_quality(img_window_struct *img)
+{
+	gtk_label_set_text(GTK_LABEL(img->quality_label), _("Quality (CRF):"));
+	gtk_spin_button_set_range(GTK_SPIN_BUTTON(img->video_quality),20, 51);
+	gtk_widget_set_tooltip_text(img->video_quality, _("The range of the CRF scale is 0–51, where 0 is lossless," \
+	" 23 is the default, and 51 is worst quality possible." \
+	" A lower value generally leads to higher quality, and a subjectively sane range is 17–28"));
 }

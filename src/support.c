@@ -143,28 +143,26 @@ void img_set_statusbar_message(img_window_struct *img_struct, gint selected)
 							img_struct->context_id, message );
 		g_free( message );
 		gtk_label_set_text( GTK_LABEL( img_struct->total_slide_number_label ), NULL );
+		gtk_icon_view_set_columns (GTK_ICON_VIEW (img_struct->thumbnail_iconview), -1);
 	}
-	else if (selected)
-	{
-		message = g_strdup_printf( ngettext( "%d slide selected",
-											 "%d slides selected",
-											 selected ), selected);
-		gtk_statusbar_push( GTK_STATUSBAR( img_struct->statusbar ),
-							img_struct->context_id, message );
-		g_free( message );
-	}
-	else
+	else 
 	{
 		total_slides = g_strdup_printf("%d",img_struct->slides_nr);
 		gtk_label_set_text(GTK_LABEL(img_struct->total_slide_number_label),total_slides);
-		message = g_strdup_printf( ngettext( "%d slide loaded %s",
-											 "%d slides loaded %s",
-											 img_struct->slides_nr ),
-								   img_struct->slides_nr,
-								   _(" - Use the CTRL key to select/unselect "
-									 "or SHIFT for multiple select") );
+	    if (selected)
+			message = g_strdup_printf( ngettext( "%d slide selected",
+						"%d slides selected",
+						selected ), selected);
+		else
+			message = g_strdup_printf( ngettext( "%d slide loaded %s",
+						"%d slides loaded %s",
+						img_struct->slides_nr ),
+					img_struct->slides_nr,
+					_(" - Use the CTRL key to select/unselect "
+						"or SHIFT for multiple select") );
 		gtk_statusbar_push( GTK_STATUSBAR( img_struct->statusbar ),
 							img_struct->context_id, message );
+		gtk_icon_view_set_columns (GTK_ICON_VIEW (img_struct->thumbnail_iconview), img_struct->slides_nr + 1);
 		g_free(total_slides);
 		g_free(message);
 	}
@@ -320,10 +318,14 @@ static gboolean img_plugin_is_loaded(img_window_struct *img, GModule *module)
 
 void img_show_file_chooser(GtkWidget *entry, GtkEntryIconPosition UNUSED(icon_pos),int UNUSED(button),img_window_struct *img)
 {
-	GtkWidget *file_selector;
-	gchar *dest_dir;
-	gint response;
-    GtkFileFilter *all_files_filter;
+	GtkWidget		*file_selector;
+	gchar			*dest_dir,
+					*ext;
+	const gchar 	*filter_name = NULL;
+	gint			response,
+					codec;
+    GtkFileFilter	*all_files_filter,
+					*video_filter;
 
 	file_selector = gtk_file_chooser_dialog_new (_("Please type the slideshow project filename"),
 							GTK_WINDOW (img->imagination_window),
@@ -334,35 +336,77 @@ void img_show_file_chooser(GtkWidget *entry, GtkEntryIconPosition UNUSED(icon_po
 							GTK_RESPONSE_ACCEPT,
 							NULL);
 
-    /* only video files filter 
-    video_filter = gtk_file_filter_new ();
+    /* Video files filter */
+	codec = gtk_combo_box_get_active(GTK_COMBO_BOX(img->container_menu));
 
-    gtk_file_filter_set_name (video_filter,
-                video_format_list[img->video_format_index].name);
-
-    i = 0;
-    while (video_format_list[img->video_format_index].file_extensions[i] != NULL)
+	switch(codec)
     {
-        file_extention = g_strconcat("*",
-                video_format_list[img->video_format_index].file_extensions[i],
-                                     NULL);
-        gtk_file_filter_add_pattern (video_filter, file_extention);
-        g_free(file_extention);
-        i++;
-    }
-    file_extention = video_format_list[img->video_format_index].file_extensions[0];
+		case 0:
+		ext = "*.3gp";
+		filter_name = "3GPP (*.3gp)";
+		break;
 
-    gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (file_selector), video_filter);
-*/
-    /* All files filter */
-    all_files_filter = gtk_file_filter_new ();
+		case 1:
+		ext = "*.flv";
+		filter_name = "Flash Video (*.flv)";
+		break;
+
+		case 2:
+		ext = "*.mpg";
+		filter_name = "MPEG-1 Video (*.mpg)";
+		break;
+
+		case 3:
+		ext = "*.mpg";
+		filter_name = "MPEG-2 Video (*.mpg)";
+		break;
+
+		case 4:
+		ext = "*.mp4";
+		filter_name = "MPEG-4 Video (*.mp4)";
+		break;
+		
+		case 5:
+		ext = "*.ts";
+		filter_name = "MPEG-TS (*.ts)";
+		break;
+		
+		case 6:
+		ext = "*.mkv";
+		filter_name = "Matroska (*.mkv)";
+		
+		case 7:
+		ext = "*.ogg";
+		filter_name = "OGG (*.ogg)";
+		break;
+		
+		case 8:
+		ext = "*.mov";
+		filter_name = "QuickTime (*.mov)";
+		break;
+		
+		case 9:
+		ext = "*.webm";
+		filter_name = "WebM (*.webm)";
+		break;
+	}
+
+	if (filter_name)
+	{
+		video_filter = gtk_file_filter_new ();
+		gtk_file_filter_set_name (video_filter, filter_name);
+		gtk_file_filter_add_pattern (video_filter, ext);
+		gtk_file_chooser_add_filter (GTK_FILE_CHOOSER (file_selector), video_filter);
+	}
+	/* All files filter */
+	all_files_filter = gtk_file_filter_new ();
     gtk_file_filter_set_name(all_files_filter, _("All files"));
     gtk_file_filter_add_pattern(all_files_filter, "*");
     gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(file_selector), all_files_filter);
-
+    
     /* set current dir to the project current dir */
     if (img->project_current_dir)
-		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(file_selector),img->project_current_dir);
+		gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(file_selector), img->project_current_dir);
 
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER (file_selector),TRUE);
 	response = gtk_dialog_run (GTK_DIALOG(file_selector));
@@ -398,7 +442,7 @@ img_create_new_slide( void )
 		slide->anim_duration = 1;
 		slide->posX = 0;
 		slide->posY = 1;
-		slide->font_desc = pango_font_description_from_string( "Sans 12" );
+		slide->font_desc = pango_font_description_from_string( "Sans 24" );
 		slide->font_color[0] = 0; /* R */
 		slide->font_color[1] = 0; /* G */
 		slide->font_color[2] = 0; /* B */
@@ -646,7 +690,7 @@ img_set_total_slideshow_duration( img_window_struct *img )
 	}
 	img->total_secs = ceil(img->total_secs);
 	time = img_convert_seconds_to_time((gint)img->total_secs);
-	gtk_label_set_text(GTK_LABEL (img->total_time_data),time);
+	gtk_label_set_text(GTK_LABEL (img->slideshow_duration),time);
 	g_free(time);
 
 	/* This is here only to be able to add this to idle source. */

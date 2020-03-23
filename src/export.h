@@ -55,11 +55,15 @@ img_render_still_frame( img_window_struct *img,
 						gdouble            rate );
 
 void
-img_exporter(GtkWidget *button, img_window_struct *img);
+img_show_export_dialog(GtkWidget *button, img_window_struct *img);
 
 void
 img_container_changed (GtkComboBox *combo, img_window_struct *);
 
 void
 img_add_codec_to_container_combo(GtkWidget *, enum AVCodecID );
+
+void img_swap_quality_for_bitrate(img_window_struct *);
+
+void img_swap_bitrate_for_quality(img_window_struct *);
 #endif

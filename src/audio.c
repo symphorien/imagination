@@ -38,11 +38,12 @@ gchar *img_get_audio_filetype(gchar *filename)
 
 gchar *img_get_audio_length(img_window_struct *img, gchar *filename, gint *secs)
 {
-	gint ret, seconds;
+	gint	ret, 
+			seconds = -1;
 	AVFormatContext *inAudioFormat = NULL;
 
 	ret = avformat_open_input(&inAudioFormat, filename, NULL, NULL);
-	
+
 	if (ret >= 0)
 	{
 		avformat_find_stream_info(inAudioFormat, NULL);
@@ -53,12 +54,10 @@ gchar *img_get_audio_length(img_window_struct *img, gchar *filename, gint *secs)
 		}
     }
     else
-		g_print("%d - %s\n", ret,av_err2str(ret));
-	
+		img_message(img, TRUE, _("Can't open music file %s\n"), filename); 
+		
 	avformat_close_input(&inAudioFormat);
-	
 	*secs = seconds;
-	img->total_music_secs += seconds;
 	
 	return seconds == -1 ? NULL : img_convert_seconds_to_time(*secs);
 }
@@ -149,17 +148,5 @@ static void img_swap_audio_files_button(img_window_struct *img, gboolean flag)
 		tmp_image = gtk_image_new_from_icon_name("media-playback-stop", GTK_ICON_SIZE_MENU);
 		gtk_button_set_image(GTK_BUTTON(img->play_audio_button), tmp_image);
 		gtk_widget_set_tooltip_text(img->play_audio_button, _("Stop the playback"));
-	}
-}
-
-void output_message(unsigned level, const char * UNUSED(filename), const char *fmt, va_list ap)
-{
-	gchar *string;
-
-	if (level == 1)
-	{
-		string = g_strdup_vprintf(fmt,ap);
-		g_message( "%s", string );
-		g_free(string);
 	}
 }

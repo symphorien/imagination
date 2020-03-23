@@ -356,6 +356,9 @@ img_render_subtitle( img_window_struct 	  *img,
 	GdkColor 	*color;
 	GtkTextTag	*tag;
 
+	if ( ! img->current_slide->subtitle)
+		return;
+
 	/* Save cairo state */
 	cairo_save( cr );
 	cairo_scale( cr, zoom, zoom );

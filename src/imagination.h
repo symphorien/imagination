@@ -184,7 +184,6 @@ struct _slide_struct
 	gint                  subtitle_angle;  /* subtitle rotation angle */
 	gint                  anim_id;         /* Animation id */
 	gint                  anim_duration;   /* Duration of animation */
-	//ImgRelPlacing         placing;         /* Relative placing */
 	PangoFontDescription *font_desc;       /* Font description */
 	gdouble               font_color[4];   /* Font color (RGBA format) */
     gdouble               font_brdr_color[4]; /* Font border color (RGBA format) */
@@ -232,7 +231,7 @@ struct _img_window_struct
 	GtkWidget	*random_button;
 	GtkWidget	*duration;				// Duration spin button
 	GtkWidget	*trans_duration;
-	GtkWidget	*total_time_data;
+	GtkWidget	*slideshow_duration;
 	GtkWidget	*filename_data;
 	GtkTextBuffer 	*slide_text_buffer;
 	GtkTextTagTable	*tag_table;
@@ -247,6 +246,7 @@ struct _img_window_struct
   	guint		context_id;
   	GtkListStore *thumbnail_model;
   	gchar		*current_dir;
+  	GdkCursor 	*cursor;			//Cursor to be stored before fullscreen
 
 	GtkWidget   *paned; /* Main paned (used for saving/restoring geometry) */
 
@@ -331,7 +331,7 @@ struct _img_window_struct
     GtkWidget   *bye_bye_transition_checkbox;
 	gint        video_size[2];
 	gint        frame_rate;
-	gint        video_quality;
+	//gint        video_quality;
 	gint        sample_rate;
 	gint        bitrate;
 	gdouble     video_ratio;
@@ -345,16 +345,19 @@ struct _img_window_struct
 									   is always 0). */
 
 	/* Variables common to export and preview functions */
-	GtkWidget		*vcodec_menu;	/* Video codec combo box in the export dialog */
-	GtkWidget		*acodec_menu;	/* Audio codec combo box in the export dialog */	
-	cairo_surface_t *current_image;  /* Image in preview area */
-	cairo_surface_t *exported_image; /* Image being exported */
-	cairo_surface_t *image1;         /* Original images */
+	GtkWidget		*container_menu;	/* Container combo box in the export dialog */
+	GtkWidget		*vcodec_menu;		/* Video codec combo box in the export dialog */
+	GtkWidget		*acodec_menu;		/* Audio codec combo box in the export dialog */
+	GtkWidget		*video_quality;		/* Combo box to store the quality CRF when enconding */
+	GtkWidget		*quality_label;		/* label to be changed when selecting formats which don't require CRF */
+	cairo_surface_t *current_image;  	/* Image in preview area */
+	cairo_surface_t *exported_image; 	/* Image being exported */
+	cairo_surface_t *image1;         	/* Original images */
 	cairo_surface_t *image2;
-	cairo_surface_t *image_from;     /* Images used in transition rendering */
+	cairo_surface_t *image_from;     	/* Images used in transition rendering */
 	cairo_surface_t *image_to;
-	ImgStopPoint    *point1;        /* Last stop point of image1 */
-	ImgStopPoint    *point2;        /* First stop point of image2 */
+	ImgStopPoint    *point1;        	/* Last stop point of image1 */
+	ImgStopPoint    *point2;        	/* First stop point of image2 */
   	GtkTreeIter      cur_ss_iter;
   	GtkTreeIter      prev_ss_iter;
   	GtkTreePath 	*first_selected_path;
@@ -422,8 +425,6 @@ struct _img_window_struct
 	GtkWidget   *export_pause_button;
 	gdouble      export_fps;        /* Frame rate for exported video */
 	gdouble      elapsed_time;      /* Elapsed time during export */
-	gchar		*encoder_name;		/* ffmpeg or avconv	*/
-	gchar       *export_cmd_line;   /* ffmpeg spawn cmd line */
 	guint        export_slide;		/* Number of slide being exported */
 	GSourceFunc  export_idle_func;	/* Stored procedure for pause */
 	GPid         encoder_pid;       /* ffmpeg/avconv process id */

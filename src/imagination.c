@@ -30,8 +30,6 @@
 #include "callbacks.h"
 #include "export.h"
 
-extern void output_message(unsigned , const char *, const char *, va_list ap);
-
 int main (int argc, char *argv[])
 {
 	static gchar libavinfo[] = "\n libavutil  : " STR(LIBAVUTIL_VERSION) \

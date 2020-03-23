@@ -40,9 +40,7 @@ enum
 };
 
 #define IMG_CELL_RENDERER_PIXBUF_GET_PRIVATE( obj ) \
-	( G_TYPE_INSTANCE_GET_PRIVATE( ( obj ), \
-								   IMG_TYPE_CELL_RENDERER_PIXBUF, \
-								   ImgCellRendererPixbufPrivate ) )
+								   img_cell_renderer_pixbuf_get_instance_private(IMG_CELL_RENDERER_PIXBUF( obj))
 
 typedef struct _ImgCellRendererPixbufPrivate ImgCellRendererPixbufPrivate;
 struct _ImgCellRendererPixbufPrivate

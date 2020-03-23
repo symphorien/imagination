@@ -317,7 +317,13 @@ gboolean img_append_slides_from( img_window_struct *img, GtkWidget *menuitem, co
                           "video width", NULL);
 	img->video_size[1] = g_key_file_get_integer(img_key_file, "slideshow settings",
                           "video height", NULL);
-
+	
+	if (img->video_size[0] == 0)
+		img->video_size[0] = 1280;
+	
+	if (img->video_size[1] == 0)
+		img->video_size[1] = 720;
+		
 	/* Set the max value of slide subtitles hrange scale
 	 * according to the new video size */
 	gtk_adjustment_set_upper( img->sub_posX_adj, (gdouble)img->video_size[0]);
@@ -464,8 +470,9 @@ gboolean img_append_slides_from( img_window_struct *img, GtkWidget *menuitem, co
 				{
 					if( slide_filename )
 						img_set_slide_file_info( slide_info, original_filename );
-					else {
-						g_return_if_fail(c_start && c_stop && p_start && p_stop);
+					else
+					{
+						g_return_val_if_fail(c_start && c_stop && p_start && p_stop, FALSE);
 						img_set_slide_gradient_info( slide_info, gradient,
 													 c_start, c_stop,
 													 p_start, p_stop );
@@ -596,8 +603,7 @@ gboolean img_append_slides_from( img_window_struct *img, GtkWidget *menuitem, co
 			slide_filename = _slide_filename;
 		}
 		img_add_audio_files(slide_filename, img);
-
-		/* slide_filename is freed in img_add_audio_files */
+		g_free(slide_filename);
 		g_free(dummy);
 	}
 	g_key_file_free (img_key_file);
@@ -612,7 +618,6 @@ gboolean img_append_slides_from( img_window_struct *img, GtkWidget *menuitem, co
 	g_free(time);
 	g_free(project_current_dir);
 
-	img->project_is_modified = TRUE;
 	return TRUE;
 }
 

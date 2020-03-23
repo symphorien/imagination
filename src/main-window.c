@@ -39,7 +39,7 @@ static const GtkTargetEntry drop_targets[] =
  * ************************************************************************* */
 static void img_random_button_clicked(GtkButton *, img_window_struct *);
 static GdkPixbuf *img_set_random_transition(img_window_struct *, slide_struct *);
-static void img_combo_box_speed_changed (GtkComboBox *,  img_window_struct *);
+static void img_transition_speed_changed (GtkRange *,  img_window_struct *);
 static void img_slide_cut(GtkMenuItem * , img_window_struct *);
 static void img_slide_copy(GtkMenuItem * , img_window_struct *);
 static void img_slide_paste(GtkMenuItem* , img_window_struct *);
@@ -293,7 +293,7 @@ img_window_struct *img_create_window (void)
 	export_menu = gtk_menu_item_new_with_mnemonic (_("Ex_port"));
 	gtk_container_add (GTK_CONTAINER (menu1), export_menu);
 	gtk_widget_add_accelerator (export_menu, "activate",img_struct->accel_group,GDK_KEY_p,GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
-	g_signal_connect (G_OBJECT (export_menu),"activate",G_CALLBACK (img_exporter),img_struct);
+	g_signal_connect (G_OBJECT (export_menu),"activate",G_CALLBACK (img_show_export_dialog),img_struct);
 
 	separatormenuitem1 = gtk_separator_menu_item_new ();
 	gtk_container_add (GTK_CONTAINER (menu1), separatormenuitem1);
@@ -628,6 +628,7 @@ img_window_struct *img_create_window (void)
 
 	/* Create the image area and the other widgets */
 	img_struct->paned = gtk_paned_new(GTK_ORIENTATION_HORIZONTAL);
+	gtk_paned_set_wide_handle(GTK_PANED(img_struct->paned), TRUE);
 	gtk_box_pack_start (GTK_BOX (vbox1), img_struct->paned, TRUE, TRUE, 0);
 
 	modes_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -686,23 +687,20 @@ img_window_struct *img_create_window (void)
 
 	/* Slide frame */
 	frame1 = gtk_frame_new (NULL);
-	gtk_box_pack_start (GTK_BOX (vbox_frames), frame1, FALSE, FALSE, 0);
-	gtk_frame_set_shadow_type (GTK_FRAME (frame1), GTK_SHADOW_OUT);
+	gtk_box_pack_start (GTK_BOX (vbox_frames), frame1, TRUE, TRUE, 0);
+	gtk_frame_set_shadow_type (GTK_FRAME (frame1), GTK_SHADOW_IN);
 
 	frame_label = gtk_label_new (_("<b>Slide Settings</b>"));
 	gtk_frame_set_label_widget (GTK_FRAME (frame1), frame_label);
 	gtk_label_set_use_markup (GTK_LABEL (frame_label), TRUE);
-	gtk_widget_set_margin_start(frame_label, 2);
-	gtk_widget_set_margin_top(frame_label, 2);
 
-	vbox_info_slide = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
+	vbox_info_slide = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	gtk_container_add(GTK_CONTAINER(frame1), vbox_info_slide);
 	gtk_widget_set_halign(GTK_WIDGET(vbox_info_slide), GTK_ALIGN_FILL);
 	gtk_widget_set_margin_top(GTK_WIDGET(vbox_info_slide), 2);
 	gtk_widget_set_margin_bottom(GTK_WIDGET(vbox_info_slide), 2);
 	gtk_widget_set_margin_start(GTK_WIDGET(vbox_info_slide), 5);
 	gtk_widget_set_margin_end(GTK_WIDGET(vbox_info_slide), 5);
-	gtk_container_set_border_width (GTK_CONTAINER (vbox_info_slide), 2);
 
 	/* Transition types label */
 	transition_label = gtk_label_new (_("Transition Type:"));
@@ -712,10 +710,11 @@ img_window_struct *img_create_window (void)
 
 	/* Slide selected, slide resolution, slide type and slide total duration */
 	grid = gtk_grid_new();
-	gtk_box_pack_start (GTK_BOX (vbox_info_slide), grid, TRUE, TRUE, 0);
+	gtk_grid_set_column_homogeneous(GTK_GRID(grid), TRUE);
 	gtk_grid_set_row_spacing (GTK_GRID (grid), 6);
 	gtk_grid_set_column_spacing (GTK_GRID (grid), 5);
-
+	gtk_box_pack_start (GTK_BOX (vbox_info_slide), grid, TRUE, FALSE, 0);
+	
 	/* Transition type */
 	img_struct->transition_type = _gtk_combo_box_new_text( TRUE );
 	atk = gtk_widget_get_accessible(img_struct->transition_type);
@@ -735,27 +734,16 @@ img_window_struct *img_create_window (void)
 	g_signal_connect (G_OBJECT (img_struct->random_button),"clicked",G_CALLBACK (img_random_button_clicked),img_struct);
 
 	/* Transition duration */
-	trans_duration_label = gtk_label_new (_("Transition Speed:"));
+	trans_duration_label = gtk_label_new (_("Transition Speed in sec:"));
 	gtk_grid_attach (GTK_GRID (grid), trans_duration_label, 0, 2, 1, 1);
 	gtk_label_set_xalign(GTK_LABEL(trans_duration_label), 0);
-	gtk_label_set_yalign(GTK_LABEL(trans_duration_label), 0.5);
+	gtk_label_set_yalign(GTK_LABEL(trans_duration_label), 0.9);
 
-	img_struct->trans_duration = _gtk_combo_box_new_text(FALSE);
+	img_struct->trans_duration = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 1, 10, 1);
+	gtk_scale_set_value_pos (GTK_SCALE(img_struct->trans_duration), GTK_POS_LEFT);
 	gtk_grid_attach (GTK_GRID (grid), img_struct->trans_duration, 1, 2, 1, 1);
-	{
-		GtkTreeIter   iter;
-		GtkListStore *store = GTK_LIST_STORE( gtk_combo_box_get_model( GTK_COMBO_BOX( img_struct->trans_duration ) ) );
-
-		gtk_list_store_append( store, &iter );
-		gtk_list_store_set( store, &iter, 0, _("Fast"), -1 );
-		gtk_list_store_append( store, &iter );
-		gtk_list_store_set( store, &iter, 0, _("Normal"), -1 );
-		gtk_list_store_append( store, &iter );
-		gtk_list_store_set( store, &iter, 0, _("Slow"), -1 );
-	}
-	gtk_combo_box_set_active(GTK_COMBO_BOX(img_struct->trans_duration),1);
 	gtk_widget_set_sensitive(img_struct->trans_duration, FALSE);
-	g_signal_connect (G_OBJECT (img_struct->trans_duration),"changed",G_CALLBACK (img_combo_box_speed_changed),img_struct);
+	g_signal_connect (G_OBJECT (img_struct->trans_duration),"value-changed",G_CALLBACK (img_transition_speed_changed),img_struct);
 
 	/* Slide duration */
 	duration_label = gtk_label_new (_("Slide Duration in sec:"));
@@ -763,8 +751,7 @@ img_window_struct *img_create_window (void)
 	gtk_label_set_xalign(GTK_LABEL(duration_label), 0);
 	gtk_label_set_yalign(GTK_LABEL(duration_label), 0.5);
 
-	GtkAdjustment *adj = (GtkAdjustment *) gtk_adjustment_new (0.10, 0.01, 9999.0, 0.01, 1.0, 0.0);
-	img_struct->duration = gtk_spin_button_new (adj, 1.0, 2);
+	img_struct->duration = gtk_spin_button_new_with_range (1,60, 1);
 	gtk_grid_attach (GTK_GRID (grid), img_struct->duration, 1, 3, 1, 1);
 	gtk_widget_set_sensitive(img_struct->duration, FALSE);
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON (img_struct->duration),TRUE);
@@ -776,15 +763,15 @@ img_window_struct *img_create_window (void)
 	gtk_label_set_xalign(GTK_LABEL(total_time), 0);
 	gtk_label_set_yalign(GTK_LABEL(total_time), 0.5);
 
-	img_struct->total_time_data = gtk_label_new ("");
-	gtk_grid_attach (GTK_GRID (grid), img_struct->total_time_data, 1, 4, 1, 1);
-	gtk_label_set_xalign(GTK_LABEL(img_struct->total_time_data), 0);
-	gtk_label_set_yalign(GTK_LABEL(img_struct->total_time_data), 0.5);
+	img_struct->slideshow_duration = gtk_label_new ("");
+	gtk_grid_attach (GTK_GRID (grid), img_struct->slideshow_duration, 1, 4, 1, 1);
+	gtk_label_set_xalign(GTK_LABEL(img_struct->slideshow_duration), 0);
+	gtk_label_set_yalign(GTK_LABEL(img_struct->slideshow_duration), 0.5);
 
 	/* Slide motion frame */
 	frame2 = gtk_frame_new (NULL);
 	gtk_box_pack_start (GTK_BOX (vbox_frames), frame2, FALSE, FALSE, 0);
-	gtk_frame_set_shadow_type (GTK_FRAME (frame2), GTK_SHADOW_OUT);
+	gtk_frame_set_shadow_type (GTK_FRAME (frame2), GTK_SHADOW_IN);
 
 	frame_label = gtk_label_new (_("<b>Slide Motion</b>"));
 	gtk_frame_set_label_widget (GTK_FRAME (frame2), frame_label);
@@ -848,7 +835,7 @@ img_window_struct *img_create_window (void)
 
 	hbox_time_offset = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_pack_start (GTK_BOX (vbox_slide_motion), hbox_time_offset, FALSE, FALSE, 0);
-	time_offset_label = gtk_label_new(_("Duration:"));
+	time_offset_label = gtk_label_new(_("Duration in sec:"));
 	gtk_box_pack_start (GTK_BOX (hbox_time_offset), time_offset_label, TRUE, TRUE, 0);
 	gtk_label_set_xalign(GTK_LABEL(time_offset_label), 0.0);
 	gtk_label_set_yalign(GTK_LABEL(time_offset_label), 0.5);
@@ -895,7 +882,7 @@ img_window_struct *img_create_window (void)
 	gtk_widget_set_margin_start(frame_label, 2);
 	gtk_widget_set_margin_top(frame_label, 2);
 
-	vbox_slide_caption = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
+	vbox_slide_caption = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
 	gtk_container_add(GTK_CONTAINER(frame4), vbox_slide_caption);
 	gtk_widget_set_halign(GTK_WIDGET(vbox_slide_caption), GTK_ALIGN_FILL);
 	gtk_widget_set_margin_top(GTK_WIDGET(vbox_slide_caption), 5);
@@ -1441,8 +1428,6 @@ img_window_struct *img_create_window (void)
 	gtk_icon_view_set_item_orientation (GTK_ICON_VIEW (img_struct->thumbnail_iconview), GTK_ORIENTATION_HORIZONTAL);
 	gtk_icon_view_set_column_spacing (GTK_ICON_VIEW (img_struct->thumbnail_iconview),0);
 	gtk_icon_view_set_row_spacing (GTK_ICON_VIEW (img_struct->thumbnail_iconview),0);
-	// MAX_INT makes gtk segfault when computing sizes
-	gtk_icon_view_set_columns (GTK_ICON_VIEW (img_struct->thumbnail_iconview), 1<<15);
 	gtk_icon_view_set_item_padding (GTK_ICON_VIEW (img_struct->thumbnail_iconview), 0);
 
 	g_signal_connect (G_OBJECT (img_struct->thumbnail_iconview),"selection-changed",G_CALLBACK (img_iconview_selection_changed),img_struct);
@@ -1453,6 +1438,8 @@ img_window_struct *img_create_window (void)
 	/* Create the status bar */
 	img_struct->statusbar = gtk_statusbar_new ();
 	gtk_widget_show (img_struct->statusbar);
+	gtk_widget_set_margin_top(img_struct->statusbar, 0);
+	gtk_widget_set_margin_bottom(img_struct->statusbar, 0);
 	gtk_box_pack_start (GTK_BOX (vbox1), img_struct->statusbar, FALSE, TRUE, 0);
 	img_struct->context_id = gtk_statusbar_get_context_id (GTK_STATUSBAR (img_struct->statusbar), "statusbar");
 
@@ -1517,7 +1504,6 @@ static void img_slide_paste(GtkMenuItem* UNUSED(item), img_window_struct *img)
 	GList *where_to_paste = NULL, *node;
 	GtkTreeModel *model;
 	GtkTreeIter iter, position_iter;
-	gchar *total_slides = NULL;
 	GdkPixbuf *thumb, *trans;
 	gboolean   has_sub;
 	slide_struct *pasted_slide, *info_slide;
@@ -1683,9 +1669,7 @@ static void img_slide_paste(GtkMenuItem* UNUSED(item), img_window_struct *img)
 	g_list_free (where_to_paste);
 
 	/* Update display */
-	total_slides = g_strdup_printf("%d",img->slides_nr);
-	gtk_label_set_text(GTK_LABEL(img->total_slide_number_label),total_slides);
-	g_free(total_slides);
+	img_set_statusbar_message(img, 0);
 
 	/* Free the GTK selection structure */
 	gtk_selection_data_free (selection);
@@ -1771,7 +1755,7 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 {
 	GtkTreeModel *model;
 	GtkTreeIter iter;
-	gint dummy, nr_selected = 0;
+	gint nr_selected = 0;
 	GList *selected = NULL;
 	gchar *slide_info_msg = NULL, *selected_slide_nr = NULL;
 	slide_struct *info_slide;
@@ -1800,7 +1784,7 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
         img_disable_videotab(img);
 
 		if (img->slides_nr == 0)
-			gtk_label_set_text(GTK_LABEL (img->total_time_data),"");
+			gtk_label_set_text(GTK_LABEL (img->slideshow_duration),"");
 
 		gtk_widget_set_sensitive(img->edit_empty_slide, FALSE);
 		return;
@@ -1848,15 +1832,9 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 		gtk_widget_set_sensitive(img->trans_duration,TRUE);
 
 	/* Set the transition speed */
-	if (info_slide->speed == FAST)
-		dummy = 0;
-	else if (info_slide->speed == NORMAL)
-		dummy = 1;
-	else
-		dummy = 2;
-	g_signal_handlers_block_by_func((gpointer)img->duration, (gpointer)img_combo_box_speed_changed, img);
-	gtk_combo_box_set_active(GTK_COMBO_BOX(img->trans_duration),dummy);
-	g_signal_handlers_block_by_func((gpointer)img->duration, (gpointer)img_combo_box_speed_changed, img);
+	g_signal_handlers_block_by_func((gpointer)img->duration, (gpointer)img_transition_speed_changed, img);
+	gtk_range_set_value( GTK_RANGE(img->trans_duration),info_slide->speed);
+	g_signal_handlers_block_by_func((gpointer)img->duration, (gpointer)img_transition_speed_changed, img);
 
 	/* Set the transition duration */
 	g_signal_handlers_block_by_func((gpointer)img->duration, (gpointer)img_spinbutton_value_changed, img);
@@ -2093,6 +2071,7 @@ img_set_random_transition( img_window_struct *img,
 	/* Select proper iter in transition model */
 	g_signal_handlers_block_by_func((gpointer)img->transition_type, (gpointer)img_combo_box_transition_type_changed, img);	
 	gtk_combo_box_set_active_iter(GTK_COMBO_BOX(img->transition_type), &iter);
+
 	/* Update the slide dialog report in real time */
 	img_report_slides_transitions(img);
 	g_signal_handlers_unblock_by_func((gpointer)img->transition_type, (gpointer)img_combo_box_transition_type_changed, img);	
@@ -2100,9 +2079,8 @@ img_set_random_transition( img_window_struct *img,
 	return( pix );
 }
 
-static void img_combo_box_speed_changed (GtkComboBox *combo, img_window_struct *img)
+static void img_transition_speed_changed (GtkRange *trans_duration, img_window_struct *img)
 {
-	gint speed;
 	gdouble duration;
 	GList *selected, *bak;
 	GtkTreeIter iter;
@@ -2114,14 +2092,7 @@ static void img_combo_box_speed_changed (GtkComboBox *combo, img_window_struct *
 	if (selected == NULL)
 		return;
 
-	speed = gtk_combo_box_get_active(combo);
-
-	if (speed == 0)
-		duration = FAST;
-	else if (speed == 1)
-		duration = NORMAL;
-	else 
-		duration = SLOW;
+	duration = (gint) gtk_range_get_value(trans_duration);
 
 	/* Avoid memory leak */
 	bak = selected;
@@ -2225,14 +2196,7 @@ img_scroll_thumb( GtkWidget         *widget,
 				  img_window_struct * UNUSED(img) )
 {
 	GtkAdjustment *adj;
-	gdouble        page, step, upper, value;
-	gint           dir = 1;
-
-	if( scroll->direction == GDK_SCROLL_UP ||
-		scroll->direction == GDK_SCROLL_LEFT )
-	{
-		dir = - 1;
-	}
+	gdouble        page, step, upper, value, offset;
 
 	adj = gtk_scrolled_window_get_hadjustment( GTK_SCROLLED_WINDOW( widget ) );
 
@@ -2241,7 +2205,22 @@ img_scroll_thumb( GtkWidget         *widget,
 	upper = gtk_adjustment_get_upper( adj );
 	value = gtk_adjustment_get_value( adj );
 
-	gtk_adjustment_set_value( adj, CLAMP( value + step * dir, 0, upper - page ) );
+
+	switch (scroll->direction) {
+	    case GDK_SCROLL_UP:
+	    case GDK_SCROLL_LEFT:
+		offset = - step;
+		break;
+	    case GDK_SCROLL_DOWN:
+	    case GDK_SCROLL_RIGHT:
+		offset = + step;
+		break;
+	    case GDK_SCROLL_SMOOTH:
+		/* one of the ->delta is 0 depending on the direction */
+		offset = step * (scroll->delta_x + scroll->delta_y);
+	}
+
+	gtk_adjustment_set_value( adj, CLAMP( value + offset, 0, upper - page ) );
 	return( TRUE );
 }
 
@@ -2533,6 +2512,7 @@ void
 img_disable_videotab (img_window_struct *img)
 {
     gtk_widget_set_sensitive(img->random_button, FALSE);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(img->transition_type), 0);
     gtk_widget_set_sensitive(img->transition_type, FALSE);
     gtk_widget_set_sensitive(img->duration, FALSE);
     gtk_widget_set_sensitive(img->trans_duration,   FALSE);

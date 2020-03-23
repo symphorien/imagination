@@ -26,4 +26,5 @@
 #include "callbacks.h"
 
 void img_new_slideshow_settings_dialog(img_window_struct *);
+
 #endif

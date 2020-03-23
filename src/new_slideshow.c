@@ -25,12 +25,12 @@ void img_new_slideshow_settings_dialog(img_window_struct *img)
 	GtkWidget *dialog1;
 	GtkWidget *dialog_vbox1;
 	GtkWidget *vbox1;
-	GtkWidget *main_frame;
-	GtkWidget *ex_vbox;
+	GtkWidget *grid;
+	GtkWidget *width;
+	GtkWidget *height;
 	GtkWidget *ex_hbox;
 	GtkWidget *distort_button;
 	GtkWidget *bg_button;
-	GtkWidget *bg_label;
 	GdkRGBA   color;
 	GtkWidget *label;
 	gint       response;
@@ -40,45 +40,65 @@ void img_new_slideshow_settings_dialog(img_window_struct *img)
 										GTK_DIALOG_DESTROY_WITH_PARENT,
 										"_Cancel", GTK_RESPONSE_CANCEL,
 										"_Ok", GTK_RESPONSE_ACCEPT, NULL);
-
-	gtk_window_set_default_size(GTK_WINDOW(dialog1),520,-1);
-
 	dialog_vbox1 = gtk_dialog_get_content_area( GTK_DIALOG( dialog1 ) );
 	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox1), 5);
 	gtk_box_pack_start (GTK_BOX (dialog_vbox1), vbox1, TRUE, TRUE, 0);
+ 
+    gtk_widget_set_halign(GTK_WIDGET(vbox1), GTK_ALIGN_FILL);
+    gtk_widget_set_margin_top(GTK_WIDGET(vbox1), 5);
+    gtk_widget_set_margin_bottom(GTK_WIDGET(vbox1), 5);
+    gtk_widget_set_margin_start(GTK_WIDGET(vbox1), 5);
+    gtk_widget_set_margin_end(GTK_WIDGET(vbox1), 5);
 
-	main_frame = gtk_frame_new (NULL);
-	gtk_box_pack_start (GTK_BOX (vbox1), main_frame, TRUE, TRUE, 0);
-	gtk_frame_set_shadow_type (GTK_FRAME (main_frame), GTK_SHADOW_IN);
+	grid = gtk_grid_new();
+	gtk_box_pack_start( GTK_BOX( vbox1 ), grid, FALSE, FALSE, 0 );
+	gtk_grid_set_row_spacing(GTK_GRID(grid), 7);
+	gtk_grid_set_column_spacing(GTK_GRID(grid), 15);
 
-	label = gtk_label_new (_("<b>Slideshow Settings</b>"));
-	gtk_frame_set_label_widget (GTK_FRAME (main_frame), label);
-	gtk_label_set_use_markup (GTK_LABEL (label), TRUE);
+	label = gtk_label_new( _("Width:") );
+	gtk_grid_attach( GTK_GRID(grid), label, 0, 0, 1, 1);
+	
+	width = gtk_spin_button_new_with_range (300, 9999, 10);
+	gtk_grid_attach( GTK_GRID(grid), width, 1, 0, 1, 1);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(width), img->video_size[0]);
+	
+	label = gtk_label_new("<b>8k\n4k:</b>");
+	gtk_label_set_xalign(GTK_LABEL(label), 0.0);
+	gtk_label_set_use_markup(GTK_LABEL(label), TRUE);
+	gtk_grid_attach( GTK_GRID(grid), label, 2, 0, 1, 1);
 
-    ex_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-    gtk_container_add(GTK_CONTAINER(main_frame), ex_vbox);
-    gtk_widget_set_halign(GTK_WIDGET(ex_vbox), GTK_ALIGN_FILL);
-    gtk_widget_set_margin_top(GTK_WIDGET(ex_vbox), 5);
-    gtk_widget_set_margin_bottom(GTK_WIDGET(ex_vbox), 15);
-    gtk_widget_set_margin_start(GTK_WIDGET(ex_vbox), 10);
-    gtk_widget_set_margin_end(GTK_WIDGET(ex_vbox), 10);
+	label = gtk_label_new("7680 x 4320\n4096 x 2160");
+	gtk_grid_attach( GTK_GRID(grid), label, 3, 0, 1, 1);
+    
+	label = gtk_label_new( _("Height:") );
+	gtk_grid_attach( GTK_GRID(grid), label, 0, 1, 1, 1);
 
-	distort_button = gtk_check_button_new_with_label( _("Rescale images to fit desired aspect ratio") );
-	gtk_box_pack_start( GTK_BOX( ex_vbox ), distort_button, FALSE, FALSE, 0 );
+	height = gtk_spin_button_new_with_range(300, 9999, 10);
+	gtk_grid_attach( GTK_GRID(grid), height, 1, 1, 1, 1);
+	gtk_spin_button_set_value(GTK_SPIN_BUTTON(height), img->video_size[1]);
+	
+	label = gtk_label_new("<b>Full HD:\nHD:</b>");
+	gtk_label_set_use_markup(GTK_LABEL(label), TRUE);
+	gtk_grid_attach( GTK_GRID(grid), label, 2, 1, 1, 1);
+
+	label = gtk_label_new("1920 x 1080\n1280 x 720");
+	gtk_grid_attach( GTK_GRID(grid), label, 3, 1, 1, 1);
+    
+	ex_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+	gtk_box_pack_start( GTK_BOX( vbox1 ), ex_hbox, FALSE, FALSE, 0 );
+	distort_button = gtk_check_button_new_with_label( _("Distort images to fill the whole screen") );
+	gtk_box_pack_start( GTK_BOX( vbox1 ), distort_button, FALSE, FALSE, 0 );
 
 	ex_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-	gtk_box_pack_start( GTK_BOX( ex_vbox ), ex_hbox, FALSE, FALSE, 0 );
+	gtk_box_pack_start( GTK_BOX( vbox1 ), ex_hbox, FALSE, FALSE, 0 );
 
 	img->bye_bye_transition_checkbox = gtk_check_button_new_with_label( _("End slideshow with blank slide") );
 	gtk_box_pack_start( GTK_BOX( ex_hbox ), img->bye_bye_transition_checkbox, FALSE, FALSE, 0 );
 	
-	bg_label = gtk_label_new( _("Select blank slide color:") );
-	gtk_box_pack_start( GTK_BOX( ex_hbox ), bg_label, TRUE, FALSE, 0 );
-
-	color.red   = img->background_color[0] * 0xffff;
-	color.green = img->background_color[1] * 0xffff;
-	color.blue  = img->background_color[2] * 0xffff;
+	color.red   = img->background_color[0];
+	color.green = img->background_color[1];
+	color.blue  = img->background_color[2];
 	color.alpha = 1.0;
 
 	bg_button = gtk_color_button_new_with_rgba( &color );
@@ -94,70 +114,33 @@ void img_new_slideshow_settings_dialog(img_window_struct *img)
 	if (response == GTK_RESPONSE_ACCEPT)
 	{
 		img_close_slideshow(NULL, img);
+		
+		img->video_size[0] = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(width));
+		img->video_size[1] = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(height));
+		img->video_ratio = (gdouble)img->video_size[0] / img->video_size[1];
 
 		GdkRGBA new;
 
 		/* Get distorsion settings */
-		img->distort_images = 
-			gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( distort_button ) );
+		img->distort_images = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( distort_button ) );
 
 		/* Get bye bye transition settings */
-		img->bye_bye_transition = 
-			gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( img->bye_bye_transition_checkbox) );
+		img->bye_bye_transition = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( img->bye_bye_transition_checkbox) );
 
 		/* Set the max value of slide subtitles hrange scale
 		* according to the new video size */
-		gtk_adjustment_set_upper( img->sub_posX_adj, (gdouble)img->video_size[0]);
-		gtk_adjustment_set_upper( img->sub_posY_adj, (gdouble)img->video_size[1]);
+		gtk_adjustment_set_upper(img->sub_posX_adj, (gdouble)img->video_size[0]);
+		gtk_adjustment_set_upper(img->sub_posY_adj, (gdouble)img->video_size[1]);
 	
 		/* Get color settings */
-		gtk_color_chooser_get_rgba( GTK_COLOR_CHOOSER( bg_button ), &new );
-		img->background_color[0] = (gdouble)new.red   / 0xffff;
-		img->background_color[1] = (gdouble)new.green / 0xffff;
-		img->background_color[2] = (gdouble)new.blue  / 0xffff;
+		gtk_color_chooser_get_rgba( GTK_COLOR_CHOOSER(bg_button), &new);
+		img->background_color[0] = (gdouble)new.red;
+		img->background_color[1] = (gdouble)new.green;
+		img->background_color[2] = (gdouble)new.blue;
+	
+		/* Adjust zoom level */
+        img_zoom_fit(NULL, img);
 	}
-
 	gtk_widget_destroy(dialog1);
 }
 
-
-/*
-static void
-img_update_thumbs( img_window_struct *img )
-{
-	gboolean      next;
-	GtkTreeIter   iter;
-	GtkListStore *store = img->thumbnail_model;
-	GtkTreeModel *model = GTK_TREE_MODEL( store );
-
-	for( next = gtk_tree_model_get_iter_first( model, &iter );
-		 next;
-		 next = gtk_tree_model_iter_next( model, &iter ) )
-	{
-		slide_struct *slide;
-		GdkPixbuf    *pix;
-
-		gtk_tree_model_get( model, &iter, 1, &slide, -1 );
-		if( img_scale_image( slide->p_filename, img->video_ratio, 88, 0,
-							 img->distort_images, img->background_color,
-							 &pix, NULL ) )
-		{
-			gtk_list_store_set( store, &iter, 0, pix, -1 );
-			g_object_unref( G_OBJECT( pix ) );
-		}
-	}
-}
-
-static void
-img_update_current_slide( img_window_struct *img )
-{
-	if( ! img->current_slide )
-		return;
-
-	cairo_surface_destroy( img->current_image );
-	img_scale_image( img->current_slide->p_filename, img->video_ratio,
-					 0, img->video_size[1], img->distort_images,
-					 img->background_color, NULL, &img->current_image );
-	gtk_widget_queue_draw( img->image_area );
-}
-*/
