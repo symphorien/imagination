@@ -2210,7 +2210,7 @@ img_scroll_thumb( GtkWidget         *widget,
 				  img_window_struct * UNUSED(img) )
 {
 	GtkAdjustment *adj;
-	gdouble        page, step, upper, value, offset;
+	gdouble        page, step, upper, value, offset = 0;
 
 	adj = gtk_scrolled_window_get_hadjustment( GTK_SCROLLED_WINDOW( widget ) );
 
