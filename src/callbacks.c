@@ -440,6 +440,7 @@ void img_select_audio_files_to_add ( GtkMenuItem* UNUSED(button), img_window_str
 	gtk_label_set_text(GTK_LABEL(img->music_time_data), time);
 	g_free(time);
 
+	img_taint_project(img);
 	gtk_widget_destroy (fs);
 }
 
@@ -453,10 +454,12 @@ void img_add_audio_files (gchar *filename, img_window_struct *img)
 	file = g_path_get_basename(filename);
 	time = img_get_audio_length(img, filename, &secs);
 
+	/* Update total audio length */
+	img->total_music_secs += secs;
+
 	if (time != NULL)
 	{
 		gtk_list_store_append(img->music_file_liststore, &iter);
-		img_taint_project(img);
 		gtk_list_store_set (img->music_file_liststore, &iter, 0, path, 1, file, 2, time, 3, secs, -1);
 		g_free(time);
 	}
@@ -2305,7 +2308,11 @@ img_update_stop_display( img_window_struct *img,
 
 		gtk_entry_set_text( GTK_ENTRY( img->ken_entry ), "" );
 		gtk_spin_button_set_value( GTK_SPIN_BUTTON( img->ken_duration ), 1 );
+		g_signal_handlers_block_by_func( img->ken_zoom,
+									img_ken_burns_zoom_changed, img );
 		gtk_range_set_value( GTK_RANGE( img->ken_zoom ), 1.0 );
+		g_signal_handlers_unblock_by_func( img->ken_zoom,
+									img_ken_burns_zoom_changed, img );
 		if( update_pos )
 			img->current_point = point;
 	}

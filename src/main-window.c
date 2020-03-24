@@ -701,7 +701,7 @@ img_window_struct *img_create_window (void)
 	gtk_container_add(GTK_CONTAINER(frame1), vbox_info_slide);
 	gtk_widget_set_halign(GTK_WIDGET(vbox_info_slide), GTK_ALIGN_FILL);
 	gtk_widget_set_margin_top(GTK_WIDGET(vbox_info_slide), 2);
-	gtk_widget_set_margin_bottom(GTK_WIDGET(vbox_info_slide), 2);
+	gtk_widget_set_margin_bottom(GTK_WIDGET(vbox_info_slide), 5);
 	gtk_widget_set_margin_start(GTK_WIDGET(vbox_info_slide), 5);
 	gtk_widget_set_margin_end(GTK_WIDGET(vbox_info_slide), 5);
 
@@ -737,7 +737,7 @@ img_window_struct *img_create_window (void)
 	g_signal_connect (G_OBJECT (img_struct->random_button),"clicked",G_CALLBACK (img_random_button_clicked),img_struct);
 
 	/* Transition duration */
-	trans_duration_label = gtk_label_new (_("Transition Speed in sec:"));
+	trans_duration_label = gtk_label_new (_("Transition speed in sec:"));
 	gtk_grid_attach (GTK_GRID (grid), trans_duration_label, 0, 2, 1, 1);
 	gtk_label_set_xalign(GTK_LABEL(trans_duration_label), 0);
 	gtk_label_set_yalign(GTK_LABEL(trans_duration_label), 0.9);
@@ -749,7 +749,7 @@ img_window_struct *img_create_window (void)
 	g_signal_connect (G_OBJECT (img_struct->trans_duration),"value-changed",G_CALLBACK (img_transition_speed_changed),img_struct);
 
 	/* Slide duration */
-	duration_label = gtk_label_new (_("Slide Duration in sec:"));
+	duration_label = gtk_label_new (_("Still slide duration in sec:"));
 	gtk_grid_attach (GTK_GRID (grid), duration_label, 0, 3, 1, 1);
 	gtk_label_set_xalign(GTK_LABEL(duration_label), 0);
 	gtk_label_set_yalign(GTK_LABEL(duration_label), 0.5);
@@ -761,7 +761,7 @@ img_window_struct *img_create_window (void)
 	g_signal_connect (G_OBJECT (img_struct->duration),"value-changed",G_CALLBACK (img_spinbutton_value_changed),img_struct);
 
 	/* Slide Total Duration */
-	total_time = gtk_label_new (_("Slideshow Length:"));
+	total_time = gtk_label_new (_("Slideshow length:"));
 	gtk_grid_attach (GTK_GRID (grid), total_time, 0, 4, 1, 1);
 	gtk_label_set_xalign(GTK_LABEL(total_time), 0);
 	gtk_label_set_yalign(GTK_LABEL(total_time), 0.5);
@@ -806,7 +806,7 @@ img_window_struct *img_create_window (void)
 
 	img_struct->ken_entry = gtk_entry_new();
 	gtk_entry_set_max_length(GTK_ENTRY (img_struct->ken_entry), 2);
-	gtk_entry_set_width_chars(GTK_ENTRY (img_struct->ken_entry), 4);
+	gtk_entry_set_width_chars(GTK_ENTRY (img_struct->ken_entry), 2);
 	{
 		GObject *object = G_OBJECT( img_struct->ken_entry );
 	
@@ -838,12 +838,11 @@ img_window_struct *img_create_window (void)
 
 	hbox_time_offset = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_box_pack_start (GTK_BOX (vbox_slide_motion), hbox_time_offset, FALSE, FALSE, 0);
-	time_offset_label = gtk_label_new(_("Duration in sec:"));
+	time_offset_label = gtk_label_new(_("Motion duration in sec:"));
 	gtk_box_pack_start (GTK_BOX (hbox_time_offset), time_offset_label, TRUE, TRUE, 0);
 	gtk_label_set_xalign(GTK_LABEL(time_offset_label), 0.0);
 	gtk_label_set_yalign(GTK_LABEL(time_offset_label), 0.5);
 	img_struct->ken_duration = gtk_spin_button_new_with_range (1, 60, 1);
-	gtk_widget_set_size_request(img_struct->ken_duration, 50, -1);
 	gtk_entry_set_max_length(GTK_ENTRY(img_struct->ken_duration), 2);
 	gtk_box_pack_start (GTK_BOX (hbox_time_offset), img_struct->ken_duration, FALSE, FALSE, 0);
 	gtk_spin_button_set_numeric(GTK_SPIN_BUTTON (img_struct->ken_duration),TRUE);

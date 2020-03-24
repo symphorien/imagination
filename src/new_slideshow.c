@@ -22,35 +22,59 @@
 
 void img_new_slideshow_settings_dialog(img_window_struct *img)
 {
-	GtkWidget *dialog1;
-	GtkWidget *dialog_vbox1;
-	GtkWidget *vbox1;
-	GtkWidget *grid;
-	GtkWidget *width;
-	GtkWidget *height;
-	GtkWidget *ex_hbox;
-	GtkWidget *distort_button;
-	GtkWidget *bg_button;
-	GdkRGBA   color;
-	GtkWidget *label;
-	gint       response;
+	GtkListStore	*liststore;
+	GtkTreeIter 	iter;
+	GtkWidget		*dialog1;
+	GtkWidget		*dialog_vbox1;
+	GtkWidget		*vbox1;
+	GtkWidget		*iconview;
+	GtkWidget		*grid;
+	GtkWidget		*width;
+	GtkWidget		*height;
+	GtkWidget		*ex_hbox;
+	GtkWidget		*distort_button;
+	GtkWidget		*bg_button;
+	GtkWidget		*label;
+	GtkWidget		*image;
+	GdkRGBA   		color;
+	GdkPixbuf		*icon_pixbuf;
+	gint       		response;
     
-	dialog1 = gtk_dialog_new_with_buttons( _("Create a new slideshow"),
+	dialog1 = gtk_dialog_new_with_buttons(_("Slideshow settings"),
 										GTK_WINDOW(img->imagination_window),
 										GTK_DIALOG_DESTROY_WITH_PARENT,
 										"_Cancel", GTK_RESPONSE_CANCEL,
 										"_Ok", GTK_RESPONSE_ACCEPT, NULL);
 	dialog_vbox1 = gtk_dialog_get_content_area( GTK_DIALOG( dialog1 ) );
-	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	gtk_container_set_border_width (GTK_CONTAINER (vbox1), 5);
+	gtk_container_set_border_width (GTK_CONTAINER (dialog_vbox1), 0);
+	
+	liststore = gtk_list_store_new (2, GDK_TYPE_PIXBUF, G_TYPE_STRING);
+	gtk_list_store_append (liststore,&iter);
+	image = gtk_image_new_from_file("./icons/imagination.png");
+	icon_pixbuf = gtk_image_get_pixbuf(GTK_IMAGE(image));
+	gtk_list_store_set (liststore, &iter, 0, icon_pixbuf, 1, _("<b><span font='12'>Create a new slideshow</span></b>"), -1);
+	if(icon_pixbuf)
+		g_object_unref (icon_pixbuf);
+
+	iconview = gtk_icon_view_new_with_model(GTK_TREE_MODEL(liststore));
+    g_object_unref (liststore);	
+	gtk_icon_view_set_selection_mode(GTK_ICON_VIEW(iconview), GTK_SELECTION_NONE);
+	gtk_icon_view_set_item_orientation (GTK_ICON_VIEW (iconview), GTK_ORIENTATION_HORIZONTAL);
+	gtk_icon_view_set_pixbuf_column (GTK_ICON_VIEW (iconview), 0);
+	gtk_icon_view_set_text_column(GTK_ICON_VIEW (iconview),1);
+	gtk_icon_view_set_markup_column(GTK_ICON_VIEW (iconview), 1);
+	gtk_icon_view_set_item_padding(GTK_ICON_VIEW (iconview), 0);
+	gtk_box_pack_start(GTK_BOX( dialog_vbox1 ), iconview, FALSE, FALSE, 0);
+	
+	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+	gtk_container_set_border_width (GTK_CONTAINER (vbox1), 0);
 	gtk_box_pack_start (GTK_BOX (dialog_vbox1), vbox1, TRUE, TRUE, 0);
  
-    gtk_widget_set_halign(GTK_WIDGET(vbox1), GTK_ALIGN_FILL);
-    gtk_widget_set_margin_top(GTK_WIDGET(vbox1), 5);
+    gtk_widget_set_margin_top(GTK_WIDGET(vbox1), 15);
     gtk_widget_set_margin_bottom(GTK_WIDGET(vbox1), 5);
     gtk_widget_set_margin_start(GTK_WIDGET(vbox1), 5);
     gtk_widget_set_margin_end(GTK_WIDGET(vbox1), 5);
-
+	
 	grid = gtk_grid_new();
 	gtk_box_pack_start( GTK_BOX( vbox1 ), grid, FALSE, FALSE, 0 );
 	gtk_grid_set_row_spacing(GTK_GRID(grid), 7);
@@ -63,7 +87,7 @@ void img_new_slideshow_settings_dialog(img_window_struct *img)
 	gtk_grid_attach( GTK_GRID(grid), width, 1, 0, 1, 1);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(width), img->video_size[0]);
 	
-	label = gtk_label_new("<b>8k\n4k</b>");
+	label = gtk_label_new("<b>8K\n4K</b>");
 	gtk_label_set_xalign(GTK_LABEL(label), 0.0);
 	gtk_label_set_use_markup(GTK_LABEL(label), TRUE);
 	gtk_grid_attach( GTK_GRID(grid), label, 2, 0, 1, 1);
@@ -78,7 +102,7 @@ void img_new_slideshow_settings_dialog(img_window_struct *img)
 	gtk_grid_attach( GTK_GRID(grid), height, 1, 1, 1, 1);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(height), img->video_size[1]);
 	
-	label = gtk_label_new("<b>Full HD\nHD</b>");
+	label = gtk_label_new("<b>FULL HD\nHD</b>");
 	gtk_label_set_use_markup(GTK_LABEL(label), TRUE);
 	gtk_grid_attach( GTK_GRID(grid), label, 2, 1, 1, 1);
 
@@ -86,15 +110,21 @@ void img_new_slideshow_settings_dialog(img_window_struct *img)
 	gtk_grid_attach( GTK_GRID(grid), label, 3, 1, 1, 1);
     
 	ex_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-	gtk_box_pack_start( GTK_BOX( vbox1 ), ex_hbox, FALSE, FALSE, 0 );
-	distort_button = gtk_check_button_new_with_label( _("Distort images to fill the whole screen") );
-	gtk_box_pack_start( GTK_BOX( vbox1 ), distort_button, FALSE, FALSE, 0 );
+	gtk_box_pack_start( GTK_BOX( vbox1 ), ex_hbox, FALSE, FALSE, 5 );
+	gtk_widget_set_margin_top(GTK_WIDGET(ex_hbox), 15);
 
+	distort_button = gtk_switch_new();
+	gtk_box_pack_start( GTK_BOX( ex_hbox ), distort_button, FALSE, FALSE, 0 );
+	label = gtk_label_new(_("Distort images to fill the whole screen") );
+	gtk_box_pack_start( GTK_BOX( ex_hbox ), label, FALSE, FALSE, 0);
+	
 	ex_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 	gtk_box_pack_start( GTK_BOX( vbox1 ), ex_hbox, FALSE, FALSE, 0 );
-
-	img->bye_bye_transition_checkbox = gtk_check_button_new_with_label( _("End slideshow with blank slide") );
+	
+	img->bye_bye_transition_checkbox = gtk_switch_new();
 	gtk_box_pack_start( GTK_BOX( ex_hbox ), img->bye_bye_transition_checkbox, FALSE, FALSE, 0 );
+	label = gtk_label_new(_("End slideshow with blank slide") );
+	gtk_box_pack_start( GTK_BOX( ex_hbox ), label, FALSE, FALSE, 0 );
 	
 	color.red   = img->background_color[0];
 	color.green = img->background_color[1];
@@ -106,8 +136,8 @@ void img_new_slideshow_settings_dialog(img_window_struct *img)
 	gtk_widget_show_all(dialog_vbox1);
 
 	/* Set parameters */
-	gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( distort_button ), img->distort_images );
-	gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON( img->bye_bye_transition_checkbox ), img->bye_bye_transition );
+	gtk_switch_set_active( GTK_SWITCH( distort_button ), img->distort_images );
+	gtk_switch_set_active( GTK_SWITCH( img->bye_bye_transition_checkbox ), img->bye_bye_transition );
 
 	response = gtk_dialog_run(GTK_DIALOG(dialog1));
 
@@ -122,10 +152,10 @@ void img_new_slideshow_settings_dialog(img_window_struct *img)
 		GdkRGBA new;
 
 		/* Get distorsion settings */
-		img->distort_images = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( distort_button ) );
+		img->distort_images = gtk_switch_get_active(GTK_SWITCH(distort_button));
 
 		/* Get bye bye transition settings */
-		img->bye_bye_transition = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON( img->bye_bye_transition_checkbox) );
+		img->bye_bye_transition = gtk_switch_get_active(GTK_SWITCH(img->bye_bye_transition_checkbox));
 
 		/* Set the max value of slide subtitles hrange scale
 		* according to the new video size */

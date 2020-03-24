@@ -117,10 +117,6 @@ doc/pt_BR/imagination.xml
 doc/pt_BR/images/Makefile
 po/Makefile.in
 icons/Makefile
-icons/16x16/Makefile
-icons/24x24/Makefile
-icons/48x48/Makefile
-icons/scalable/Makefile
 ])
 
 echo ""
