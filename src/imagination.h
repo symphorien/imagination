@@ -246,9 +246,9 @@ struct _img_window_struct
   	guint		context_id;
   	GtkListStore *thumbnail_model;
   	gchar		*current_dir;
-  	GdkCursor 	*cursor;			//Cursor to be stored before fullscreen
-
-	GtkWidget   *paned; /* Main paned (used for saving/restoring geometry) */
+  	GdkCursor 	*cursor;			/* Cursor to be stored before going fullscreen */
+  	GtkWidget	*preview_timelapse;	/* Label to show timelapse during preview */
+	GtkWidget   *paned;				/* Main paned (used for saving/restoring geometry) */
 
 	/* Mode switching */
 	gint       mode;        /* In what mode are we in: 0 - preview
@@ -315,7 +315,6 @@ struct _img_window_struct
 	
 	/* Update ids */
 	gint subtitle_update_id; /* Update subtitle display */
-	gint total_dur_id;       /* Update total duration */
 
 	/* Renderers and module stuff */
   	gint		nr_transitions_loaded;
@@ -428,7 +427,7 @@ struct _img_window_struct
 	guint        export_slide;		/* Number of slide being exported */
 	GSourceFunc  export_idle_func;	/* Stored procedure for pause */
 	GPid         encoder_pid;       /* ffmpeg/avconv process id */
-	GTimer		 *elapsed_timer;	/* GTimer for the elasped time */
+	GTimer		 *elapsed_timer;	/* GTimer for the elapsed time */
 
 	/* Sox thread related variables */
 	gint      sox_flags;         /* Thread controls:

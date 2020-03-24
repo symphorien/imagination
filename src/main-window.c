@@ -648,7 +648,6 @@ img_window_struct *img_create_window (void)
 	
 	gtk_widget_set_hexpand(img_struct->viewport_align, FALSE);
 	gtk_widget_set_vexpand(img_struct->viewport_align, FALSE);
-	
 
 	align = gtk_event_box_new();
 	gtk_container_add(GTK_CONTAINER(img_struct->viewport_align), align);
@@ -670,6 +669,10 @@ img_window_struct *img_create_window (void)
 					  G_CALLBACK( img_image_area_motion ), img_struct );
 	g_signal_connect( G_OBJECT( img_struct->image_area ), "scroll-event", 
 					  G_CALLBACK( img_image_area_scroll ), img_struct);
+
+	img_struct->preview_timelapse = gtk_label_new("<b><span font='20'>00:00:00</span></b>");
+	gtk_label_set_use_markup(GTK_LABEL(img_struct->preview_timelapse), TRUE);
+	gtk_box_pack_start(GTK_BOX(modes_vbox), img_struct->preview_timelapse, FALSE, FALSE, 5);
 	
 	vbox_frames = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
 	scrollable_window = gtk_scrolled_window_new(NULL, NULL);
@@ -1758,7 +1761,7 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 	gint nr_selected = 0;
 	GList *selected = NULL;
 	gchar *slide_info_msg = NULL, *selected_slide_nr = NULL;
-	slide_struct *info_slide;
+	slide_struct 	*info_slide;
 
 	if (img->export_is_running)
 		return;
@@ -1767,8 +1770,7 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 
 	selected = gtk_icon_view_get_selected_items(iconview);
 	nr_selected = g_list_length(selected);
-	img_set_total_slideshow_duration(img);
-
+	
 	if (selected == NULL)
 	{
 		img_set_statusbar_message(img,nr_selected);
@@ -1787,6 +1789,7 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 			gtk_label_set_text(GTK_LABEL (img->slideshow_duration),"");
 
 		gtk_widget_set_sensitive(img->edit_empty_slide, FALSE);
+		img->elapsed_time = 0;
 		return;
 	}
 	gtk_widget_set_sensitive(img->trans_duration,	TRUE);
@@ -1799,11 +1802,29 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 	gtk_entry_set_text(GTK_ENTRY(img->slide_number_entry),selected_slide_nr);
 	g_free(selected_slide_nr);
 
+	/* Let's calculate the duration of all slides
+	 * prior to the selected one only if the user
+	 * has selected a slide other than the first */
+	if (img->cur_nr_of_selected_slide - 1 > 0)
+	{
+		gtk_tree_model_get_iter(model,&iter,selected->data);
+
+		while( gtk_tree_model_iter_previous( model, &iter ) )
+		{
+			gtk_tree_model_get( model, &iter, 1, &info_slide, -1 );
+			if (info_slide->render)
+				img->elapsed_time += info_slide->speed;
+
+			img->elapsed_time += info_slide->duration;
+		}
+	}
 	gtk_tree_model_get_iter(model,&iter,selected->data);
 	GList *node4;
-	for(node4 = selected;node4 != NULL;node4 = node4->next) {
+	for(node4 = selected;node4 != NULL;node4 = node4->next)
 		gtk_tree_path_free(node4->data);
-	}
+
+	img_set_preview_label(img);
+
 	g_list_free (selected);
 	gtk_tree_model_get(model,&iter,1,&info_slide,-1);
 	img->current_slide = info_slide;
@@ -1832,9 +1853,9 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 		gtk_widget_set_sensitive(img->trans_duration,TRUE);
 
 	/* Set the transition speed */
-	g_signal_handlers_block_by_func((gpointer)img->duration, (gpointer)img_transition_speed_changed, img);
+	g_signal_handlers_block_by_func((gpointer)img->trans_duration, (gpointer)img_transition_speed_changed, img);
 	gtk_range_set_value( GTK_RANGE(img->trans_duration),info_slide->speed);
-	g_signal_handlers_block_by_func((gpointer)img->duration, (gpointer)img_transition_speed_changed, img);
+	g_signal_handlers_block_by_func((gpointer)img->trans_duration, (gpointer)img_transition_speed_changed, img);
 
 	/* Set the transition duration */
 	g_signal_handlers_block_by_func((gpointer)img->duration, (gpointer)img_spinbutton_value_changed, img);
@@ -2022,8 +2043,11 @@ static void img_random_button_clicked(GtkButton * UNUSED(button), img_window_str
 	}
 	g_list_free(bak);
 
+	/* Update total slideshow duration */
+	img_set_total_slideshow_duration(img);
+
 	/* This fixes enable/disable issue */
-	img_iconview_selection_changed(GTK_ICON_VIEW(img->active_icon), img );
+	//img_iconview_selection_changed(GTK_ICON_VIEW(img->active_icon), img );
 }
 
 static GdkPixbuf *

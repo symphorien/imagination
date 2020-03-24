@@ -63,7 +63,7 @@ void img_new_slideshow_settings_dialog(img_window_struct *img)
 	gtk_grid_attach( GTK_GRID(grid), width, 1, 0, 1, 1);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(width), img->video_size[0]);
 	
-	label = gtk_label_new("<b>8k\n4k:</b>");
+	label = gtk_label_new("<b>8k\n4k</b>");
 	gtk_label_set_xalign(GTK_LABEL(label), 0.0);
 	gtk_label_set_use_markup(GTK_LABEL(label), TRUE);
 	gtk_grid_attach( GTK_GRID(grid), label, 2, 0, 1, 1);
@@ -78,7 +78,7 @@ void img_new_slideshow_settings_dialog(img_window_struct *img)
 	gtk_grid_attach( GTK_GRID(grid), height, 1, 1, 1, 1);
 	gtk_spin_button_set_value(GTK_SPIN_BUTTON(height), img->video_size[1]);
 	
-	label = gtk_label_new("<b>Full HD:\nHD:</b>");
+	label = gtk_label_new("<b>Full HD\nHD</b>");
 	gtk_label_set_use_markup(GTK_LABEL(label), TRUE);
 	gtk_grid_attach( GTK_GRID(grid), label, 2, 1, 1, 1);
 

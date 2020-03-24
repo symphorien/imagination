@@ -558,10 +558,7 @@ img_set_slide_still_info( slide_struct      *slide,
 	if( slide->duration != duration )
 	{
 		slide->duration = duration;
-
-		if( ! img->total_dur_id )
-			img->total_dur_id =
-				g_idle_add( (GSourceFunc)img_set_total_slideshow_duration, img );
+		img_set_total_slideshow_duration(img);
 	}
 }
 
@@ -592,10 +589,7 @@ img_set_slide_transition_info( slide_struct      *slide,
 	if( speed && ( slide->speed != speed ) )
 	{
 		slide->speed = speed;
-
-		if( ! img->total_dur_id )
-			img->total_dur_id =
-				g_idle_add( (GSourceFunc)img_set_total_slideshow_duration, img );
+		img_set_total_slideshow_duration(img);
 	}
 }
 
@@ -678,7 +672,7 @@ img_set_total_slideshow_duration( img_window_struct *img )
 		{
 			gtk_tree_model_get( model, &iter, 1, &entry, -1 );
 			img->total_secs += entry->duration;
-			
+
 			if(entry->render)
 				img->total_secs += entry->speed;
 		}
@@ -693,8 +687,6 @@ img_set_total_slideshow_duration( img_window_struct *img )
 	gtk_label_set_text(GTK_LABEL (img->slideshow_duration),time);
 	g_free(time);
 
-	/* This is here only to be able to add this to idle source. */
-	img->total_dur_id = 0;
 	return( FALSE );
 }
 
@@ -1464,4 +1456,27 @@ gboolean img_check_for_recent_file(img_window_struct *img, const gchar *input)
 	}
 	g_list_free(menu_items);
 	return FALSE;
+}
+
+gboolean img_increase_preview_time(img_window_struct *img)
+{
+	if (img->preview_is_running)
+	{
+		img->elapsed_time++;
+		return TRUE;
+	}
+	return FALSE;
+}
+
+void img_set_preview_label(img_window_struct *img)
+{
+	gchar *dummy, *dummy2;
+
+	dummy = img_convert_seconds_to_time( (gint) img->elapsed_time);
+	dummy2 = g_markup_printf_escaped("<b><span font='20'>%s</span></b>", dummy);
+	g_free(dummy);
+
+	gtk_label_set_text(GTK_LABEL(img->preview_timelapse), dummy2);
+	gtk_label_set_use_markup(GTK_LABEL(img->preview_timelapse), TRUE);
+	g_free(dummy2);
 }

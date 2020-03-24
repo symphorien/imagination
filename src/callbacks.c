@@ -1131,6 +1131,7 @@ void img_start_stop_preview(GtkWidget *item, img_window_struct *img)
 	}
 	else
 	{
+		g_timeout_add_seconds(1, (GSourceFunc)img_increase_preview_time, img);
 		if (GTK_WIDGET(item) == img->fullscreen_music_preview)
 			img->music_preview = TRUE;
 
@@ -1565,6 +1566,9 @@ static gboolean img_transition_timeout(img_window_struct *img)
 	img->slide_cur_frame++;
 	img->displayed_frame++;
 
+	/* Set the bottom label with the preview elapsed time */
+	img_set_preview_label(img);
+
 	return TRUE;
 }
 
@@ -1615,7 +1619,6 @@ static gboolean img_still_timeout(img_window_struct *img)
 
 	/* Redraw */
 	gtk_widget_queue_draw( img->image_area );
-
 	return( TRUE );
 }
 
@@ -1813,6 +1816,8 @@ void img_close_slideshow(GtkWidget *widget, img_window_struct *img)
     img_disable_videotab (img);
 
     gtk_entry_set_text(GTK_ENTRY(img->slide_number_entry), "");
+    gtk_label_set_text(GTK_LABEL(img->preview_timelapse), "<b><span font='20'>00:00:00</span></b>");
+    gtk_label_set_use_markup(GTK_LABEL(img->preview_timelapse), TRUE);
 }
 
 void img_move_audio_up( GtkButton * UNUSED(button), img_window_struct *img )
@@ -1880,6 +1885,7 @@ img_ken_burns_zoom_changed( GtkRange *range, img_window_struct *img )
 	img_update_zoom_variables(img);
 
 	img_update_stop_point(NULL, img);
+	img_taint_project(img);
 	gtk_widget_queue_draw( img->image_area );
 }
 
@@ -2012,9 +2018,9 @@ img_zoom_in( GtkWidget         * UNUSED(item),
 			 img_window_struct *img )
 {
 	if( img->mode == 0 )
-		img_image_area_change_zoom( 0.1, FALSE, img );
+		img_image_area_change_zoom( 0.05, FALSE, img );
 	else
-		img_overview_change_zoom( 0.1, FALSE, img );
+		img_overview_change_zoom( 0.05, FALSE, img );
 }
 
 void
@@ -2022,9 +2028,9 @@ img_zoom_out( GtkWidget         * UNUSED(item),
 			  img_window_struct *img )
 {
 	if( img->mode == 0 )
-		img_image_area_change_zoom( - 0.1, FALSE, img );
+		img_image_area_change_zoom( - 0.05, FALSE, img );
 	else
-		img_overview_change_zoom( - 0.1, FALSE, img );
+		img_overview_change_zoom( - 0.05, FALSE, img );
 }
 
 void
@@ -2159,6 +2165,7 @@ img_update_stop_point( GtkSpinButton  * UNUSED(button),
 					   img_window_struct *img )
 {
 	ImgStopPoint *point;
+	gint full;
 
 	if( img->current_slide == NULL || img->current_slide->points == NULL)
 		return;
@@ -2170,12 +2177,20 @@ img_update_stop_point( GtkSpinButton  * UNUSED(button),
 	/* Update data */
 	*point = img->current_point;
 	point->time = gtk_spin_button_get_value_as_int(	GTK_SPIN_BUTTON( img->ken_duration ) );
+	
 	/* Update display */
 	img_update_stop_display( img, FALSE );
 
+	/* Update total slideshow duration */
+	full = img_calc_slide_duration_points(img->current_slide->points,
+										img->current_slide->no_points);
+
+	img->current_slide->duration = full;
+	img_set_total_slideshow_duration(img);
+
 	/* Sync timings */
 	img_sync_timings( img->current_slide, img );
-	
+
 	img_taint_project(img);
 }
 
@@ -2184,6 +2199,7 @@ img_delete_stop_point( GtkButton         * UNUSED(button),
 					   img_window_struct *img )
 {
 	GList *node;
+	gint  full;
 
 	if( img->current_slide == NULL )
 		return;
@@ -2205,6 +2221,13 @@ img_delete_stop_point( GtkButton         * UNUSED(button),
 	img_ken_burns_update_sensitivity( img, TRUE,
 									  img->current_slide->no_points );
 
+	/* Update total slideshow duration */
+	full = img_calc_slide_duration_points(img->current_slide->points,
+										img->current_slide->no_points);
+
+	img->current_slide->duration = full;
+	img_set_total_slideshow_duration(img);
+	
 	/* Sync timings */
 	img_sync_timings( img->current_slide, img );
 	
@@ -3715,3 +3738,5 @@ void img_open_recent_slideshow(GtkWidget *menu, img_window_struct *img)
 	if (img_can_discard_unsaved_project(img))
 		img_load_slideshow(img, menu, filename);
 }
+
+

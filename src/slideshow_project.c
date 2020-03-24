@@ -586,26 +586,27 @@ gboolean img_append_slides_from( img_window_struct *img, GtkWidget *menuitem, co
 	g_object_unref( G_OBJECT( img->thumbnail_model ) );
 
 	/* Loads the audio files in the liststore */
-	img_set_fadeout_duration(img,
-	    g_key_file_get_integer(img_key_file, "music", "fadeout duration",
-	      NULL));
-
 	number = g_key_file_get_integer(img_key_file, "music", "number", NULL);
-	for (i = 1; i <= number; i++)
+	if (number > 0)
 	{
-		dummy = g_strdup_printf("music_%d", i);
-		slide_filename = g_key_file_get_string(img_key_file, "music", dummy, NULL);
-		if ( g_path_is_absolute(slide_filename) == FALSE)
+		img_set_fadeout_duration(img, g_key_file_get_integer(img_key_file, "music", "fadeout duration", NULL));
+		for (i = 1; i <= number; i++)
 		{
-			gchar *_slide_filename;
-			_slide_filename = g_strconcat(project_current_dir, "/", slide_filename, NULL);
+			dummy = g_strdup_printf("music_%d", i);
+			slide_filename = g_key_file_get_string(img_key_file, "music", dummy, NULL);
+			if ( g_path_is_absolute(slide_filename) == FALSE)
+			{
+				gchar *_slide_filename;
+				_slide_filename = g_strconcat(project_current_dir, "/", slide_filename, NULL);
+				g_free(slide_filename);
+				slide_filename = _slide_filename;
+			}
+			img_add_audio_files(slide_filename, img);
 			g_free(slide_filename);
-			slide_filename = _slide_filename;
+			g_free(dummy);
 		}
-		img_add_audio_files(slide_filename, img);
-		g_free(slide_filename);
-		g_free(dummy);
 	}
+
 	g_key_file_free (img_key_file);
 	img_set_total_slideshow_duration(img);
 

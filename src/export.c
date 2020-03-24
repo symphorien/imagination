@@ -967,7 +967,9 @@ img_render_still_frame( img_window_struct *img,
 		    img_fail_export(img, "Error while exporting frame to ppm: errno=%d", errno);
 		}
 	}
-
+	
+	if ( img->preview_is_running)
+		img_set_preview_label(img);
 
 	/* Destroy drawing context */
 	cairo_destroy( cr );
