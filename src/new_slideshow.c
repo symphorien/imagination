@@ -1,6 +1,5 @@
 /*
  *  Copyright (c) 2009-2020 Giuseppe Torelli <colossus73@gmail.com>
- *  Copyright (c) 2009 Tadej Borovšak 	<tadeboro@gmail.com>
  * 
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,7 +19,13 @@
 
 #include "new_slideshow.h"
 
-void img_new_slideshow_settings_dialog(img_window_struct *img)
+static void
+img_update_thumbs( img_window_struct *img );
+
+static void
+img_update_current_slide( img_window_struct *img );
+
+void img_new_slideshow_settings_dialog(img_window_struct *img, gboolean property)
 {
 	GtkListStore	*liststore;
 	GtkTreeIter 	iter;
@@ -39,7 +44,14 @@ void img_new_slideshow_settings_dialog(img_window_struct *img)
 	GdkRGBA   		color;
 	GdkPixbuf		*icon_pixbuf;
 	gint       		response;
-    
+	gchar			*title;
+    gboolean		c_color;
+
+    if (property)
+		title = _("<b><span font='13'>Edit the slideshow</span></b>");
+	else
+		title = _("<b><span font='13'>Create a new slideshow</span></b>");
+	
 	dialog1 = gtk_dialog_new_with_buttons(_("Slideshow settings"),
 										GTK_WINDOW(img->imagination_window),
 										GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -52,7 +64,7 @@ void img_new_slideshow_settings_dialog(img_window_struct *img)
 	gtk_list_store_append (liststore,&iter);
 	image = gtk_image_new_from_file("./icons/imagination.png");
 	icon_pixbuf = gtk_image_get_pixbuf(GTK_IMAGE(image));
-	gtk_list_store_set (liststore, &iter, 0, icon_pixbuf, 1, _("<b><span font='12'>Create a new slideshow</span></b>"), -1);
+	gtk_list_store_set (liststore, &iter, 0, icon_pixbuf, 1, title, -1);
 	if(icon_pixbuf)
 		g_object_unref (icon_pixbuf);
 
@@ -66,14 +78,14 @@ void img_new_slideshow_settings_dialog(img_window_struct *img)
 	gtk_icon_view_set_item_padding(GTK_ICON_VIEW (iconview), 0);
 	gtk_box_pack_start(GTK_BOX( dialog_vbox1 ), iconview, FALSE, FALSE, 0);
 	
-	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+	vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 3);
 	gtk_container_set_border_width (GTK_CONTAINER (vbox1), 0);
 	gtk_box_pack_start (GTK_BOX (dialog_vbox1), vbox1, TRUE, TRUE, 0);
  
-    gtk_widget_set_margin_top(GTK_WIDGET(vbox1), 15);
-    gtk_widget_set_margin_bottom(GTK_WIDGET(vbox1), 5);
-    gtk_widget_set_margin_start(GTK_WIDGET(vbox1), 5);
-    gtk_widget_set_margin_end(GTK_WIDGET(vbox1), 5);
+    gtk_widget_set_margin_top(vbox1, 15);
+    gtk_widget_set_margin_bottom(vbox1, 5);
+    gtk_widget_set_margin_start(vbox1, 5);
+    gtk_widget_set_margin_end(vbox1, 5);
 	
 	grid = gtk_grid_new();
 	gtk_box_pack_start( GTK_BOX( vbox1 ), grid, FALSE, FALSE, 0 );
@@ -143,7 +155,8 @@ void img_new_slideshow_settings_dialog(img_window_struct *img)
 
 	if (response == GTK_RESPONSE_ACCEPT)
 	{
-		img_close_slideshow(NULL, img);
+		if (! property)
+			img_close_slideshow(NULL, img);
 		
 		img->video_size[0] = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(width));
 		img->video_size[1] = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(height));
@@ -167,10 +180,61 @@ void img_new_slideshow_settings_dialog(img_window_struct *img)
 		img->background_color[0] = (gdouble)new.red;
 		img->background_color[1] = (gdouble)new.green;
 		img->background_color[2] = (gdouble)new.blue;
-	
-		/* Adjust zoom level */
-        img_zoom_fit(NULL, img);
+		c_color = ( color.red   != new.red   ) ||
+				  ( color.green != new.green ) ||
+				  ( color.blue  != new.blue  );
+
+		/* Update display properly */
+		if( img->distort_images || c_color )
+		{
+			/* Update thumbnails */
+			img_update_thumbs( img );
+
+			/* Update display of currently selected image */
+			img_update_current_slide( img );
+		
+			/* Adjust zoom level */
+			img_zoom_fit(NULL, img);
+		}
 	}
 	gtk_widget_destroy(dialog1);
 }
 
+static void
+img_update_thumbs( img_window_struct *img )
+{
+	gboolean      next;
+	GtkTreeIter   iter;
+	GtkListStore *store = img->thumbnail_model;
+	GtkTreeModel *model = GTK_TREE_MODEL( store );
+
+	for( next = gtk_tree_model_get_iter_first( model, &iter );
+		 next;
+		 next = gtk_tree_model_iter_next( model, &iter ) )
+	{
+		slide_struct *slide;
+		GdkPixbuf    *pix;
+
+		gtk_tree_model_get( model, &iter, 1, &slide, -1 );
+		if( img_scale_image( slide->p_filename, img->video_ratio, 88, 0,
+							 img->distort_images, img->background_color,
+							 &pix, NULL ) )
+		{
+			gtk_list_store_set( store, &iter, 0, pix, -1 );
+			g_object_unref( G_OBJECT( pix ) );
+		}
+	}
+}
+
+static void
+img_update_current_slide( img_window_struct *img )
+{
+	if( ! img->current_slide )
+		return;
+
+	cairo_surface_destroy( img->current_image );
+	img_scale_image( img->current_slide->p_filename, img->video_ratio,
+					 0, img->video_size[1], img->distort_images,
+					 img->background_color, NULL, &img->current_image );
+	gtk_widget_queue_draw( img->image_area );
+}

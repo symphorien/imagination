@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2009-2019 Giuseppe Torelli <colossus73@gmail.com>
+ *  Copyright (c) 2009-2020 Giuseppe Torelli <colossus73@gmail.com>
  *  Copyright (c) 2009 Tadej Borovšak 	<tadeboro@gmail.com>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -160,7 +160,12 @@ void img_new_slideshow(GtkMenuItem * UNUSED(item), img_window_struct *img_struct
     if (!img_can_discard_unsaved_project(img_struct)) {
 	return;
     }
-    img_new_slideshow_settings_dialog(img_struct);
+    img_new_slideshow_settings_dialog(img_struct, FALSE);
+}
+
+void img_project_properties(GtkMenuItem * UNUSED(item), img_window_struct *img_struct)
+{
+	img_new_slideshow_settings_dialog(img_struct, TRUE);
 }
 
 static void detect_slide_orientation_from_pixbuf(GdkPixbuf *image, gboolean *flipped, ImgAngle *angle) {
@@ -1013,7 +1018,7 @@ void img_show_about_dialog (GtkMenuItem * UNUSED(item), img_window_struct *img_s
 			"translator_credits",_("translator-credits"),
 			"logo_icon_name","imagination",
 			"website","http://imagination.sf.net",
-			"license","Copyright \xC2\xA9 2009-2018 Giuseppe Torelli - Colossus <colossus73@gmail.com>\n\n"
+			"license","Copyright \xC2\xA9 2009-2020 Giuseppe Torelli - Colossus <colossus73@gmail.com>\n\n"
 		    			"This is free software; you can redistribute it and/or\n"
     					"modify it under the terms of the GNU Library General Public License as\n"
     					"published by the Free Software Foundation; either version 2 of the\n"

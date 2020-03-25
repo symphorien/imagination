@@ -21,7 +21,6 @@
 #include "audio.h"
 #include <glib/gstdio.h>
 
-extern gchar *img_get_audio_filetype(gchar *);
 static gboolean img_plugin_is_loaded(img_window_struct *, GModule *);
 
 GtkWidget *img_load_icon(gchar *filename, GtkIconSize size)
@@ -327,7 +326,7 @@ void img_show_file_chooser(GtkWidget *entry, GtkEntryIconPosition UNUSED(icon_po
     GtkFileFilter	*all_files_filter,
 					*video_filter;
 
-	file_selector = gtk_file_chooser_dialog_new (_("Please type the slideshow project filename"),
+	file_selector = gtk_file_chooser_dialog_new (_("Please type the video filename"),
 							GTK_WINDOW (img->imagination_window),
 							GTK_FILE_CHOOSER_ACTION_SAVE,
 							"_Cancel",
@@ -415,6 +414,8 @@ void img_show_file_chooser(GtkWidget *entry, GtkEntryIconPosition UNUSED(icon_po
 		dest_dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (file_selector));
 		gtk_entry_set_text(GTK_ENTRY(entry),dest_dir);
 		g_free(dest_dir);
+		
+		gtk_popover_popdown(GTK_POPOVER(img->file_po) );
 	}
 	gtk_widget_destroy(file_selector);
 }
@@ -1191,10 +1192,10 @@ void img_preview_with_music(img_window_struct *img, gint offset)
 	if (offset > 0)
 	{
 		time = gtk_label_get_text(GTK_LABEL(img->preview_timelapse));
-		cmd_line = g_strdup_printf("play -t %s %s trim %s", img_get_audio_filetype(file), path, time);
+		cmd_line = g_strdup_printf("ffplay -nodisp -ss %s %s", time, path);
 	}
 	else
-		cmd_line = g_strdup_printf("play -t %s %s", img_get_audio_filetype(file), path);
+		cmd_line = g_strdup_printf("ffplay -nodisp %s", path);
 	g_free( path );
 	g_free( file );
 
@@ -1239,7 +1240,7 @@ void img_play_next_audio_during_preview (GPid UNUSED(pid), gint UNUSED(status), 
 
 	path = g_shell_quote( file );
 
-	cmd_line = g_strdup_printf("play -t %s %s", img_get_audio_filetype(file), path);
+	cmd_line = g_strdup_printf("ffplay -nodisp %s", path);
 	g_free( path );
 	g_free( file );
 
@@ -1439,7 +1440,7 @@ void img_set_preview_label(img_window_struct *img)
 	gchar *dummy, *dummy2;
 
 	dummy = img_convert_seconds_to_time( (gint) img->elapsed_time);
-	dummy2 = g_markup_printf_escaped("<b><span font='20'>%s</span></b>", dummy);
+	dummy2 = g_markup_printf_escaped("<b><span font='20' background='#ffffff' foreground='#404040'> %s </span></b>", dummy);
 	g_free(dummy);
 
 	gtk_label_set_text(GTK_LABEL(img->preview_timelapse), dummy2);

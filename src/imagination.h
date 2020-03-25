@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2009-2018 Giuseppe Torelli <colossus73@gmail.com>
+ *  Copyright (c) 2009-2020 Giuseppe Torelli <colossus73@gmail.com>
  *  Copyright (c) 2009 Tadej Borovšak 	<tadeboro@gmail.com>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -349,6 +349,7 @@ struct _img_window_struct
 	GtkWidget		*acodec_menu;		/* Audio codec combo box in the export dialog */
 	GtkWidget		*video_quality;		/* Combo box to store the quality CRF when enconding */
 	GtkWidget		*quality_label;		/* label to be changed when selecting formats which don't require CRF */
+	GtkWidget		*file_po;			/* Popover to notify user to choose a slideshow filename */
 	cairo_surface_t *current_image;  	/* Image in preview area */
 	cairo_surface_t *exported_image; 	/* Image being exported */
 	cairo_surface_t *image1;         	/* Original images */

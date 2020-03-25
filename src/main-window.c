@@ -151,6 +151,7 @@ img_window_struct *img_create_window (void)
 	GtkWidget *preview_menu;
 	GtkWidget *import_menu;
 	GtkWidget *import_audio_menu;
+	GtkWidget *properties_menu;
 	GtkWidget *import_button;
 	GtkWidget *import_audio_button;
 	GtkToolItem *remove_button;
@@ -266,6 +267,10 @@ img_window_struct *img_create_window (void)
 	gtk_widget_add_accelerator (import_audio_menu,"activate",img_struct->accel_group,GDK_KEY_m,GDK_CONTROL_MASK,GTK_ACCEL_VISIBLE);
 	g_signal_connect (G_OBJECT (import_audio_menu),"activate",G_CALLBACK (img_select_audio_files_to_add),img_struct);
 
+	properties_menu = gtk_menu_item_new_with_mnemonic (_("_Properties"));
+	gtk_container_add (GTK_CONTAINER (menu1), properties_menu);
+	g_signal_connect (G_OBJECT (properties_menu), "activate", G_CALLBACK (img_project_properties), img_struct);
+	
 	separatormenuitem1 = gtk_separator_menu_item_new ();
 	gtk_container_add (GTK_CONTAINER (menu1), separatormenuitem1);
 
@@ -683,7 +688,7 @@ img_window_struct *img_create_window (void)
 	img_struct->notebook = gtk_notebook_new();
 	gtk_paned_add2( GTK_PANED( img_struct->paned ), img_struct->notebook );
 	gtk_notebook_append_page(GTK_NOTEBOOK(img_struct->notebook), scrollable_window, video_tab);
-
+g_object_set(img_struct->paned, "position",1361,NULL);
 	viewport = gtk_bin_get_child(GTK_BIN(scrollable_window));
 	gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_NONE);
 	gtk_container_set_border_width( GTK_CONTAINER( viewport ), 5 );
@@ -1410,7 +1415,7 @@ img_window_struct *img_create_window (void)
 #endif
 		text = gdk_pixbuf_new_from_file( path, NULL );
 		g_free( path );
-		g_object_set( G_OBJECT( pixbuf_cell ), "width", 115,
+		g_object_set( G_OBJECT( pixbuf_cell ), "width", 110,
 											   "ypad", 2,
 											   "text-ico", text,
 											   NULL );
@@ -1431,6 +1436,9 @@ img_window_struct *img_create_window (void)
 	gtk_icon_view_set_column_spacing (GTK_ICON_VIEW (img_struct->thumbnail_iconview),0);
 	gtk_icon_view_set_row_spacing (GTK_ICON_VIEW (img_struct->thumbnail_iconview),0);
 	gtk_icon_view_set_item_padding (GTK_ICON_VIEW (img_struct->thumbnail_iconview), 0);
+	
+	/* Thanks to the new GTK+3 inspector */
+	gtk_widget_set_valign(img_struct->thumbnail_iconview, GTK_ALIGN_CENTER);
 
 	g_signal_connect (G_OBJECT (img_struct->thumbnail_iconview),"selection-changed",G_CALLBACK (img_iconview_selection_changed),img_struct);
 	g_signal_connect (G_OBJECT (img_struct->thumbnail_iconview),"select-all",G_CALLBACK (img_iconview_selection_changed),img_struct);
@@ -1476,7 +1484,6 @@ img_window_struct *img_create_window (void)
 		gtk_check_menu_item_set_active(
 				GTK_CHECK_MENU_ITEM( tmp_checks[index] ), TRUE );
 	}
-	
 	return img_struct;
 }
 

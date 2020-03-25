@@ -1083,12 +1083,17 @@ img_export_frame_to_ppm( cairo_surface_t *surface,
 
 void img_show_export_dialog (GtkWidget *button, img_window_struct *img )
 {
+	GtkIconTheme *theme;
 	const gchar *filename;
+	GtkListStore	*liststore;
+	GtkTreeIter 	iter2;
+	GdkPixbuf		*icon_pixbuf;
 	GtkWidget	*dialog;
+	GtkWidget	*image;
+	GtkWidget	*iconview;
 	GtkWidget	*vbox, *range_menu, *export_grid, *sample_rate, *bitrate;
 	GtkWidget	*ex_vbox, *audio_frame, *video_frame, *label;
-	GtkWidget	*frame_rate, *slideshow_title_entry;
-	GtkWidget	*file_po, *fill_filename;
+	GtkWidget	*frame_rate, *slideshow_title_entry, *fill_filename;
 	GtkTreeModel *model;
 	GtkListStore *store;
 	GtkCellRenderer *cell;
@@ -1132,18 +1137,45 @@ void img_show_export_dialog (GtkWidget *button, img_window_struct *img )
 		g_list_free(selected);
 	}
 	/* Create dialog */
-	dialog = gtk_dialog_new_with_buttons( _("Export Slideshow"), GTK_WINDOW(img->imagination_window),
+	dialog = gtk_dialog_new_with_buttons( _("Export settings"), GTK_WINDOW(img->imagination_window),
 										  GTK_DIALOG_DESTROY_WITH_PARENT,
 										  "_Cancel", GTK_RESPONSE_CANCEL,
 										  "_Export", GTK_RESPONSE_ACCEPT,
 										  NULL );
 
-	//gtk_window_set_default_size(GTK_WINDOW(dialog), 550, -1);
 	vbox = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+	gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
+	
+	liststore = gtk_list_store_new (2, GDK_TYPE_PIXBUF, G_TYPE_STRING);
+	gtk_list_store_append (liststore,&iter2);
+	
+	theme = gtk_icon_theme_get_default();
+	icon_pixbuf = gtk_icon_theme_load_icon (theme, "applications-multimedia", 64, 0, NULL);
+	gtk_list_store_set (liststore, &iter2, 0, icon_pixbuf, 1, _("<b><span font='13'>Export the slideshow</span></b>"), -1);
+	if(icon_pixbuf)
+		g_object_unref (icon_pixbuf);
+
+	iconview = gtk_icon_view_new_with_model(GTK_TREE_MODEL(liststore));
+    g_object_unref (liststore);	
+	gtk_icon_view_set_selection_mode(GTK_ICON_VIEW(iconview), GTK_SELECTION_NONE);
+	gtk_icon_view_set_item_orientation (GTK_ICON_VIEW (iconview), GTK_ORIENTATION_HORIZONTAL);
+	gtk_icon_view_set_pixbuf_column (GTK_ICON_VIEW (iconview), 0);
+	gtk_icon_view_set_text_column(GTK_ICON_VIEW (iconview),1);
+	gtk_icon_view_set_markup_column(GTK_ICON_VIEW (iconview), 1);
+	gtk_icon_view_set_item_padding(GTK_ICON_VIEW (iconview), 0);
+	gtk_box_pack_start(GTK_BOX( vbox ), iconview, FALSE, FALSE, 0);
+	
+	ex_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+	gtk_container_set_border_width (GTK_CONTAINER (ex_vbox), 0);
+	gtk_box_pack_start (GTK_BOX (vbox), ex_vbox, TRUE, TRUE, 0);
+ 
+    gtk_widget_set_margin_top(ex_vbox, 10);
 
 	video_frame = gtk_frame_new (NULL);
-	gtk_box_pack_start (GTK_BOX (vbox), video_frame, TRUE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox), video_frame, FALSE, FALSE, 0);
 	gtk_frame_set_shadow_type (GTK_FRAME (video_frame), GTK_SHADOW_IN);
+	gtk_widget_set_margin_start(video_frame, 8);
+	gtk_widget_set_margin_end(video_frame, 8);
 
 	label = gtk_label_new (_("<b>Video Settings</b>"));
 	gtk_frame_set_label_widget (GTK_FRAME (video_frame), label);
@@ -1223,10 +1255,10 @@ void img_show_export_dialog (GtkWidget *button, img_window_struct *img )
 	gtk_grid_attach( GTK_GRID(export_grid), slideshow_title_entry, 1,5,1,1);
 
 	/* Define the popup error message */
-	file_po = gtk_popover_new(slideshow_title_entry);
+	img->file_po = gtk_popover_new(slideshow_title_entry);
 	fill_filename = gtk_label_new(_("\n Please fill this field \n"));
-	gtk_container_add (GTK_CONTAINER(file_po), fill_filename);
-	gtk_widget_show_all(file_po);
+	gtk_container_add (GTK_CONTAINER(img->file_po), fill_filename);
+	gtk_widget_show_all(img->file_po);
 
 	/* Fill range combo box */
 	gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(range_menu), NULL, _("All slides"));
@@ -1247,6 +1279,8 @@ void img_show_export_dialog (GtkWidget *button, img_window_struct *img )
 	audio_frame = gtk_frame_new (NULL);
 	gtk_box_pack_start (GTK_BOX (vbox), audio_frame, TRUE, TRUE, 10);
 	gtk_frame_set_shadow_type (GTK_FRAME (audio_frame), GTK_SHADOW_IN);
+	gtk_widget_set_margin_start(audio_frame, 8);
+	gtk_widget_set_margin_end(audio_frame, 8);
 
 	/* Disable the whole Audio frame if there
 	 * is no music in the project */
@@ -1324,7 +1358,7 @@ void img_show_export_dialog (GtkWidget *button, img_window_struct *img )
 		}
 		if (gtk_entry_get_text_length (GTK_ENTRY(slideshow_title_entry)) == 0)
 		{
-			gtk_popover_popup(GTK_POPOVER(file_po));
+			gtk_popover_popup(GTK_POPOVER(img->file_po));
 			continue;
 		}
 		break;

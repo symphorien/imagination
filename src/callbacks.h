@@ -30,6 +30,7 @@
 
 gboolean img_can_discard_unsaved_project(img_window_struct *img);
 void img_taint_project(img_window_struct *img);
+void img_project_properties(GtkMenuItem * UNUSED(item), img_window_struct *);
 void img_refresh_window_title(img_window_struct *);
 void img_new_slideshow(GtkMenuItem *,img_window_struct *);
 void img_add_slides(GSList *slides, img_window_struct *img);

@@ -22,20 +22,6 @@
 static void img_play_audio_ended (GPid ,gint ,img_window_struct *);
 static void img_swap_audio_files_button(img_window_struct *, gboolean );
 
-gchar *img_get_audio_filetype(gchar *filename)
-{
-	if (g_str_has_suffix(filename, ".mp3") || g_str_has_suffix(filename, ".MP3"))
-		return "mp3";
-	else if (g_str_has_suffix(filename, ".ogg") || g_str_has_suffix(filename, ".OGG"))
-		return "ogg";
-	else if (g_str_has_suffix(filename, ".flac") || g_str_has_suffix(filename, ".FLAC"))
-		return "flac";
-	else if (g_str_has_suffix(filename, ".wav") || g_str_has_suffix(filename, ".WAV"))
-		return "wav";
-
-	return NULL;
-}
-
 gchar *img_get_audio_length(img_window_struct *img, gchar *filename, gint *secs)
 {
 	gint	ret, 
@@ -91,7 +77,7 @@ void img_play_stop_selected_file(GtkButton * UNUSED(button), img_window_struct *
 
 	path = g_shell_quote( file );
 
-	cmd_line = g_strdup_printf("play -t %s %s", img_get_audio_filetype(file), path);
+	cmd_line = g_strdup_printf("ffplay -nodisp %s", path);
 	g_free( path );
 
 	g_shell_parse_argv (cmd_line, &argc, &argv, NULL);
