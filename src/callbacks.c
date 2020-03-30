@@ -633,6 +633,9 @@ void img_exit_fullscreen(img_window_struct *img)
 
 gboolean img_quit_application(GtkWidget * UNUSED(widget), GdkEvent * UNUSED(event), img_window_struct *img_struct)
 {
+	if (img_struct->no_recent_item_menu)
+		gtk_widget_destroy(img_struct->no_recent_item_menu);
+
 	if (!img_can_discard_unsaved_project(img_struct)) {
 	    return TRUE;
 	}
@@ -1139,7 +1142,7 @@ void img_start_stop_preview(GtkWidget *item, img_window_struct *img)
 	}
 	else
 	{
-		g_timeout_add_seconds(1, (GSourceFunc)img_increase_preview_time, img);
+		g_timeout_add(1185, (GSourceFunc)img_increase_preview_time, img);
 		if (GTK_WIDGET(item) == img->fullscreen_music_preview)
 			img->music_preview = TRUE;
 
@@ -1817,7 +1820,7 @@ void img_close_slideshow(GtkWidget *widget, img_window_struct *img)
 	img->background_color[0] = 0;
 	img->background_color[1] = 0;
 	img->background_color[2] = 0;
-	img->final_transition.speed = NORMAL;
+	img->final_transition.speed = 4;
 	img->final_transition.render = NULL;
 
 	/* Disable the video tab */
@@ -1982,16 +1985,16 @@ img_image_area_motion( GtkWidget         * UNUSED(widget),
 					   GdkEventMotion    *event,
 					   img_window_struct *img )
 {
-	gdouble deltax,
-			deltay;
+	//~ gdouble deltax,
+			//~ deltay;
 
-	deltax = ( event->x - img->x ) / img->image_area_zoom;
-	deltay = ( event->y - img->y ) / img->image_area_zoom;
+	//~ deltax = ( event->x - img->x ) / img->image_area_zoom;
+	//~ deltay = ( event->y - img->y ) / img->image_area_zoom;
 
-	img->current_point.offx = CLAMP( deltax + img->bak_offx, img->maxoffx, 0 );
-	img->current_point.offy = CLAMP( deltay + img->bak_offy, img->maxoffy, 0 );
+	//~ img->current_point.offx = CLAMP( deltax + img->bak_offx, img->maxoffx, 0 );
+	//~ img->current_point.offy = CLAMP( deltay + img->bak_offy, img->maxoffy, 0 );
 
-	gtk_widget_queue_draw( img->image_area );
+	//~ gtk_widget_queue_draw( img->image_area );
 	
 	return( TRUE );
 }
@@ -3299,6 +3302,13 @@ img_load_window_settings( img_window_struct *img )
 			g_free(recent_files);
 			g_strfreev(recent_slideshows);
 		}
+		else
+		{
+			img->no_recent_item_menu = gtk_menu_item_new_with_label(_("No recent items found"));
+			gtk_widget_set_sensitive(img->no_recent_item_menu, FALSE);
+			gtk_menu_shell_append(GTK_MENU_SHELL(img->recent_slideshows), img->no_recent_item_menu);
+			gtk_widget_show(img->no_recent_item_menu);
+		}
 	}
 	/* New addition to environment settings */
 	img->preview_fps     = g_key_file_get_integer( kf, group, "preview", NULL );
@@ -3631,6 +3641,9 @@ void img_fadeout_duration_changed (GtkSpinButton *spinbutton, img_window_struct 
 void img_set_slide_text_align(GtkButton *button, img_window_struct *img)
 {
 	gint alignment = 0;
+
+	if (img->current_slide == NULL)
+		return;
 
 	if (GTK_WIDGET(button) == img->left_justify)
 		alignment = PANGO_ALIGN_LEFT;

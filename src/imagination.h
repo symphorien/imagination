@@ -34,11 +34,6 @@
 #define PREVIEW_FPS_NO_PRESETS 6
 #define PREVIEW_FPS_DEFAULT    15
 
-/* The transition speed is defined as a duration in seconds. */
-#define	FAST	1
-#define	NORMAL	4
-#define	SLOW	8
-
 #define comment_string \
 	"Imagination 2.0 Slideshow Project - http://imagination.sf.net"
 
@@ -80,6 +75,9 @@ ImgAngle;
  * When @progress > 1, @layout should be drawn at (@posx, @posy) without any
  * scalling.
  */
+ 
+typedef struct _slide_struct slide_struct;
+ 
 typedef void (*TextAnimationFunc)( cairo_t     *cr,
 								   PangoLayout *layout,
 								   gint         sw,
@@ -89,16 +87,8 @@ typedef void (*TextAnimationFunc)( cairo_t     *cr,
 								   gint         posx,
 								   gint         posy,
 								   gint         angle,
-								   gchar		*pattern_filename,
-								   gdouble      progress,
-								   gdouble     *font_color,
-								   gdouble     *font_brdr_color,
-                                   gdouble     *font_bg_color,
-                                   gdouble     *border_color,
-                                   gboolean		top_border,
-                                   gboolean		bottom_border,
-                                   gint			border_width,
-                                   gint			alignment );
+								   gdouble		 progress,
+								   slide_struct * );
 
 
 /* ****************************************************************************
@@ -205,6 +195,7 @@ struct _img_window_struct
 	GtkAccelGroup *accel_group;
 	GtkWidget	*open_menu;
 	GtkWidget	*open_recent;
+	GtkWidget	*no_recent_item_menu;
 	GtkWidget	*recent_slideshows;
     GtkWidget   *close_menu;
     GtkWidget   *import_project_menu;

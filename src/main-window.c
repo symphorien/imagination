@@ -119,7 +119,6 @@ img_window_struct *img_create_window (void)
 	GtkWidget *audio_tab;
 	GtkWidget *swindow, *scrollable_window;
 	GtkWidget *viewport;
-	GtkWidget *align;
 	GtkWidget *vbox_frames, *vbox_audio_frames;
 	GtkWidget *frame1, *frame2, *frame3, *frame4, *frame_label;
 	GtkWidget *transition_label;
@@ -139,7 +138,6 @@ img_window_struct *img_create_window (void)
 	GtkWidget *move_down_button, *clear_button, *image_buttons, *vbox2, *scrolledwindow1;
     GtkWidget *message_scroll, *message_view;
 	GtkCellRenderer *renderer, *pixbuf_cell;
-	//GtkTreeSelection *selection;
 	GtkTreeViewColumn *column;
 	GtkIconTheme *icon_theme;
 	GdkPixbuf *icon;
@@ -190,7 +188,7 @@ img_window_struct *img_create_window (void)
 
 	img_struct->final_transition.duration = 0;
 	img_struct->final_transition.render = NULL;
-	img_struct->final_transition.speed = NORMAL;
+	img_struct->final_transition.speed = 4;
 
 
 	/* GUI STUFF */
@@ -269,6 +267,7 @@ img_window_struct *img_create_window (void)
 
 	properties_menu = gtk_menu_item_new_with_mnemonic (_("_Properties"));
 	gtk_container_add (GTK_CONTAINER (menu1), properties_menu);
+	gtk_widget_add_accelerator (properties_menu,"activate",img_struct->accel_group,GDK_KEY_p,GDK_MOD1_MASK,GTK_ACCEL_VISIBLE);
 	g_signal_connect (G_OBJECT (properties_menu), "activate", G_CALLBACK (img_project_properties), img_struct);
 	
 	separatormenuitem1 = gtk_separator_menu_item_new ();
@@ -654,13 +653,10 @@ img_window_struct *img_create_window (void)
 	gtk_widget_set_hexpand(img_struct->viewport_align, FALSE);
 	gtk_widget_set_vexpand(img_struct->viewport_align, FALSE);
 
-	align = gtk_event_box_new();
-	gtk_container_add(GTK_CONTAINER(img_struct->viewport_align), align);
-
 	img_struct->image_area = gtk_drawing_area_new();
-	gtk_container_add(GTK_CONTAINER(align), img_struct->image_area);
+	gtk_container_add(GTK_CONTAINER(img_struct->viewport_align), img_struct->image_area);
 	gtk_widget_add_events( img_struct->image_area, GDK_BUTTON1_MOTION_MASK
-												 | GDK_POINTER_MOTION_HINT_MASK
+												 | GDK_POINTER_MOTION_MASK
 												 | GDK_BUTTON_PRESS_MASK
 												 | GDK_BUTTON_RELEASE_MASK
 												 | GDK_SCROLL_MASK );
@@ -1436,8 +1432,6 @@ g_object_set(img_struct->paned, "position",1361,NULL);
 	gtk_icon_view_set_column_spacing (GTK_ICON_VIEW (img_struct->thumbnail_iconview),0);
 	gtk_icon_view_set_row_spacing (GTK_ICON_VIEW (img_struct->thumbnail_iconview),0);
 	gtk_icon_view_set_item_padding (GTK_ICON_VIEW (img_struct->thumbnail_iconview), 0);
-	
-	/* Thanks to the new GTK+3 inspector */
 	gtk_widget_set_valign(img_struct->thumbnail_iconview, GTK_ALIGN_CENTER);
 
 	g_signal_connect (G_OBJECT (img_struct->thumbnail_iconview),"selection-changed",G_CALLBACK (img_iconview_selection_changed),img_struct);
@@ -1448,8 +1442,7 @@ g_object_set(img_struct->paned, "position",1361,NULL);
 	/* Create the status bar */
 	img_struct->statusbar = gtk_statusbar_new ();
 	gtk_widget_show (img_struct->statusbar);
-	gtk_widget_set_margin_top(img_struct->statusbar, 0);
-	gtk_widget_set_margin_bottom(img_struct->statusbar, 0);
+	g_object_set(img_struct->statusbar, "margin", 0, NULL);
 	gtk_box_pack_start (GTK_BOX (vbox1), img_struct->statusbar, FALSE, TRUE, 0);
 	img_struct->context_id = gtk_statusbar_get_context_id (GTK_STATUSBAR (img_struct->statusbar), "statusbar");
 
@@ -1769,7 +1762,7 @@ void img_iconview_selection_changed(GtkIconView *iconview, img_window_struct *im
 	gchar *slide_info_msg = NULL, *selected_slide_nr = NULL;
 	slide_struct 	*info_slide;
 
-	if (img->export_is_running)
+	if (img->export_is_running || img->preview_is_running)
 		return;
 
 	model = gtk_icon_view_get_model(iconview);

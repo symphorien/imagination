@@ -412,6 +412,12 @@ void img_show_file_chooser(GtkWidget *entry, GtkEntryIconPosition UNUSED(icon_po
 	if (response == GTK_RESPONSE_ACCEPT)
 	{
 		dest_dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (file_selector));
+		if (strstr(dest_dir,++ext) == NULL)
+		{	
+			gchar *dummy2 = g_strconcat(dest_dir, ext, NULL);
+			g_free(dest_dir);
+			dest_dir = dummy2;
+		}
 		gtk_entry_set_text(GTK_ENTRY(entry),dest_dir);
 		g_free(dest_dir);
 		
@@ -434,7 +440,7 @@ img_create_new_slide( void )
 		/* Transition */
 		slide->path = g_strdup( "0" );
 		slide->transition_id = -1;
-		slide->speed = NORMAL;
+		slide->speed = 4;
 
 		/* Ken Burns */
 		slide->cur_point = -1;
@@ -462,7 +468,7 @@ img_create_new_slide( void )
         slide->border_color[0] = 1; /* R */
         slide->border_color[1] = 1; /* G */
         slide->border_color[2] = 1; /* B */
-        slide->border_color[3] = 1; /* B */
+        slide->border_color[3] = 1; /* A */
 
 		slide->border_width = 1;
 

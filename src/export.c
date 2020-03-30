@@ -1240,9 +1240,6 @@ void img_show_export_dialog (GtkWidget *button, img_window_struct *img )
 	gtk_grid_attach( GTK_GRID(export_grid), img->quality_label, 0,4,1,1);
 
 	img->video_quality = gtk_spin_button_new_with_range(20, 51, 1);
-	gtk_widget_set_tooltip_text(img->video_quality, _("The range of the CRF scale is 0–51, where 0 is lossless," \
-	" 23 is the default, and 51 is worst quality possible." \
-	" A lower value generally leads to higher quality, and a subjectively sane range is 17–28"));
 	gtk_grid_attach( GTK_GRID(export_grid), img->video_quality, 1,4,1,1);
 
 	label = gtk_label_new( _("Filename:") );
@@ -1528,7 +1525,6 @@ void img_swap_bitrate_for_quality(img_window_struct *img)
 {
 	gtk_label_set_text(GTK_LABEL(img->quality_label), _("Quality (CRF):"));
 	gtk_spin_button_set_range(GTK_SPIN_BUTTON(img->video_quality),20, 51);
-	gtk_widget_set_tooltip_text(img->video_quality, _("The range of the CRF scale is 0–51, where 0 is lossless," \
-	" 23 is the default, and 51 is worst quality possible." \
-	" A lower value generally leads to higher quality, and a subjectively sane range is 17–28"));
+	gtk_widget_set_tooltip_text(img->video_quality, _("The range of the CRF scale is 0–51:\n0 = lossless\n" \
+	"17-28 = visually lossless (still compressed but unnoticeable)\n23 = high quality\n51 = worst quality possible"));
 }

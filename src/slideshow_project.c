@@ -43,28 +43,11 @@ img_save_slideshow( img_window_struct *img,
 	/* Slideshow settings */
 	g_key_file_set_comment(img_key_file, NULL, NULL, comment_string, NULL);
 
-    //~ g_key_file_set_string(img_key_file, "slideshow settings",
-                          //~ "video codec",
-                          //~ video_format_list[img->video_format_index].config_name);
-
-                          g_key_file_set_integer(img_key_file, "slideshow settings",
+	g_key_file_set_integer(img_key_file, "slideshow settings",
                           "video width", img->video_size[0]);
     g_key_file_set_integer(img_key_file, "slideshow settings",
                           "video height", img->video_size[1]);
 
-    //~ g_key_file_set_string(img_key_file, "slideshow settings",
-                //~ "fps",
-                //~ video_format_list[img->video_format_index].fps_list[img->fps_index].name);
-
-    //~ if (NULL != video_format_list[img->video_format_index].aspect_ratio_list)
-        //~ g_key_file_set_string(img_key_file, "slideshow settings",
-                //~ "aspect ratio",
-                //~ video_format_list[img->video_format_index].aspect_ratio_list[img->aspect_ratio_index].name);
-
-    //~ if (NULL != video_format_list[img->video_format_index].bitratelist)
-		//~ g_key_file_set_string(img_key_file, "slideshow settings", "bitrate",video_format_list[img->video_format_index].bitratelist[img->bitrate_index].value);
-
-	/* Save last slide setting (bye bye transition) */
 	g_key_file_set_boolean( img_key_file, "slideshow settings",
 										 "blank slide", img->bye_bye_transition);
 
@@ -251,9 +234,12 @@ gboolean img_append_slides_from( img_window_struct *img, GtkWidget *menuitem, co
 	gchar      *spath, *conf, *project_current_dir;
 	gdouble    duration, *color, *font_color, *font_brdr_color, *font_bg_color, *border_color;
 	gboolean   first_slide = TRUE;
-    gchar      *video_config_name, *aspect_ratio, *fps;
-    gchar      *bitrate;
 
+	if (img->no_recent_item_menu)
+	{
+		gtk_widget_destroy(img->no_recent_item_menu);
+		img->no_recent_item_menu = NULL;
+	}
 	/* Check if the file still exist on the disk */
 	if (!g_file_test (input, G_FILE_TEST_EXISTS))
 	{
