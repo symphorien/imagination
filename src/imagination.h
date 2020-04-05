@@ -234,6 +234,7 @@ struct _img_window_struct
   	GtkWidget	*progress_bar;
   	GtkWidget 	*viewport_align;
   	GtkWidget	*image_area;
+  	GtkWidget	*video_tab_content;
   	guint		context_id;
   	GtkListStore *thumbnail_model;
   	gchar		*current_dir;

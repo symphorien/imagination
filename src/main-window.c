@@ -90,6 +90,8 @@ img_toggle_frame_rate( GtkCheckMenuItem  *item,
 static GtkWidget *
 img_load_icon_from_theme(GtkIconTheme *icon_theme, gchar *name, gint size);
 
+static void img_adjust_pane_width(GtkWidget* UNUSED(pane), GdkRectangle *alloc, img_window_struct *img);
+
 /* ****************************************************************************
  * Function definitions
  * ************************************************************************* */
@@ -119,7 +121,7 @@ img_window_struct *img_create_window (void)
 	GtkWidget *audio_tab;
 	GtkWidget *swindow, *scrollable_window;
 	GtkWidget *viewport;
-	GtkWidget *vbox_frames, *vbox_audio_frames;
+	GtkWidget *vbox_audio_frames;
 	GtkWidget *frame1, *frame2, *frame3, *frame4, *frame_label;
 	GtkWidget *transition_label;
 	GtkWidget *vbox_info_slide, *vbox_slide_motion, *vbox_slide_caption, *vbox_slide_position;
@@ -675,23 +677,22 @@ img_window_struct *img_create_window (void)
 	gtk_label_set_use_markup(GTK_LABEL(img_struct->preview_timelapse), TRUE);
 	gtk_box_pack_start(GTK_BOX(modes_vbox), img_struct->preview_timelapse, FALSE, FALSE, 5);
 	
-	vbox_frames = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+	img_struct->video_tab_content = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
 	scrollable_window = gtk_scrolled_window_new(NULL, NULL);
 	g_object_set (G_OBJECT (scrollable_window),"hscrollbar-policy",GTK_POLICY_AUTOMATIC,"vscrollbar-policy",GTK_POLICY_AUTOMATIC,NULL);
-	gtk_container_add (GTK_CONTAINER (scrollable_window), vbox_frames);
+	gtk_container_add (GTK_CONTAINER (scrollable_window), img_struct->video_tab_content);
 	
 	video_tab = gtk_label_new (_("Video"));
 	img_struct->notebook = gtk_notebook_new();
 	gtk_paned_add2( GTK_PANED( img_struct->paned ), img_struct->notebook );
 	gtk_notebook_append_page(GTK_NOTEBOOK(img_struct->notebook), scrollable_window, video_tab);
-g_object_set(img_struct->paned, "position",1361,NULL);
 	viewport = gtk_bin_get_child(GTK_BIN(scrollable_window));
 	gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_NONE);
 	gtk_container_set_border_width( GTK_CONTAINER( viewport ), 5 );
 
 	/* Slide frame */
 	frame1 = gtk_frame_new (NULL);
-	gtk_box_pack_start (GTK_BOX (vbox_frames), frame1, TRUE, TRUE, 0);
+	gtk_box_pack_start (GTK_BOX (img_struct->video_tab_content), frame1, TRUE, TRUE, 0);
 	gtk_frame_set_shadow_type (GTK_FRAME (frame1), GTK_SHADOW_IN);
 
 	frame_label = gtk_label_new (_("<b>Slide Settings</b>"));
@@ -774,7 +775,7 @@ g_object_set(img_struct->paned, "position",1361,NULL);
 
 	/* Slide motion frame */
 	frame2 = gtk_frame_new (NULL);
-	gtk_box_pack_start (GTK_BOX (vbox_frames), frame2, FALSE, FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (img_struct->video_tab_content), frame2, FALSE, FALSE, 0);
 	gtk_frame_set_shadow_type (GTK_FRAME (frame2), GTK_SHADOW_IN);
 
 	frame_label = gtk_label_new (_("<b>Slide Motion</b>"));
@@ -876,7 +877,7 @@ g_object_set(img_struct->paned, "position",1361,NULL);
 	
 	/* Slide text frame */
 	frame4 = gtk_frame_new (NULL);
-	gtk_box_pack_start (GTK_BOX (vbox_frames), frame4, FALSE, FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (img_struct->video_tab_content), frame4, FALSE, FALSE, 0);
 	gtk_frame_set_shadow_type (GTK_FRAME (frame4), GTK_SHADOW_OUT);
 
 	frame_label = gtk_label_new (_("<b>Slide Text</b>"));
@@ -1069,7 +1070,7 @@ g_object_set(img_struct->paned, "position",1361,NULL);
 					  G_CALLBACK( img_combo_box_anim_speed_changed ), img_struct );
 
 	frame4 = gtk_frame_new (NULL);
-	gtk_box_pack_start (GTK_BOX (vbox_frames), frame4, FALSE, FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (img_struct->video_tab_content), frame4, FALSE, FALSE, 0);
 	gtk_frame_set_shadow_type (GTK_FRAME (frame4), GTK_SHADOW_OUT);
 
 	vbox_slide_position = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
@@ -1477,7 +1478,33 @@ g_object_set(img_struct->paned, "position",1361,NULL);
 		gtk_check_menu_item_set_active(
 				GTK_CHECK_MENU_ITEM( tmp_checks[index] ), TRUE );
 	}
+	g_signal_connect( G_OBJECT( img_struct->imagination_window ), "size-allocate",
+		G_CALLBACK( img_adjust_pane_width ), img_struct );
+
 	return img_struct;
+}
+
+/* Adjusts the size of the pane when the user maximises the window, for example.
+ * The goal is to leave maximum room for the image without having to scroll
+ * horizontally in the video tab */
+static void img_adjust_pane_width(GtkWidget* UNUSED(w), GdkRectangle *alloc, img_window_struct *img) {
+	static int previous;
+	GtkRequisition min, natural;
+	g_return_if_fail(img->video_tab_content);
+	int max_pos = alloc->width;
+	/* if the user is manually dragging, this will be by small increments */
+	if (previous - 20 < max_pos && max_pos < previous + 20) {
+	    return;
+	}
+	previous = max_pos;
+	/* now we know something abrupt happened, like windows maximisation */
+	gtk_widget_get_preferred_size(GTK_WIDGET(img->video_tab_content), &min, &natural);
+	int target_width = min.width > natural.width ? min.width : natural.width;
+	int pos = max_pos - target_width - /* some room for the slider */ 40;
+	/* there should still be some room for both panes, otherwise split in half */
+	if (pos < 400 || target_width < 300)
+	    pos = max_pos / 2;
+	gtk_paned_set_position(GTK_PANED(img->paned), pos);
 }
 
 static GtkWidget *img_load_icon_from_theme(GtkIconTheme* icon_theme, gchar *name, gint size) {
