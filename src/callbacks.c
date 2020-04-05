@@ -3225,7 +3225,7 @@ img_load_window_settings( img_window_struct *img )
 	gchar	  **recent_slideshows;
 	gchar     *rc_file, *recent_files = NULL;
 	gint      w, h, g, m; /* Width, height, gutter, mode */
-	gint	  i;
+	guint	  i;
 	gboolean  max;
 
 	rc_file = g_build_filename( g_get_home_dir(), ".config",
