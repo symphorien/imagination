@@ -1858,7 +1858,7 @@ void img_move_audio_down( GtkButton * UNUSED(button), img_window_struct *img )
  * img_image_area_change_zoom is the thing to look at.
  */
 void
-img_ken_burns_zoom_changed( GtkRange *range, img_window_struct *img )
+img_ken_burns_zoom_changed( GtkRange * UNUSED(range), img_window_struct *img )
 {
 	img_update_zoom_variables(img);
 
