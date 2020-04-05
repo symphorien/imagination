@@ -2025,26 +2025,21 @@ void
 img_zoom_fit( GtkWidget         * UNUSED(item),
               img_window_struct *img )
 {
-    gdouble step, level1, level2;
-    GtkAllocation allocation;
-    
     if( img->mode == 0 )
-    {
-	gtk_widget_get_allocation(img->prev_root, &allocation);
-        /* we want to fit the frame into prev_root. Frame = video + 4 px */
-        level1 = (float)allocation.width / (img->video_size[0] + 4);
-        level2 = (float)allocation.height / (img->video_size[1] + 4);
-        if (level1 < level2)
-            /* step is relative to zoom level 1 */
-            step = level1 - 1;
-        else
-            step = level2 - 1;
-
-        img_image_area_change_zoom( 0, TRUE, img );
-        img_image_area_change_zoom( step, FALSE, img );
-    }
+	img_image_area_change_zoom( 0, TRUE, img );
     else
         img_overview_change_zoom( 0, TRUE, img );
+}
+
+void img_image_area_apply_zoom(GtkWidget* UNUSED(w), GdkRectangle *alloc, img_window_struct *img) {
+    float wratio = (float)alloc->width  / (float)img->video_size[0];
+    float hratio = (float)alloc->height / (float)img->video_size[1];
+    float ratio = wratio < hratio ? wratio : hratio;
+
+    int wrequest = img->video_size[0] * ratio * img->image_area_zoom;
+    int hrequest = img->video_size[1] * ratio * img->image_area_zoom;
+
+    gtk_widget_set_size_request( img->image_area, wrequest, hrequest);
 }
 
 /*
@@ -2069,6 +2064,7 @@ img_image_area_change_zoom( gdouble            step,
 							img_window_struct *img )
 {
 	static gdouble bounds[] = { 0.1, 5.0 };
+	GdkRectangle allocation;
 
 	if( reset )
 		img->image_area_zoom = 1;
@@ -2076,10 +2072,10 @@ img_image_area_change_zoom( gdouble            step,
 		img->image_area_zoom = CLAMP( img->image_area_zoom + step,
 									  bounds[0], bounds[1] );
 
+	gtk_widget_get_allocation(img->prev_root, &allocation);
+
 	/* Apply change */
-	gtk_widget_set_size_request( img->image_area,
-								 img->video_size[0] * img->image_area_zoom,
-								 img->video_size[1] * img->image_area_zoom );
+	img_image_area_apply_zoom(NULL, &allocation, img);
 }
 
 static void
@@ -2724,7 +2720,6 @@ img_add_empty_slide( GtkMenuItem       *item,
 					  G_CALLBACK( img_gradient_color_set ), &slide );
 
 	preview = gtk_drawing_area_new();
-	gtk_widget_set_size_request( preview, w, h );
 	gtk_widget_add_events( preview, GDK_BUTTON1_MOTION_MASK |
 									GDK_BUTTON_PRESS_MASK |
 									GDK_BUTTON_RELEASE_MASK );
@@ -3198,7 +3193,6 @@ img_save_window_settings( img_window_struct *img )
 	g_key_file_set_integer( kf, group, "height",  h );
 	g_key_file_set_integer( kf, group, "gutter",  g );
 	g_key_file_set_integer( kf, group, "mode",    img->mode );
-	g_key_file_set_double(  kf, group, "zoom_p",  img->image_area_zoom );
 	g_key_file_set_double(  kf, group, "zoom_o",  img->overview_zoom );
 	g_key_file_set_boolean( kf, group, "max",     max );
 	g_key_file_set_integer( kf, group, "preview", img->preview_fps );
@@ -3246,7 +3240,7 @@ img_load_window_settings( img_window_struct *img )
 	h                    = g_key_file_get_integer( kf, group, "height",  NULL );
 	g                    = g_key_file_get_integer( kf, group, "gutter",  NULL );
 	m                    = g_key_file_get_integer( kf, group, "mode",    NULL );
-	img->image_area_zoom = g_key_file_get_double(  kf, group, "zoom_p",  NULL );
+	img->image_area_zoom = 1.0;
 	img->overview_zoom   = g_key_file_get_double(  kf, group, "zoom_o",  NULL );
 	max                  = g_key_file_get_boolean( kf, group, "max",     NULL );
 	recent_files		 = g_key_file_get_string(  kf, group, "recent_files", NULL);
@@ -3298,10 +3292,6 @@ img_load_window_settings( img_window_struct *img )
 	if( max )
 		gtk_window_maximize( GTK_WINDOW( img->imagination_window ) );
 
-	/* Update zoom display */
-	gtk_widget_set_size_request( img->image_area,
-								 img->video_size[0] * img->image_area_zoom,
-								 img->video_size[1] * img->image_area_zoom );
 	g_object_set( img->over_cell, "zoom", img->overview_zoom, NULL );
 
 	return( TRUE );

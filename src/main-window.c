@@ -1480,6 +1480,8 @@ img_window_struct *img_create_window (void)
 	}
 	g_signal_connect( G_OBJECT( img_struct->imagination_window ), "size-allocate",
 		G_CALLBACK( img_adjust_pane_width ), img_struct );
+	g_signal_connect( G_OBJECT( img_struct->prev_root ), "size-allocate",
+		G_CALLBACK( img_image_area_apply_zoom ), img_struct );
 
 	return img_struct;
 }
@@ -1505,6 +1507,9 @@ static void img_adjust_pane_width(GtkWidget* UNUSED(w), GdkRectangle *alloc, img
 	if (pos < 400 || target_width < 300)
 	    pos = max_pos / 2;
 	gtk_paned_set_position(GTK_PANED(img->paned), pos);
+	/* set-position in a size-allocate handler can invalidate the automatic
+	 * zoom computation of the image_area */
+	img_zoom_fit(NULL, img);
 }
 
 static GtkWidget *img_load_icon_from_theme(GtkIconTheme* icon_theme, gchar *name, gint size) {
