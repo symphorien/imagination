@@ -511,8 +511,13 @@ img_append_slides_from( img_window_struct *img, const gchar *input )
 
 				/* Get the mem address of the transition */
 				spath = (gchar *)g_hash_table_lookup( table, GINT_TO_POINTER( transition_id ) );
-				gtk_tree_model_get_iter_from_string( model, &iter, spath );
-				gtk_tree_model_get( model, &iter, 2, &render, 0, &pix, -1 );
+				if (spath) {
+				  gtk_tree_model_get_iter_from_string( model, &iter, spath );
+				  gtk_tree_model_get( model, &iter, 2, &render, 0, &pix, -1 );
+				} else {
+				  img_message(img, TRUE, _("Slide %d: Unknown transition id %d\n"), i, transition_id);
+				  transition_id = -1;
+				}
 
 				slide_info = img_create_new_slide();
 				if( slide_info )
