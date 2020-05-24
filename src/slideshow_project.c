@@ -335,7 +335,8 @@ img_append_slides_from( img_window_struct *img, const gchar *input )
 	}
 	else
 		img->fps_index = i;
-	img->export_fps = video_format_list[img->video_format_index].fps_list[img->fps_index].value;
+	img->export_fps = video_format_list[img->video_format_index].fps_list[img->fps_index].numerator;
+	img->export_fps /= video_format_list[img->video_format_index].fps_list[img->fps_index].denominator;
 
   /* Aspect ratio */
   if (NULL != video_format_list[img->video_format_index].aspect_ratio_list)

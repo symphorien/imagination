@@ -418,7 +418,8 @@ void img_get_format_options(img_window_struct *img)
     img->aspect_ratio_index = gtk_combo_box_get_active(GTK_COMBO_BOX(img->aspect_ratio_combo));
     img->bitrate_index = gtk_combo_box_get_active(GTK_COMBO_BOX(img->bitrate_combo));
     img->fps_index = gtk_combo_box_get_active(GTK_COMBO_BOX(img->fps_combo));
-    img->export_fps = video_format_list[video_format_index].fps_list[img->fps_index].value;
+    img->export_fps = video_format_list[video_format_index].fps_list[img->fps_index].numerator;
+    img->export_fps /= video_format_list[video_format_index].fps_list[img->fps_index].denominator;
     img->bye_bye_transition = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(img->bye_bye_transition_checkbox));
 }
 

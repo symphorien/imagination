@@ -190,7 +190,8 @@ img_window_struct *img_create_window (void)
     img_struct->aspect_ratio_index = 0;
     img_struct->bitrate_index = 0;
     img_struct->fps_index = 0;
-    img_struct->export_fps = video_format_list[img_struct->video_format_index].fps_list[img_struct->fps_index].value;
+    img_struct->export_fps = video_format_list[img_struct->video_format_index].fps_list[img_struct->fps_index].numerator;
+    img_struct->export_fps /= video_format_list[img_struct->video_format_index].fps_list[img_struct->fps_index].denominator;
 
     img_struct->audio_fadeout = 5;
 

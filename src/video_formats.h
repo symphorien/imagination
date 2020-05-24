@@ -42,7 +42,8 @@ struct aspect_ratio {
 struct video_fps {
     gchar   *name;
     gchar   *ffmpeg_option;
-    gdouble value;
+    gint    numerator;
+    gint    denominator;
 };
 
 struct video_format {

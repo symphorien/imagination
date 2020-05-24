@@ -65,8 +65,8 @@ struct video_size VOB_size_list[] = {
 };
 
 struct video_fps VOB_fps_list[] = {
-    {"25 (PAL)", "25 -target pal-dvd", 25},
-    {"30 (NTSC)", "30000/1001 -target ntsc-dvd", 30000/1001},
+    {"25 (PAL)", "-target pal-dvd", 25, 1},
+    {"30 (NTSC)", "-target ntsc-dvd", 30000, 1001},
     {NULL}
 };
 
@@ -98,7 +98,7 @@ struct video_bitrate OGV_bitrate_list[] = {
 };
 
 struct video_fps OGV_fps_list[] = {
-    {"30", "30", 30},
+    {"30", "", 30, 1},
     {NULL}
 };
 
@@ -143,7 +143,7 @@ struct video_size x3GP_size_list[] = {
 };
 
 struct video_fps x3GP_fps_list[] = {
-    {"25", "25", 25},
+    {"25", "", 25, 1},
     {NULL}
 };
 
@@ -162,8 +162,8 @@ struct video_size x264_size_list[] = {
 };
 
 struct video_fps x264_fps_list[] = {
-    {"25 (PAL)", "25", 25},
-    {"30 (NTSC)", "30000/1001", 30000/1001},
+    {"25 (PAL)", "", 25, 1},
+    {"30 (NTSC)", "", 30000, 1001},
     {NULL}
 };
 
