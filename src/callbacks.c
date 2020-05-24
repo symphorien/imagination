@@ -1760,7 +1760,6 @@ void img_choose_slideshow_filename(GtkWidget *widget, img_window_struct *img)
 			gtk_widget_destroy(fc);
 			return;
 	    }
-	    g_message(img->project_current_dir);
 	    
 	    if (img->project_current_dir)
 			g_free(img->project_current_dir);
