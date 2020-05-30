@@ -113,7 +113,7 @@ cb_timeout( GdkPixbufAnimationIter *iter )
 		GtkWidget *widget;
 
 		widget = g_object_get_data( G_OBJECT( iter ), "widget" );
-		if( ! gtk_widget_get_visible( widget ) )
+		if( (! widget) || (! gtk_widget_get_visible( widget )) )
 			return( FALSE );
 
 		gtk_widget_queue_draw( widget );
